@@ -9,11 +9,15 @@ import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.LoggedInUser;
 import com.hlt.commonservice.dto.StandardResponse;
 import com.hlt.commonservice.enums.ERole;
-import com.hlt.usermanagement.dto.request.*;
+import com.hlt.usermanagement.dto.request.LoginRequest;
+import com.hlt.usermanagement.dto.request.RefreshTokenRequest;
+import com.hlt.usermanagement.dto.request.UsernameLoginRequest;
 import com.hlt.usermanagement.jwt.JwtResponse;
-import com.hlt.usermanagement.model.*;
+import com.hlt.usermanagement.model.B2BUnitModel;
+import com.hlt.usermanagement.model.RoleModel;
+import com.hlt.usermanagement.model.UserModel;
+import com.hlt.usermanagement.model.UserOTPModel;
 import com.hlt.usermanagement.repository.B2BUnitRepository;
-import com.hlt.usermanagement.repository.UserBusinessRoleMappingRepository;
 import com.hlt.usermanagement.services.RoleService;
 import com.hlt.usermanagement.services.UserOTPService;
 import com.hlt.usermanagement.services.UserService;
@@ -52,8 +56,6 @@ public class AuthController extends JTBaseEndpoint {
     private final UserDetailsServiceImpl userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
-    private final UserBusinessRoleMappingRepository mappingRepository;
-
     @PostMapping("/login")
     public ResponseEntity<Object> generateJwt(@Valid @RequestBody LoginRequest loginRequest) throws JsonProcessingException {
         log.info("Login attempt for primary contact: {}", loginRequest.getPrimaryContact());
@@ -83,14 +85,10 @@ public class AuthController extends JTBaseEndpoint {
             userModel.setEmail(loginRequest.getEmailAddress());
         }
 
-        // Instead of setB2bUnit(), add the business to the businesses set
         if (loginRequest.getBusinessId() != null) {
             B2BUnitModel unit = b2bUnitRepository.findById(loginRequest.getBusinessId())
                     .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
-
-            // Ensure bidirectional consistency:
-            unit.setOwner(userModel);
-            userModel.getBusinesses().add(unit);
+            userModel.setB2bUnit(unit);
         }
 
         Set<RoleModel> userRoles = new HashSet<>();
@@ -101,7 +99,6 @@ public class AuthController extends JTBaseEndpoint {
         log.info("New user registered: {}", userModel.getPrimaryContact());
         return userModel;
     }
-
 
     private void validateUserUniqueness(String username, String primaryContact, String email) {
         if (userService.findByUsername(username).isPresent()) {
@@ -147,6 +144,7 @@ public class AuthController extends JTBaseEndpoint {
     }
 
 
+
     @PostMapping("/login/username")
     public ResponseEntity<Object> loginWithUsername(@Valid @RequestBody UsernameLoginRequest request) throws JsonProcessingException {
         UserModel user = userService.findByUsername(request.getUsername())
@@ -175,12 +173,7 @@ public class AuthController extends JTBaseEndpoint {
             userService.saveUser(userModel);
 
             String newAccessToken = jwtUtils.generateJwtToken(loggedInUser);
-
-            List<Long> businessIds = userModel.getBusinesses() != null
-                    ? userModel.getBusinesses().stream()
-                    .map(B2BUnitModel::getId)
-                    .toList()
-                    : Collections.emptyList();
+            Long businessId = userModel.getB2bUnit() != null ? userModel.getB2bUnit().getId() : null;
 
             return ResponseEntity.ok(new JwtResponse(
                     newAccessToken,
@@ -189,13 +182,12 @@ public class AuthController extends JTBaseEndpoint {
                     loggedInUser.getEmail(),
                     new ArrayList<>(loggedInUser.getRoles()),
                     refreshToken,
-                    businessIds
+                    businessId
             ));
         }
 
         throw new HltCustomerException(ErrorCode.TOKEN_PROCESSING_ERROR);
     }
-
 
     @PostMapping("/verify")
     public Boolean verifyOtp(@RequestBody LoginRequest loginRequest) {
@@ -237,25 +229,7 @@ public class AuthController extends JTBaseEndpoint {
             LoggedInUser loggedInUser = convertToLoggedInUser(userModel);
             String jwt = jwtUtils.generateJwtToken(loggedInUser);
             String refreshToken = jwtUtils.generateRefreshToken(loggedInUser);
-
-            List<Long> businessIds = userModel.getBusinesses() != null
-                    ? userModel.getBusinesses().stream()
-                    .map(B2BUnitModel::getId)
-                    .toList()
-                    : Collections.emptyList();
-
-
-            List<Long> mappedBusinessIds = mappingRepository.findByUserId(userModel.getId())
-                    .stream()
-                    .map(UserBusinessRoleMappingModel::getB2bUnit)
-                    .filter(Objects::nonNull)
-                    .map(B2BUnitModel::getId)
-                    .distinct()
-                    .toList();
-
-            Set<Long> allBusinessIds = new HashSet<>();
-            allBusinessIds.addAll(businessIds);
-            allBusinessIds.addAll(mappedBusinessIds);
+            Long businessId = userModel.getB2bUnit() != null ? userModel.getB2bUnit().getId() : null;
 
             return new JwtResponse(
                     jwt,
@@ -264,14 +238,13 @@ public class AuthController extends JTBaseEndpoint {
                     loggedInUser.getEmail(),
                     new ArrayList<>(loggedInUser.getRoles()),
                     refreshToken,
-                    new ArrayList<>(allBusinessIds)
+                    businessId
             );
         } finally {
             userOTPService.deleteByPrimaryContactAndOtpType(userModel.getPrimaryContact(), SIGN_IN);
             log.info("Deleted OTP for contact: {}", userModel.getPrimaryContact());
         }
     }
-
 
     private LoggedInUser convertToLoggedInUser(UserModel userModel) {
         LoggedInUser user = new LoggedInUser();
@@ -286,17 +259,5 @@ public class AuthController extends JTBaseEndpoint {
         user.setRoles(roles);
 
         return user;
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<StandardResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        userService.forgotPassword(request);
-        return ResponseEntity.ok(StandardResponse.message("Password reset  sent to your email"));
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<StandardResponse<String>> resetPassword(@Valid @RequestBody ChangePasswordRequest request) {
-        userService.changePassword(request);
-        return ResponseEntity.ok(StandardResponse.message("Password updated successfully"));
     }
 }

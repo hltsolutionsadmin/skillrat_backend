@@ -12,6 +12,7 @@
         <module>registry</module>
         <module>commonservices</module>
         <module>usermanagement</module>
+        <module>skillratservices</module>
 
     </modules>
     <packaging>pom</packaging>

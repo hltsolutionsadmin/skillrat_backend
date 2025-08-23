@@ -1,6 +1,5 @@
 package com.hlt.usermanagement.dto;
 
-import com.hlt.commonservice.dto.UserDTO;
 import com.hlt.commonservice.enums.ERole;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,4 +14,5 @@ public class UserBusinessRoleMappingDTO {
     private ERole role;
     private boolean active;
     private UserDTO userDetails;
+
 }

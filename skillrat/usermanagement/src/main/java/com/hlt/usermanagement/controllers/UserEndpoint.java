@@ -78,11 +78,7 @@ public class UserEndpoint extends JTBaseEndpoint {
     public List<UserModel> getUserDetailsByIds(@RequestBody List<Long> userIds) {
         return userService.findByIds(userIds);
     }
-    @GetMapping("/by-contact/{contact}")
-    public UserDTO getUserByPrimaryContact(@Valid @PathVariable String primaryContact) {
-        return userService.findDtoByPrimaryContact(primaryContact)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
-    }
+
     @PutMapping("/user/role/{role}")
     public ResponseEntity<?> assignRoleToCurrentUser(@PathVariable String role) {
         UserDetailsImpl currentUser = SecurityUtils.getCurrentUserDetails();
@@ -337,4 +333,5 @@ public class UserEndpoint extends JTBaseEndpoint {
         long count = userService.getUserCountByBusinessId(businessId);
         return ResponseEntity.ok(StandardResponse.single("User count fetched successfully", count));
     }
+
 }

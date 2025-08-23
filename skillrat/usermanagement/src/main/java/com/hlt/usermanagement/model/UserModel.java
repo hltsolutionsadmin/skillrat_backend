@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -17,9 +16,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "B2B_USER", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "USERNAME"),
-        @UniqueConstraint(columnNames = "EMAIL_HASH"),
-        @UniqueConstraint(columnNames = "PRIMARY_CONTACT_HASH")
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "email")
 })
 @Getter
 @Setter
@@ -27,24 +25,23 @@ public class UserModel extends AuditableModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID", nullable = false, updatable = false)
     private Long id;
 
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "FULL_NAME", nullable = false, length = 150)
+    @Column(name = "FULL_NAME", nullable = false)
     private String fullName;
 
     @Size(max = 20)
-    @Column(name = "USERNAME", nullable = false, unique = true, length = 20)
+    @Column(name = "USERNAME", unique = true, nullable = false)
     private String username;
 
     @Email
     @Size(max = 50)
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "EMAIL", nullable = false, length = 50)
+    @Column(name = "EMAIL", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "EMAIL_HASH", nullable = false, unique = true)
+    @Column(name = "email_hash", unique = true)
     private String emailHash;
 
     @NotBlank
@@ -52,7 +49,7 @@ public class UserModel extends AuditableModel {
     @Column(name = "PRIMARY_CONTACT", nullable = false)
     private String primaryContact;
 
-    @Column(name = "PRIMARY_CONTACT_HASH", nullable = false, unique = true)
+    @Column(name = "primary_contact_hash")
     private String primaryContactHash;
 
     @Convert(converter = EncryptedStringConverter.class)
@@ -62,10 +59,10 @@ public class UserModel extends AuditableModel {
     @Column(name = "PROFILE_PICTURE_ID")
     private Long profilePictureId;
 
-    @Column(name = "FCM_TOKEN", length = 255)
+    @Column(name = "FCM_TOKEN")
     private String fcmToken;
 
-    @Column(name = "JUVI_ID", length = 50)
+    @Column(name = "JUVI_ID")
     private String juviId;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -77,34 +74,21 @@ public class UserModel extends AuditableModel {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AddressModel> addresses;
 
-    @Column(name = "RECENT_ACTIVITY_DATE")
+    @Column(name = "recent_activity_date")
     private LocalDate recentActivityDate;
 
-    @Size(max = 255)
+    @Size(max = 50)
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "PASSWORD", nullable = false)
+    @Column(name = "password", unique = true, nullable = false)
     private String password;
 
-    @Column(name = "LAST_LOGOUT_DATE")
+    @Column(name = "last_logout_date")
     private LocalDate lastLogOutDate;
 
-    @Column(name = "CREATION_TIME", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date creationTime = new Date();
+    @Column(name = "CREATION_TIME")
+    private Date creationTime;
 
-    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<B2BUnitModel> businesses = new HashSet<>();
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UserAttributeModel> attributes = new HashSet<>();
-
-    // Password reset token
-    @Size(max = 255)
-    @Column(name = "RESET_TOKEN")
-    private String resetToken;
-
-    @Column(name = "RESET_TOKEN_EXPIRY")
-    private LocalDateTime resetTokenExpiry;
-
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "b2b_unit_id")
+    private B2BUnitModel b2bUnit;
 }

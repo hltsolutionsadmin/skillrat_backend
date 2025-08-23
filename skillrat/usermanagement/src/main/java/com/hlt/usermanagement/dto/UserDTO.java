@@ -7,7 +7,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -31,12 +30,10 @@ public class UserDTO {
     private LocalDate lastLogOutDate;
     private LocalDate recentActivityDate;
     private List<AddressDTO> addresses;
-    private Map<Long, String> businessInfo;
-    private List<Long> businessIds;
+    private Long businessId;
     private Set<String> roles;
-    //JsonIgnore to prevent password from being serialized in API responses
+    @JsonIgnore
     private String password;
-    private Map<String, String> attributes;
 
 
 }

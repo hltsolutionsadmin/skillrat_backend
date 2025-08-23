@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -31,8 +30,8 @@ public class B2BUnitRequest {
     private String country;
     private String postalCode;
     private String contactNumber;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
+    private Double latitude;
+    private Double longitude;
     private Boolean enabled;
 
     private String gstNumber;

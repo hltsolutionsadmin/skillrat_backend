@@ -8,14 +8,6 @@ public enum ErrorCode {
     // User & Auth Errors (1000–1099)
     // ===========================
     USER_NOT_FOUND(1000, "User Not Found", HttpStatus.NOT_FOUND),
-    ENQUIRY_NOT_FOUND(2000, "Enquiry Not Found", HttpStatus.NOT_FOUND),
-    INVALID_OLD_PASSWORD(1101, "The old password you entered is incorrect", HttpStatus.BAD_REQUEST),
-    INVALID_TOKEN(1100, "Invalid Token", HttpStatus.BAD_REQUEST),
-    TOKEN_EXPIRED(1101, "Token Expired", HttpStatus.UNAUTHORIZED),
-    APPOINTMENT_NOT_FOUND(2001, "Appointment Not Found", HttpStatus.NOT_FOUND),
-    PATIENT_NOT_FOUND(2001, "Patient not found", HttpStatus.NOT_FOUND),
-
-    // Appointment related errors
     USER_ALREADY_EXISTS(1001, "User Already Exists", HttpStatus.CONFLICT),
     EMAIL_ALREADY_IN_USE(1002, "Email Is Already In Use", HttpStatus.CONFLICT),
     UNAUTHORIZED(1003, "Unauthorized Access", HttpStatus.UNAUTHORIZED),

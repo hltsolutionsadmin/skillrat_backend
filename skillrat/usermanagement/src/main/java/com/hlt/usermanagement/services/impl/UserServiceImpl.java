@@ -1,9 +1,5 @@
 package com.hlt.usermanagement.services.impl;
 
-import com.hlt.usermanagement.dto.MailRequestDTO;
-import com.hlt.usermanagement.dto.enums.EmailType;
-import com.hlt.usermanagement.dto.request.ChangePasswordRequest;
-import com.hlt.usermanagement.dto.request.ForgotPasswordRequest;
 import com.hlt.usermanagement.model.*;
 import com.hlt.auth.UserServiceAdapter;
 import com.hlt.auth.exception.handling.ErrorCode;
@@ -15,10 +11,13 @@ import com.hlt.commonservice.dto.UserDTO;
 import com.hlt.commonservice.enums.ERole;
 import com.hlt.commonservice.user.UserDetailsImpl;
 import com.hlt.usermanagement.dto.UserUpdateDTO;
-import com.hlt.usermanagement.repository.*;
-import com.hlt.usermanagement.services.EmailService;
+import com.hlt.usermanagement.repository.B2BUnitRepository;
+import com.hlt.usermanagement.repository.MediaRepository;
+import com.hlt.usermanagement.repository.RoleRepository;
+import com.hlt.usermanagement.repository.UserRepository;
 import com.hlt.usermanagement.services.UserService;
 import com.hlt.utils.SecurityUtils;
+import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +28,8 @@ import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
-
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService, UserServiceAdapter {
@@ -44,10 +40,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     @Autowired private MediaRepository mediaRepository;
     @Autowired private B2BUnitRepository b2bUnitRepository;
     @Autowired private PasswordEncoder passwordEncoder;
-    @Autowired private EmailService emailService;
-
-    @Autowired
-    private UserBusinessRoleMappingRepository mappingRepository;
     @Override
     public UserModel saveUser(UserModel userModel) {
         try {
@@ -65,6 +57,8 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
             throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS);
         }
 
+        B2BUnitModel business = dto.getBusinessId() != null ? findB2BUnitById(dto.getBusinessId()) : null;
+
         UserModel user = new UserModel();
         user.setUsername(dto.getUsername());
         user.setFullName(dto.getFullName());
@@ -72,13 +66,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRoleModels(fetchRoles(dto.getUserRoles()));
-
-        if (dto.getBusinessId() != null) {
-            B2BUnitModel business = findB2BUnitById(dto.getBusinessId());
-            Set<B2BUnitModel> businesses = new HashSet<>();
-            businesses.add(business);
-            user.setBusinesses(businesses);
-        }
+        user.setB2bUnit(business);
 
         return saveUser(user).getId();
     }
@@ -115,16 +103,10 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         user.setRoleModels(fetchRoles(userRoles));
         user.setCreationTime(new Date());
         user.setFullName(fullName);
-
-        if (b2bUnit != null) {
-            Set<B2BUnitModel> businesses = new HashSet<>();
-            businesses.add(b2bUnit);
-            user.setBusinesses(businesses);
-        }
+        user.setB2bUnit(b2bUnit);
 
         return saveUser(user).getId();
     }
-
 
     @Override
     public void addUserRole(Long userId, ERole userRole) {
@@ -163,17 +145,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
         return dto;
     }
-    private MediaDTO convertToMediaDto(MediaModel media) {
-        MediaDTO dto = new MediaDTO();
-        dto.setId(media.getId());
-        dto.setUrl(media.getUrl());
-        dto.setName(media.getFileName());
-        dto.setDescription(media.getDescription());
-        dto.setExtension(media.getExtension());
-        dto.setCreationTime(media.getCreationTime());
-        dto.setMediaType(media.getMediaType());
-        return dto;
-    }
 
     @Override
     public UserModel findById(Long userId) {
@@ -199,12 +170,9 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     @Override
     public Optional<UserModel> findByPrimaryContact(String primaryContact) {
         return userRepository.findByPrimaryContactHash(DigestUtils.sha256Hex(primaryContact));
+
     }
-    @Override
-    public Optional<UserDTO> findDtoByPrimaryContact(String primaryContact) {
-        return userRepository.findByPrimaryContact(primaryContact)
-                .map(this::convertToUserDto);
-    }
+
 
     @Override
     public List<UserDTO> getUsersByRole(String roleName) {
@@ -262,142 +230,59 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         return userRepository.findById(id)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
     }
+
+    private MediaDTO convertToMediaDto(MediaModel media) {
+        MediaDTO dto = new MediaDTO();
+        dto.setId(media.getId());
+        dto.setUrl(media.getUrl());
+        dto.setName(media.getFileName());
+        dto.setDescription(media.getDescription());
+        dto.setExtension(media.getExtension());
+        dto.setCreationTime(media.getCreationTime());
+        dto.setMediaType(media.getMediaType());
+        return dto;
+    }
+
     public UserDTO convertToUserDto(UserModel user) {
-        // Map roles
-        Set<com.hlt.commonservice.dto.Role> roles = Optional.ofNullable(user.getRoleModels())
-                .orElse(Collections.emptySet())
-                .stream()
+        Set<com.hlt.commonservice.dto.Role> roles = user.getRoleModels().stream()
                 .map(role -> new com.hlt.commonservice.dto.Role(role.getId(), role.getName()))
                 .collect(Collectors.toSet());
 
-        // Get profile picture URL
-        String profilePicture = getProfilePictureUrl(user.getId());
+        String profilePicture = Optional.ofNullable(
+                        mediaRepository.findByCustomerIdAndMediaType(user.getId(), "PROFILE_PICTURE"))
+                .map(MediaModel::getUrl)
+                .orElse(null);
 
-        // First, get the mapped business IDs and their names
-        Map<Long, String> mappedBusinessInfo = mappingRepository.findByUserId(user.getId())
-                .stream()
-                .map(UserBusinessRoleMappingModel::getB2bUnit)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(
-                        B2BUnitModel::getId,
-                        B2BUnitModel::getBusinessName,
-                        (existing, replacement) -> existing
-                ));
+        B2BUnitDTO b2bUnit = Optional.ofNullable(user.getB2bUnit())
+                .map(this::convertToB2BDTO)
+                .orElseGet(() -> b2bUnitRepository.findByUserModel(user)
+                        .map(this::convertToB2BDTO)
+                        .orElse(null));
 
-        // Next, get the user's direct business IDs and their names
-        Map<Long, String> directBusinessInfo = user.getBusinesses() != null
-                ? user.getBusinesses().stream()
-                .collect(Collectors.toMap(
-                        B2BUnitModel::getId,
-                        B2BUnitModel::getBusinessName,
-                        (existing, replacement) -> existing
-                ))
-                : Collections.emptyMap();
-
-        // Combine the two maps into a single source of truth for unique business IDs and names
-        Map<Long, String> allBusinessInfo = new HashMap<>();
-        allBusinessInfo.putAll(mappedBusinessInfo);
-        allBusinessInfo.putAll(directBusinessInfo);
-
-        // Now, transform the Map into the desired List<Map<String, Object>> format
-        List<Map<String, Object>> businesses = allBusinessInfo.entrySet().stream()
-                .map(entry -> {
-                    Map<String, Object> businessMap = new HashMap<>();
-                    businessMap.put("id", entry.getKey());
-                    businessMap.put("businessName", entry.getValue());
-                    return businessMap;
-                })
-                .collect(Collectors.toList());
-
-        // Map user attributes
-        Map<String, String> userAttributes = user.getAttributes()
-                .stream()
-                .collect(Collectors.toMap(UserAttributeModel::getAttributeName, UserAttributeModel::getAttributeValue));
-
-        // Build and return the UserDTO
         return UserDTO.builder()
                 .id(user.getId())
-                .fullName(StringUtils.trimToNull(user.getFullName()))
-                .primaryContact(StringUtils.trimToNull(user.getPrimaryContact()))
-                .email(StringUtils.trimToNull(user.getEmail()))
+                .fullName(user.getFullName())
+                .primaryContact(user.getPrimaryContact())
+                .email(user.getEmail())
                 .creationTime(user.getCreationTime())
                 .token(user.getFcmToken())
-                .username(StringUtils.trimToNull(user.getUsername()))
-                .gender(StringUtils.trimToNull(user.getGender()))
+                .username(user.getUsername())
+                .gender(user.getGender())
                 .profilePicture(profilePicture)
                 .roles(roles)
-                .juviId(StringUtils.trimToNull(user.getJuviId()))
-                .attributes(userAttributes)
-                .businesses(businesses) // Pass the new list of maps
+                .juviId(user.getJuviId())
+                .password(user.getPassword())
+                .b2bUnit(b2bUnit)
                 .build();
     }
 
-    private String getProfilePictureUrl(Long userId) {
-        MediaModel profilePicture = mediaRepository.findByCustomerIdAndMediaType(userId, "PROFILE_PICTURE");
-        return profilePicture != null ? profilePicture.getUrl() : null;
+    private B2BUnitDTO convertToB2BDTO(B2BUnitModel unit) {
+        B2BUnitDTO dto = new B2BUnitDTO();
+        dto.setId(unit.getId());
+        dto.setBusinessName(unit.getBusinessName());
+        dto.setEnabled(unit.isEnabled());
+        return dto;
     }
-
-    @Override
-    @Transactional
-    public void forgotPassword(ForgotPasswordRequest request) {
-        UserModel user = userRepository.findByUsernameOrEmail(
-                request.getUsernameOrEmail(),
-                request.getUsernameOrEmail()
-        ).orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
-
-        // Generate a secure random password
-        String newPassword = generateRandomPassword();
-
-        // Encode and update password directly
-        user.setPassword(passwordEncoder.encode(newPassword));
-        user.setResetToken(null);
-        user.setResetTokenExpiry(null);
-        userRepository.save(user);
-
-
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("name", user.getFullName());
-        variables.put("username", user.getUsername());
-        variables.put("password", newPassword);
-
-        MailRequestDTO mailRequest = MailRequestDTO.builder()
-                .to(user.getEmail())
-                .subject("Your Password Has Been Reset")
-                .type(EmailType.FORGOT_PASSWORD)
-                .variables(variables)
-                .build();
-        // Send confirmation email with new credentials
-        emailService.sendMail(mailRequest);
-    }
-
-    /**
-     * Utility method to generate a secure random password
-     */
-    private String generateRandomPassword() {
-        int length = 10; // you can adjust length
-        String charSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%!&*?";
-        SecureRandom random = new SecureRandom();
-        StringBuilder password = new StringBuilder();
-
-        for (int i = 0; i < length; i++) {
-            password.append(charSet.charAt(random.nextInt(charSet.length())));
-        }
-        return password.toString();
-    }
-
-    @Override
-    public void changePassword(ChangePasswordRequest request) {
-        UserModel user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
-
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw new HltCustomerException(ErrorCode.INVALID_OLD_PASSWORD);
-        }
-
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
-    }
-
 
     public Boolean existsByEmail(String email, Long userId) {
         return userRepository.existsByEmailAndNotUserId(email, userId);

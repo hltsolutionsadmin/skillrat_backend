@@ -52,7 +52,10 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/api/usermanagement/auth/**",
                                 "/auth/**",
-                                "/jtprofile/admin/**"
+                                "/jtprofile/admin/**",
+                                "/api/public/**",
+                                "/api/product/public/products/**",
+                                "/api/usermgmt/api/public/**"
 
                         ).permitAll()
 

@@ -9,7 +9,6 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -45,6 +44,7 @@ public class UserDTO {
     private String type;
 
     private boolean isRegistered;
+    private List<SchemeInfoDTO> schemeInfoList;
 
     private Long userRegistrationId;
 
@@ -59,13 +59,12 @@ public class UserDTO {
     private String rollNumber;
     private String qualification;
 
+    private String branch;
     private B2BUnitDTO b2bUnit;
     private List<MediaDTO> media;
-
-    private Map<String, String> attributes;
-
-    private Map<Long, String> businessIdToNameMap;
-    private List<Map<String, Object>> businesses;
-
+    private UserVerificationStatus userVerificationStatus;
+    private Integer studentStartYear;
+    private Integer studentEndYear;
+    private Long currentYear;
     private String password;
 }

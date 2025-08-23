@@ -17,10 +17,9 @@ public class GatewayCorsConfig {
 
         corsConfig.setAllowedOriginPatterns(Arrays.asList(
                 "https://kovela.app",
-                "https://kovela.in",
-                "http://localhost:4200"
+                "http://localhost:4200",
+                "https://polite-sand-0a97dd600.2.azurestaticapps.net"
         ));
-//        corsConfig.setAllowedMethods(Arrays.asList("*"));
         corsConfig.setAllowedMethods(Arrays.asList("*"));
         corsConfig.setAllowedHeaders(Arrays.asList("*"));
         corsConfig.setAllowCredentials(true);

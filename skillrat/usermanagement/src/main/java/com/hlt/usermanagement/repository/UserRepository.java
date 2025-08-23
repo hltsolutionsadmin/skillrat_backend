@@ -1,8 +1,10 @@
 package com.hlt.usermanagement.repository;
 
+
+import com.hlt.commonservice.enums.ERole;
+import com.hlt.commonservice.enums.UserVerificationStatus;
 import com.hlt.usermanagement.model.RoleModel;
 import com.hlt.usermanagement.model.UserModel;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,15 +35,12 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 
     Optional<UserModel> findByPrimaryContact(String primaryContact);
 
-    // Updated: Count users having a business in their businesses set with given businessId
-    @Query("SELECT COUNT(u) FROM UserModel u JOIN u.businesses b WHERE b.id = :businessId")
+
+
+    @Query("SELECT COUNT(u) FROM UserModel u WHERE u.b2bUnit.id = :businessId")
     long countUsersByBusinessId(@Param("businessId") Long businessId);
 
-    Optional<UserModel> findByPrimaryContactHash(String primaryContactHash);
+    Optional<UserModel> findByPrimaryContactHash(String primaryContact);
 
     Optional<UserModel> findByEmailHash(String emailHash);
-
-    Optional<UserModel> findByResetToken(@NotBlank String token);
-
-    Optional<UserModel> findByUsernameOrEmail(String username, String email);
 }
