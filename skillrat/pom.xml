@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
@@ -21,9 +21,13 @@
 
     <properties>
         <java.version>17</java.version>
-        <spring-boot.version>3.5.5</spring-boot.version>
+
+        <!-- Compatible versions -->
+        <spring-boot.version>3.2.5</spring-boot.version>
+        <spring-cloud.version>2023.0.3</spring-cloud.version>
         <spring-security.version>6.5.3</spring-security.version>
-        <spring-cloud.version>2022.0.4</spring-cloud.version>
+
+        <!-- Compiler -->
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -35,6 +39,7 @@
         <jjwt.version>0.12.4</jjwt.version>
         <aws-java-sdk.version>1.12.288</aws-java-sdk.version>
     </properties>
+
 
     <build>
         <pluginManagement>
