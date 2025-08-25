@@ -71,7 +71,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
     public B2BUnitDTO createOrUpdate(B2BUnitRequest request) throws IOException {
         UserModel currentUser = fetchCurrentUser();
         Optional<B2BUnitModel> existingModelOpt = b2bUnitRepository
-                .findByUserModelAndBusinessNameIgnoreCase(currentUser, request.getBusinessName());
+                .findByOwnerAndBusinessNameIgnoreCase(currentUser, request.getBusinessName());
 
         B2BUnitModel unit = existingModelOpt.orElseGet(B2BUnitModel::new);
         unit.setOwner(currentUser);
@@ -222,7 +222,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
                 .map(role -> new Role(role.getId(), role.getName()))
                 .collect(Collectors.toSet());
 
-        List<B2BUnitModel> b2BUnits = b2bUnitRepository.findByUserModelId(userId);
+        List<B2BUnitModel> b2BUnits = b2bUnitRepository.findByOwnerId(userId);
 
         if (b2BUnits.isEmpty()) {
             return List.of(B2BUnitStatusDTO.rolesOnly(userRoles));
@@ -270,7 +270,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         if (hasLatLng) {
             resultsPage = b2bUnitRepository.findNearbyBusinessesWithCategoryFilter(latitude, longitude, radiusInKm, categoryName, pageable);
         } else if (hasPostalCode) {
-            resultsPage = b2bUnitRepository.findByUserAddressPostalCode(postalCode, pageable);
+            resultsPage = b2bUnitRepository.findByOwnerAddressPostalCode(postalCode, pageable);
         }
 
         if (hasSearchTerm && !resultsPage.isEmpty()) {

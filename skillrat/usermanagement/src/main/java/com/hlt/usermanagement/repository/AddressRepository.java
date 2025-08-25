@@ -11,11 +11,8 @@ public interface AddressRepository extends JpaRepository<AddressModel, Long> {
     Page<AddressModel> findByUserId(Long userId, Pageable pageable);
 
     @Query("SELECT a FROM AddressModel a " +
-            "JOIN a.user u " +
-            "JOIN B2BUnitModel b ON b.userModel.id = u.id " +
-            "WHERE b.id = :businessId")
+            "WHERE a.user.b2bUnit.id = :businessId")
     Page<AddressModel> findAddressesByBusinessId(@Param("businessId") Long businessId, Pageable pageable);
-
 
     AddressModel findByUserIdAndIsDefaultTrue(Long userId);
 

@@ -11,8 +11,9 @@ public class RewardEventPublisher {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    public void publishRewardEvent(Long userId, String userType, int points,
+    public void publishRewardEvent(Long userId, String userType,
                                    RewardEventType eventType, Long refId, String description) {
+        int points = eventType.getPoints();
         RewardEvent event = new RewardEvent(userId, userType, points, eventType, refId, description);
         eventPublisher.publishEvent(event);
     }

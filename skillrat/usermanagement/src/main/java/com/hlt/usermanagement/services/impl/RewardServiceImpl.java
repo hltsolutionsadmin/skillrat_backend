@@ -10,6 +10,7 @@ import com.hlt.usermanagement.repository.RewardTransactionRepository;
 import com.hlt.usermanagement.services.RewardService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RewardServiceImpl implements RewardService {
 
     private final RewardPointRepository rewardPointRepo;
@@ -27,22 +29,30 @@ public class RewardServiceImpl implements RewardService {
     @Transactional
     public void addPoints(Long userId, String userType, int points,
                           RewardEventType eventType, Long refId, String description) {
+        try {
+            RewardPointModel rewardPoint = rewardPointRepo.findByUserIdAndUserType(userId, userType)
+                    .orElseGet(() -> {
+                        RewardPointModel rp = new RewardPointModel();
+                        rp.setUserId(userId);
+                        rp.setUserType(userType);
+                        rp.setTotalPoints(0);
+                        return rp;
+                    });
 
-        RewardPointModel rewardPoint = rewardPointRepo.findByUserIdAndUserType(userId, userType)
-                .orElseGet(() -> {
-                    RewardPointModel rp = new RewardPointModel();
-                    rp.setUserId(userId);
-                    rp.setUserType(userType);
-                    rp.setTotalPoints(0);
-                    return rp;
-                });
+            int oldPoints = rewardPoint.getTotalPoints();
+            rewardPoint.setTotalPoints(oldPoints + points);
+            rewardPoint.setLastUpdated(LocalDateTime.now());
+            rewardPointRepo.save(rewardPoint);
 
-        rewardPoint.setTotalPoints(rewardPoint.getTotalPoints() + points);
-        rewardPoint.setLastUpdated(LocalDateTime.now());
-        rewardPointRepo.save(rewardPoint);
+            saveTransactionRecord(userId, userType, points, "CREDIT", eventType, refId, description);
+            log.info("Transaction record saved for userId={}, points={}", userId, points);
 
-        saveTransactionRecord(userId, userType, points, "CREDIT", eventType, refId, description);
+        } catch (Exception e) {
+            log.error("Failed to add points for userId={} due to {}", userId, e.getMessage(), e);
+            throw e;
+        }
     }
+
 
     @Override
     @Async

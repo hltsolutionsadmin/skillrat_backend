@@ -14,8 +14,17 @@ import java.util.Optional;
 
 public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
 
-    Optional<B2BUnitModel> findByUserModelAndBusinessNameIgnoreCase(UserModel userModel, String businessName);
+    // 1. Find by owner and business name (ignore case)
+    Optional<B2BUnitModel> findByOwnerAndBusinessNameIgnoreCase(UserModel owner, String businessName);
 
+    // 2. Find by owner
+    Optional<B2BUnitModel> findByOwner(UserModel owner);
+
+    // 3. Find by owner ID
+    @Query("SELECT b FROM B2BUnitModel b WHERE b.owner.id = :ownerId")
+    List<B2BUnitModel> findByOwnerId(@Param("ownerId") Long ownerId);
+
+    // 4. Find nearby businesses with optional category filter (native query with pagination)
     @Query(value = """
             SELECT * FROM (
                 SELECT bu.*, 
@@ -53,33 +62,31 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
                                                               @Param("categoryName") String categoryName,
                                                               Pageable pageable);
 
+    // 5. Find by owner's address postal code
     @Query("""
-            SELECT b 
-            FROM B2BUnitModel b 
-            JOIN AddressModel a ON a.user.id = b.userModel.id 
-            WHERE a.postalCode = :postalCode
-            """)
-    Page<B2BUnitModel> findByUserAddressPostalCode(@Param("postalCode") String postalCode, Pageable pageable);
+        SELECT DISTINCT b
+        FROM B2BUnitModel b
+        JOIN b.owner u
+        JOIN u.addresses a
+        WHERE a.postalCode = :postalCode
+    """)
+    Page<B2BUnitModel> findByOwnerAddressPostalCode(@Param("postalCode") String postalCode, Pageable pageable);
 
-    @Query("SELECT b FROM B2BUnitModel b WHERE b.userModel.id = :userId")
-    List<B2BUnitModel> findByUserModelId(@Param("userId") Long userId);
-
+    // 6. Find by category name ordered by creation date
     Page<B2BUnitModel> findByCategory_NameOrderByCreationDateDesc(String categoryName, Pageable pageable);
 
+    // 7. Find by city and category name
     @Query("""
        SELECT b FROM B2BUnitModel b
        WHERE b.enabled = true
          AND LOWER(b.businessAddress.city) = LOWER(:city)
          AND LOWER(b.category.name) = LOWER(:categoryName)
-   """)
-    Page<B2BUnitModel> findByCityAndCategoryName(
-            @Param("city") String city,
-            @Param("categoryName") String categoryName,
-            Pageable pageable
-    );
+    """)
+    Page<B2BUnitModel> findByCityAndCategoryName(@Param("city") String city,
+                                                 @Param("categoryName") String categoryName,
+                                                 Pageable pageable);
 
-    Optional<B2BUnitModel> findByUserModel(UserModel userModel);
-
+    // 8. Get business address by unit ID
     @Query("SELECT b.businessAddress FROM B2BUnitModel b WHERE b.id = :unitId")
     Optional<AddressModel> findBusinessAddressByUnitId(@Param("unitId") Long unitId);
 }

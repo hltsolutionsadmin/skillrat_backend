@@ -9,9 +9,12 @@ import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.LoggedInUser;
 import com.hlt.commonservice.dto.StandardResponse;
 import com.hlt.commonservice.enums.ERole;
+import com.hlt.usermanagement.dto.enums.RewardEventType;
 import com.hlt.usermanagement.dto.request.LoginRequest;
 import com.hlt.usermanagement.dto.request.RefreshTokenRequest;
 import com.hlt.usermanagement.dto.request.UsernameLoginRequest;
+import com.hlt.usermanagement.event.RewardEvent;
+import com.hlt.usermanagement.event.RewardEventPublisher;
 import com.hlt.usermanagement.jwt.JwtResponse;
 import com.hlt.usermanagement.model.B2BUnitModel;
 import com.hlt.usermanagement.model.RoleModel;
@@ -54,7 +57,7 @@ public class AuthController extends JTBaseEndpoint {
     private final JwtUtils jwtUtils;
     private final B2BUnitRepository b2bUnitRepository;
     private final UserDetailsServiceImpl userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+    private final RewardEventPublisher rewardEventPublisher;
 
     @PostMapping("/login")
     public ResponseEntity<Object> generateJwt(@Valid @RequestBody LoginRequest loginRequest) throws JsonProcessingException {
@@ -135,7 +138,16 @@ public class AuthController extends JTBaseEndpoint {
         // 4. Save user (encryption handled by JPA layer)
         userService.saveUser(newUser);
 
-        // 5. Return response
+        // 5. Reward using enum logic
+        rewardEventPublisher.publishRewardEvent(
+                newUser.getId(),
+                "USER",
+                RewardEventType.USER_CREATED,
+                null,
+                "Reward for user registration"
+        );
+
+        // 6. Return response
         return ResponseEntity.ok(StandardResponse.message("User registered successfully"));
     }
 

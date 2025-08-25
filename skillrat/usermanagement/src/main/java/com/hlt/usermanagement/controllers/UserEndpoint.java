@@ -53,9 +53,6 @@ public class UserEndpoint extends JTBaseEndpoint {
     private B2BUnitRepository b2bUnitRepository;
 
     @Autowired
-    private  PasswordEncoder passwordEncoder;
-
-    @Autowired
     private MediaService mediaService;
     @Autowired
     private UserRepository userRepository;
