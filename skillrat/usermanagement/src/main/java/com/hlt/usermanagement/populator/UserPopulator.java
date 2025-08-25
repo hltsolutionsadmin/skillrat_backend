@@ -33,8 +33,6 @@ public class UserPopulator implements Populator<UserModel, UserDTO> {
         target.setGender(source.getGender());
 
         target.setFcmToken(source.getFcmToken());
-        target.setJuviId(source.getJuviId());
-        target.setLastLogOutDate(source.getLastLogOutDate());
         target.setRecentActivityDate(source.getRecentActivityDate());
 
 
@@ -49,9 +47,9 @@ public class UserPopulator implements Populator<UserModel, UserDTO> {
             );
         }
 
-        if (source.getRoleModels() != null && !source.getRoleModels().isEmpty()) {
+        if (source.getRoles() != null && !source.getRoles().isEmpty()) {
             target.setRoles(
-                    source.getRoleModels().stream()
+                    source.getRoles().stream()
                             .map(role -> role.getName().name())
                             .collect(Collectors.toSet())
             );

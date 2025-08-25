@@ -77,9 +77,7 @@ public class AuthController extends JTBaseEndpoint {
         UserModel userModel = new UserModel();
         userModel.setPrimaryContact(loginRequest.getPrimaryContact());
         userModel.setFullName(loginRequest.getFullName());
-        userModel.setCreationTime(new Date());
         userModel.setRecentActivityDate(LocalDate.now());
-        userModel.setLastLogOutDate(LocalDate.now());
 
         if (StringUtils.isNotEmpty(loginRequest.getEmailAddress())) {
             userModel.setEmail(loginRequest.getEmailAddress());
@@ -93,7 +91,7 @@ public class AuthController extends JTBaseEndpoint {
 
         Set<RoleModel> userRoles = new HashSet<>();
         userRoles.add(roleService.findByErole(ERole.ROLE_USER));
-        userModel.setRoleModels(userRoles);
+        userModel.setRoles(userRoles);
 
         userService.saveUser(userModel);
         log.info("New user registered: {}", userModel.getPrimaryContact());
@@ -128,13 +126,11 @@ public class AuthController extends JTBaseEndpoint {
         newUser.setEmailHash(DigestUtils.sha256Hex(request.getEmail().trim().toLowerCase()));
         newUser.setPrimaryContact(request.getPrimaryContact());
         newUser.setPrimaryContactHash(DigestUtils.sha256Hex(request.getPrimaryContact()));
-        newUser.setCreationTime(new Date());
         newUser.setRecentActivityDate(LocalDate.now());
-        newUser.setLastLogOutDate(LocalDate.now());
 
         // 3. Assign default role
         RoleModel userRole = roleService.findByErole(ERole.ROLE_USER);
-        newUser.setRoleModels(Set.of(userRole));
+        newUser.setRoles(Set.of(userRole));
 
         // 4. Save user (encryption handled by JPA layer)
         userService.saveUser(newUser);
@@ -253,7 +249,7 @@ public class AuthController extends JTBaseEndpoint {
         user.setEmail(userModel.getEmail());
         user.setFullName(userModel.getFullName());
 
-        Set<String> roles = userModel.getRoleModels().stream()
+        Set<String> roles = userModel.getRoles().stream()
                 .map(role -> role.getName().name())
                 .collect(Collectors.toSet());
         user.setRoles(roles);
