@@ -1,5 +1,7 @@
 package com.hlt.usermanagement.model;
 
+import com.hlt.usermanagement.dto.enums.RewardEventType;
+import com.hlt.usermanagement.event.RewardEvent;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -31,7 +33,7 @@ public class RewardTransactionModel extends GenericModel {
     private String transactionType; // EARNED, REDEEMED
 
     @Column(name = "EVENT_TYPE", nullable = false)
-    private String eventType;
+    private RewardEventType eventType;
 
     @Column(name = "EVENT_REF_ID")
     private Long eventRefId;

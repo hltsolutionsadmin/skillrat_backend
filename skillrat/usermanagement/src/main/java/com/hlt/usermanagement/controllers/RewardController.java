@@ -1,6 +1,7 @@
 package com.hlt.usermanagement.controllers;
 
 import com.hlt.commonservice.dto.StandardResponse;
+import com.hlt.usermanagement.dto.enums.RewardEventType;
 import com.hlt.usermanagement.model.RewardTransactionModel;
 import com.hlt.usermanagement.services.RewardService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class RewardController {
             @RequestParam Long userId,
             @RequestParam String userType,
             @RequestParam int points,
-            @RequestParam String eventType,
+            @RequestParam RewardEventType eventType,
             @RequestParam(required = false) Long refId,
             @RequestParam(required = false) String description) {
 
@@ -43,7 +44,7 @@ public class RewardController {
             @RequestParam Long userId,
             @RequestParam String userType,
             @RequestParam int points,
-            @RequestParam String eventType,
+            @RequestParam RewardEventType eventType,
             @RequestParam(required = false) Long refId,
             @RequestParam(required = false) String description) {
 

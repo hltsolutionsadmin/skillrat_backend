@@ -1,8 +1,6 @@
 package com.hlt.usermanagement.services;
 
-
-import com.hlt.usermanagement.model.RewardTransactionModel;
-
+import com.hlt.usermanagement.dto.enums.RewardEventType;
 import com.hlt.usermanagement.model.RewardTransactionModel;
 
 public interface RewardService {
@@ -10,12 +8,14 @@ public interface RewardService {
     /**
      * Add reward points to a user asynchronously.
      */
-    void addPoints(Long userId, String userType, int points, String eventType, Long refId, String description);
+    void addPoints(Long userId, String userType, int points,
+                   RewardEventType eventType, Long refId, String description);
 
     /**
      * Deduct reward points from a user asynchronously.
      */
-    void deductPoints(Long userId, String userType, int points, String eventType, Long refId, String description);
+    void deductPoints(Long userId, String userType, int points,
+                      RewardEventType eventType, Long refId, String description);
 
     /**
      * Get total reward points for a user.
@@ -27,4 +27,3 @@ public interface RewardService {
      */
     RewardTransactionModel saveTransaction(RewardTransactionModel transaction);
 }
-

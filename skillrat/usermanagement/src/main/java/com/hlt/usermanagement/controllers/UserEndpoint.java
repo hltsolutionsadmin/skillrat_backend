@@ -281,9 +281,9 @@ public class UserEndpoint extends JTBaseEndpoint {
             LoggedInUser loggedInUser = new LoggedInUser();
             loggedInUser.setId(userModel.getId());
             loggedInUser.setFullName(userModel.getFullName());
-            List<String> roles = userModel.getRoleModels().stream().map(role -> role.getName().name())
-                    .collect(Collectors.toList());
-            loggedInUser.setRoles(new HashSet<>(roles));
+//            List<String> roles = userModel.getRoleModels().stream().map(role -> role.getName().name())
+//                    .collect(Collectors.toList());
+//            loggedInUser.setRoles(new HashSet<>(roles));
             loggedInUser.setPrimaryContact(userModel.getPrimaryContact());
 
             log.info("Customer details fetched successfully for Primary Contact: {}", primaryContact);

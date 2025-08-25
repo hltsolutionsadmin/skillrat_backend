@@ -1,5 +1,8 @@
 package com.hlt.usermanagement.services.impl;
 
+import com.hlt.auth.exception.handling.ErrorCode;
+import com.hlt.auth.exception.handling.HltCustomerException;
+import com.hlt.usermanagement.dto.enums.RewardEventType;
 import com.hlt.usermanagement.model.RewardPointModel;
 import com.hlt.usermanagement.model.RewardTransactionModel;
 import com.hlt.usermanagement.repository.RewardPointRepository;
@@ -22,9 +25,9 @@ public class RewardServiceImpl implements RewardService {
     @Override
     @Async
     @Transactional
-    public void addPoints(Long userId, String userType, int points, String eventType, Long refId, String description) {
+    public void addPoints(Long userId, String userType, int points,
+                          RewardEventType eventType, Long refId, String description) {
 
-        // Update or create reward balance
         RewardPointModel rewardPoint = rewardPointRepo.findByUserIdAndUserType(userId, userType)
                 .orElseGet(() -> {
                     RewardPointModel rp = new RewardPointModel();
@@ -38,20 +41,22 @@ public class RewardServiceImpl implements RewardService {
         rewardPoint.setLastUpdated(LocalDateTime.now());
         rewardPointRepo.save(rewardPoint);
 
-        // Save transaction
         saveTransactionRecord(userId, userType, points, "CREDIT", eventType, refId, description);
     }
 
     @Override
     @Async
     @Transactional
-    public void deductPoints(Long userId, String userType, int points, String eventType, Long refId, String description) {
+    public void deductPoints(Long userId, String userType, int points,
+                             RewardEventType eventType, Long refId, String description) {
 
         RewardPointModel rewardPoint = rewardPointRepo.findByUserIdAndUserType(userId, userType)
-                .orElseThrow(() -> new RuntimeException("User reward balance not found"));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.REWARD_NOT_FOUND,
+                        "User reward balance not found for userId: " + userId));
 
         if (rewardPoint.getTotalPoints() < points) {
-            throw new RuntimeException("Not enough points to deduct");
+            throw new HltCustomerException(ErrorCode.INSUFFICIENT_POINTS,
+                    "Not enough points to deduct for userId: " + userId);
         }
 
         rewardPoint.setTotalPoints(rewardPoint.getTotalPoints() - points);
@@ -74,7 +79,7 @@ public class RewardServiceImpl implements RewardService {
     }
 
     private void saveTransactionRecord(Long userId, String userType, int points, String type,
-                                       String eventType, Long refId, String description) {
+                                       RewardEventType eventType, Long refId, String description) {
         RewardTransactionModel txn = new RewardTransactionModel();
         txn.setUserId(userId);
         txn.setUserType(userType);
