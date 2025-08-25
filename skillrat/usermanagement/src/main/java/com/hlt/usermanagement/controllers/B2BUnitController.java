@@ -112,22 +112,24 @@ public class B2BUnitController extends JTBaseEndpoint {
             }
 
 
-            List<B2BUnitDTO> dtoList = unitPage.getContent().stream()
-                    .map(unit -> {
-                        B2BUnitDTO dto = new B2BUnitDTO();
-                        b2BUnitPopulator.populate(unit, dto);
-                        if (unit.getUserModel() != null) {
-                            UserDTO userDTO = new UserDTO();
-                            userPopulator.populate(unit.getUserModel(), userDTO, false);
-                            dto.setUserDTO(userDTO);
-                        }
-                        return dto;
-                    }).toList();
+//            List<B2BUnitDTO> dtoList = unitPage.getContent().stream()
+//                    .map(unit -> {
+//                        B2BUnitDTO dto = new B2BUnitDTO();
+//                        b2BUnitPopulator.populate(unit, dto);
+//                        if (unit.getUserModel() != null) {
+//                            UserDTO userDTO = new UserDTO();
+//                            userPopulator.populate(unit.getUserModel(), userDTO, false);
+//                            dto.setUserDTO(userDTO);
+//                        }
+//                        return dto;
+//                    }).toList();
 
-            Page<B2BUnitDTO> dtoPage = new PageImpl<>(dtoList, pageable, unitPage.getTotalElements());
+//            Page<B2BUnitDTO> dtoPage = new PageImpl<>(dtoList, pageable, unitPage.getTotalElements());
 
-            return ResponseEntity.ok(dtoPage);
+//            return ResponseEntity.ok(dtoPage);
+            return  null;
         }
+
 
 
     @GetMapping("/searchbycity")

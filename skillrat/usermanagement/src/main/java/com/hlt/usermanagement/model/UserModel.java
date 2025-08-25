@@ -62,8 +62,6 @@ public class UserModel extends GenericModel {
     @Column(name = "FCM_TOKEN")
     private String fcmToken;
 
-    @Column(name = "JUVI_ID")
-    private String juviId;
 
     /** Many-to-Many with RoleModel */
     @ManyToMany(fetch = FetchType.LAZY)
@@ -85,8 +83,8 @@ public class UserModel extends GenericModel {
     @Column(name = "PASSWORD", nullable = false)
     private String password;
 
-    @Column(name = "LAST_LOGOUT_DATE")
-    private LocalDate lastLogoutDate;
+//    @Column(name = "LAST_LOGOUT_DATE")
+//    private LocalDate lastLogoutDate;
 
     /** Many-to-One with B2BUnit */
     @ManyToOne(fetch = FetchType.LAZY)
