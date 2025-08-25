@@ -1,13 +1,14 @@
 package com.hlt.usermanagement.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hlt.commonservice.enums.UserVerificationStatus;
-import lombok.*;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.auto.value.AutoValue.Builder;
+
+import lombok.*;
 
 @Getter
 @Setter

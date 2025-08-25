@@ -1,15 +1,5 @@
 package com.hlt.usermanagement.azure.service.impl;
 
-
-
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-
-
 import com.hlt.usermanagement.azure.service.AwsBlobService;
 import com.hlt.usermanagement.model.MediaModel;
 import com.hlt.usermanagement.model.UserModel;
@@ -20,6 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,22 +48,28 @@ public class AwsBlobServiceImpl implements AwsBlobService {
     private UserService userService;
 
     @Override
-    public AmazonS3 getClient() {
-        AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-        return AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withRegion(Regions.EU_NORTH_1).build();
+    public S3Client getClient() {
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+        return S3Client.builder()
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .region(Region.of(region))
+                .build();
     }
 
-    @SuppressWarnings("resource")
     @Override
     public MediaModel uploadFile(MultipartFile file) throws IOException {
         MediaModel mediaModel = new MediaModel();
-        File modified = new File(file.getOriginalFilename());
-        FileOutputStream os = new FileOutputStream(modified);
-        os.write(file.getBytes());
-        String fileName = System.currentTimeMillis() + "" + file.getOriginalFilename();
-        getClient().putObject(bucketName, fileName, modified);
-        modified.delete();
+        File tempFile = convertMultipartFileToFile(file);
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+        PutObjectRequest putRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(fileName)
+                .build();
+
+        getClient().putObject(putRequest, RequestBody.fromFile(tempFile));
+        tempFile.delete();
+
         mediaModel.setFileName(fileName);
         mediaModel.setUrl(getS3Url(fileName));
         return mediaService.saveMedia(mediaModel);
@@ -83,35 +85,46 @@ public class AwsBlobServiceImpl implements AwsBlobService {
         return uploadFiles;
     }
 
-    private String getS3Url(String fileName) {
-        String completeUrl = "https://" + bucketName + "." + region + "/" + fileName;
-        return completeUrl;
-    }
-
     @Override
     public MediaModel uploadCustomerPictureFile(Long customerId, MultipartFile file, Long createdUser)
             throws IOException {
         UserModel userModel = userService.findById(customerId);
-        if (null != userModel) {
-
+        if (userModel != null) {
             MediaModel picture = mediaService.findByJtcustomerAndMediaType(customerId, PROFILE_PICTURE);
-            if (null == picture) {
+            if (picture == null) {
                 picture = new MediaModel();
             }
-            File modified = new File(file.getOriginalFilename());
-            try (FileOutputStream os = new FileOutputStream(modified)) {
-                os.write(file.getBytes());
-            }
-            String fileName = System.currentTimeMillis() + "" + file.getOriginalFilename();
-            getClient().putObject(bucketName, fileName, modified);
-            modified.delete();
+
+            File tempFile = convertMultipartFileToFile(file);
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+            PutObjectRequest putRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileName)
+                    .build();
+
+            getClient().putObject(putRequest, RequestBody.fromFile(tempFile));
+            tempFile.delete();
+
             picture.setUrl(getS3Url(fileName));
             picture.setCustomerId(customerId);
             picture.setMediaType(PROFILE_PICTURE);
-            picture.setCreatedBy(customerId);
+            picture.setCreatedBy(createdUser);
             return mediaService.saveMedia(picture);
         }
         return null;
+    }
+
+    private String getS3Url(String fileName) {
+        return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + fileName;
+    }
+
+    private File convertMultipartFileToFile(MultipartFile file) throws IOException {
+        File convFile = new File(file.getOriginalFilename());
+        try (FileOutputStream fos = new FileOutputStream(convFile)) {
+            fos.write(file.getBytes());
+        }
+        return convFile;
     }
 
     private String getFileExtension(String fileName) {
@@ -120,7 +133,4 @@ public class AwsBlobServiceImpl implements AwsBlobService {
         }
         return "";
     }
-
-
-
 }
