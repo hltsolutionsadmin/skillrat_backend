@@ -1,6 +1,7 @@
 package com.hlt.usermanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hlt.usermanagement.dto.enums.BusinessType;
 import com.hlt.usermanagement.dto.response.BusinessAttributeResponse;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,35 +11,49 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class B2BUnitDTO {
-	private Long id;
 
-	private String businessName;
+    private Long id;
 
-	private String contactNumber;
+    private String businessName;
 
-	private boolean enabled;
+    private BusinessType type;
 
-	private Double businessLatitude;
+    private String businessCode;
 
-	private Double businessLongitude;
+    private String contactNumber;
 
-	private String categoryName;
+    private String email;
 
-	private LocalDateTime creationDate;
+    private String websiteUrl;
 
-	private UserDTO userDTO;
+    private boolean enabled;
 
-	private AddressDTO addressDTO;
+    private boolean temporarilyClosed;
 
-	private Set<BusinessAttributeResponse> attributes;
+    private Double businessLatitude;
 
-	private List<MultipartFile> mediaFiles;
-	private List<String> mediaUrls;
-	private List<MediaDTO> mediaList;
+    private Double businessLongitude;
+
+    private Long categoryId;
+
+    private String categoryName;
+
+    private LocalDateTime creationDate;
+
+    private UserDTO admin;
+
+    private AddressDTO businessAddress;
+
+    private Set<BusinessAttributeResponse> attributes;
+
+    private List<MultipartFile> mediaFiles;
+
+    private List<String> mediaUrls;
+
+    private List<MediaDTO> mediaList;
 
 }

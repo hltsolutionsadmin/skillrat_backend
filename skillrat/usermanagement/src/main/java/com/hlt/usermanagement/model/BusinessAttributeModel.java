@@ -5,8 +5,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "business_attribute")
-@Getter @Setter
+@Table(name = "business_attribute",
+        indexes = {
+                @Index(name = "idx_b2b_unit_id", columnList = "b2b_unit_id"),
+                @Index(name = "idx_attribute_name", columnList = "attribute_name")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_b2b_unit_attribute", columnNames = {"b2b_unit_id", "attribute_name"})
+        })
+@Getter
+@Setter
 public class BusinessAttributeModel {
 
     @Id

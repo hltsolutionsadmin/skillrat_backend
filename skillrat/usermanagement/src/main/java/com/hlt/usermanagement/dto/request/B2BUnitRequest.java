@@ -2,9 +2,9 @@ package com.hlt.usermanagement.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hlt.commonservice.dto.MediaDTO;
+import com.hlt.usermanagement.dto.enums.BusinessType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +22,11 @@ public class B2BUnitRequest {
     @NotNull(message = "Category ID is mandatory")
     private Long categoryId;
 
+    private String businessCode;
+
+    @NotNull(message = "Business type is mandatory")
+    private BusinessType businessType;
+
     @NotBlank(message = "Address Line 1 is mandatory")
     private String addressLine1;
     private String street;
@@ -29,10 +34,15 @@ public class B2BUnitRequest {
     private String state;
     private String country;
     private String postalCode;
+
+    @NotBlank(message = "Contact number is mandatory")
     private String contactNumber;
+
     private Double latitude;
     private Double longitude;
+
     private Boolean enabled;
+    private Boolean temporarilyClosed;
 
     private String gstNumber;
     private String fssaiNo;
@@ -42,6 +52,5 @@ public class B2BUnitRequest {
     private List<MultipartFile> mediaFiles;
     private List<String> mediaUrls;
     private List<MediaDTO> media;
-
 
 }

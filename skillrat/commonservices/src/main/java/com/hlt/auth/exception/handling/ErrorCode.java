@@ -20,7 +20,8 @@ public enum ErrorCode {
     UNAUTHORIZED_OPERATION(1016, "Unauthorized operation", HttpStatus.UNAUTHORIZED),
     INVALID_ROLE_FOR_OPERATION(1017, "Invalid role for this operation", HttpStatus.FORBIDDEN),
     HOSPITAL_ADMIN_ALREADY_EXISTS(2001, "A hospital admin already exists for this hospital", HttpStatus.CONFLICT),
-
+    INVALID_BUSINESS_TYPE(1003, "Invalid Business Type code", HttpStatus.BAD_REQUEST),
+    BUSINESS_CODE_ALREADY_EXISTS(1010, "Business code already exists", HttpStatus.CONFLICT),
     REWARD_NOT_FOUND(3000, "User reward balance not found", HttpStatus.NOT_FOUND),
     INSUFFICIENT_POINTS(3001, "Not enough reward points available", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED_ROLE_ASSIGNMENT(1006, "You are not allowed to assign this role", HttpStatus.FORBIDDEN),
