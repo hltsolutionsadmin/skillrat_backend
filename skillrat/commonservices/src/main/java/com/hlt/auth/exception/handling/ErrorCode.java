@@ -25,7 +25,9 @@ public enum ErrorCode {
     REWARD_NOT_FOUND(3000, "User reward balance not found", HttpStatus.NOT_FOUND),
     INSUFFICIENT_POINTS(3001, "Not enough reward points available", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED_ROLE_ASSIGNMENT(1006, "You are not allowed to assign this role", HttpStatus.FORBIDDEN),
-
+    REQUIREMENT_NOT_FOUND(2001, "Requirement not found", HttpStatus.NOT_FOUND),
+    REQUIREMENT_ALREADY_EXISTS(2002, "Requirement already exists", HttpStatus.CONFLICT),
+    REQUIREMENT_INVALID_DATA(2003, "Invalid requirement data", HttpStatus.BAD_REQUEST),
     // ===========================
     // OTP & Token (1800–1899)
     // ===========================
