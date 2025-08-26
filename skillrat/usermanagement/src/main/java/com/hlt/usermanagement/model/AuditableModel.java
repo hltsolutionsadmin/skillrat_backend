@@ -13,24 +13,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
-@Getter
-@Setter
-public abstract class AuditableModel {
+@Getter @Setter
+public abstract class AuditableModel extends GenericModel {
 
-    @CreatedBy
-    @Column(name = "created_by", updatable = false)
+    @Column(name = "created_by")
     private String createdBy;
 
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private Instant createdAt;
-
-    @LastModifiedBy
     @Column(name = "updated_by")
     private String updatedBy;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private Instant updatedAt;
 }

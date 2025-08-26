@@ -9,9 +9,12 @@ import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.LoggedInUser;
 import com.hlt.commonservice.dto.StandardResponse;
 import com.hlt.commonservice.enums.ERole;
+import com.hlt.usermanagement.dto.enums.RewardEventType;
 import com.hlt.usermanagement.dto.request.LoginRequest;
 import com.hlt.usermanagement.dto.request.RefreshTokenRequest;
 import com.hlt.usermanagement.dto.request.UsernameLoginRequest;
+import com.hlt.usermanagement.event.RewardEvent;
+import com.hlt.usermanagement.event.RewardEventPublisher;
 import com.hlt.usermanagement.jwt.JwtResponse;
 import com.hlt.usermanagement.model.B2BUnitModel;
 import com.hlt.usermanagement.model.RoleModel;
@@ -54,7 +57,7 @@ public class AuthController extends JTBaseEndpoint {
     private final JwtUtils jwtUtils;
     private final B2BUnitRepository b2bUnitRepository;
     private final UserDetailsServiceImpl userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+    private final RewardEventPublisher rewardEventPublisher;
 
     @PostMapping("/login")
     public ResponseEntity<Object> generateJwt(@Valid @RequestBody LoginRequest loginRequest) throws JsonProcessingException {
@@ -77,9 +80,7 @@ public class AuthController extends JTBaseEndpoint {
         UserModel userModel = new UserModel();
         userModel.setPrimaryContact(loginRequest.getPrimaryContact());
         userModel.setFullName(loginRequest.getFullName());
-        userModel.setCreationTime(new Date());
         userModel.setRecentActivityDate(LocalDate.now());
-        userModel.setLastLogOutDate(LocalDate.now());
 
         if (StringUtils.isNotEmpty(loginRequest.getEmailAddress())) {
             userModel.setEmail(loginRequest.getEmailAddress());
@@ -93,7 +94,7 @@ public class AuthController extends JTBaseEndpoint {
 
         Set<RoleModel> userRoles = new HashSet<>();
         userRoles.add(roleService.findByErole(ERole.ROLE_USER));
-        userModel.setRoleModels(userRoles);
+        userModel.setRoles(userRoles);
 
         userService.saveUser(userModel);
         log.info("New user registered: {}", userModel.getPrimaryContact());
@@ -128,18 +129,25 @@ public class AuthController extends JTBaseEndpoint {
         newUser.setEmailHash(DigestUtils.sha256Hex(request.getEmail().trim().toLowerCase()));
         newUser.setPrimaryContact(request.getPrimaryContact());
         newUser.setPrimaryContactHash(DigestUtils.sha256Hex(request.getPrimaryContact()));
-        newUser.setCreationTime(new Date());
         newUser.setRecentActivityDate(LocalDate.now());
-        newUser.setLastLogOutDate(LocalDate.now());
 
         // 3. Assign default role
         RoleModel userRole = roleService.findByErole(ERole.ROLE_USER);
-        newUser.setRoleModels(Set.of(userRole));
+        newUser.setRoles(Set.of(userRole));
 
         // 4. Save user (encryption handled by JPA layer)
         userService.saveUser(newUser);
 
-        // 5. Return response
+        // 5. Reward using enum logic
+        rewardEventPublisher.publishRewardEvent(
+                newUser.getId(),
+                "USER",
+                RewardEventType.USER_CREATED,
+                null,
+                "Reward for user registration"
+        );
+
+        // 6. Return response
         return ResponseEntity.ok(StandardResponse.message("User registered successfully"));
     }
 
@@ -253,7 +261,7 @@ public class AuthController extends JTBaseEndpoint {
         user.setEmail(userModel.getEmail());
         user.setFullName(userModel.getFullName());
 
-        Set<String> roles = userModel.getRoleModels().stream()
+        Set<String> roles = userModel.getRoles().stream()
                 .map(role -> role.getName().name())
                 .collect(Collectors.toSet());
         user.setRoles(roles);

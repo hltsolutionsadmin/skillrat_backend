@@ -27,9 +27,10 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 
     Optional<UserModel> findByEmail(String email);
 
-    Page<UserModel> findByRoleModelsContaining(RoleModel roleModel, Pageable pageable);
+//    Page<UserModel> findByRolesContaining(RoleModel roleModel, Pageable pageable);
 
-    List<UserModel> findByRoleModelsContaining(RoleModel roleModel);
+    List<UserModel> findByRolesContaining(RoleModel roleModel);
+
 
     Boolean existsByPrimaryContact(String primaryContact);
 

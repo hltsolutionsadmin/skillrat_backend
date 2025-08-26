@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         user.setPrimaryContact(dto.getPrimaryContact());
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRoleModels(fetchRoles(dto.getUserRoles()));
+        user.setRoles(fetchRoles(dto.getUserRoles()));
         user.setB2bUnit(business);
 
         return saveUser(user).getId();
@@ -100,8 +100,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
         UserModel user = new UserModel();
         user.setPrimaryContact(mobileNumber);
-        user.setRoleModels(fetchRoles(userRoles));
-        user.setCreationTime(new Date());
+        user.setRoles(fetchRoles(userRoles));
         user.setFullName(fullName);
         user.setB2bUnit(b2bUnit);
 
@@ -113,7 +112,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         UserModel user = getUserByIdOrThrow(userId);
         RoleModel role = getRoleByEnum(userRole);
 
-        if (user.getRoleModels().add(role)) {
+        if (user.getRoles().add(role)) {
             saveUser(user);
         }
     }
@@ -124,7 +123,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
         RoleModel role = getRoleByEnum(userRole);
 
-        if (!user.getRoleModels().remove(role)) {
+        if (!user.getRoles().remove(role)) {
             throw new HltCustomerException(ErrorCode.ROLE_NOT_FOUND);
         }
 
@@ -179,7 +178,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         ERole role = ERole.valueOf(roleName.toUpperCase());
         RoleModel roleModel = getRoleByEnum(role);
 
-        return userRepository.findByRoleModelsContaining(roleModel)
+        return userRepository.findByRolesContaining(roleModel)
                 .stream()
                 .map(this::convertToUserDto)
                 .collect(Collectors.toList());
@@ -244,7 +243,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     }
 
     public UserDTO convertToUserDto(UserModel user) {
-        Set<com.hlt.commonservice.dto.Role> roles = user.getRoleModels().stream()
+        Set<com.hlt.commonservice.dto.Role> roles = user.getRoles().stream()
                 .map(role -> new com.hlt.commonservice.dto.Role(role.getId(), role.getName()))
                 .collect(Collectors.toSet());
 
@@ -255,7 +254,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
         B2BUnitDTO b2bUnit = Optional.ofNullable(user.getB2bUnit())
                 .map(this::convertToB2BDTO)
-                .orElseGet(() -> b2bUnitRepository.findByUserModel(user)
+                .orElseGet(() -> b2bUnitRepository.findByOwner(user)
                         .map(this::convertToB2BDTO)
                         .orElse(null));
 
@@ -264,13 +263,11 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .fullName(user.getFullName())
                 .primaryContact(user.getPrimaryContact())
                 .email(user.getEmail())
-                .creationTime(user.getCreationTime())
                 .token(user.getFcmToken())
                 .username(user.getUsername())
                 .gender(user.getGender())
                 .profilePicture(profilePicture)
                 .roles(roles)
-                .juviId(user.getJuviId())
                 .password(user.getPassword())
                 .b2bUnit(b2bUnit)
                 .build();

@@ -71,10 +71,10 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
     public B2BUnitDTO createOrUpdate(B2BUnitRequest request) throws IOException {
         UserModel currentUser = fetchCurrentUser();
         Optional<B2BUnitModel> existingModelOpt = b2bUnitRepository
-                .findByUserModelAndBusinessNameIgnoreCase(currentUser, request.getBusinessName());
+                .findByOwnerAndBusinessNameIgnoreCase(currentUser, request.getBusinessName());
 
         B2BUnitModel unit = existingModelOpt.orElseGet(B2BUnitModel::new);
-        unit.setUserModel(currentUser);
+        unit.setOwner(currentUser);
         populateBasicDetails(unit, request, existingModelOpt);
         populateAddress(unit, request);
         populateCategory(unit, request);
@@ -143,9 +143,9 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         B2BUnitDTO dto = new B2BUnitDTO();
         b2bUnitPopulator.populate(savedModel, dto);
 
-        if (savedModel.getUserModel() != null) {
+        if (savedModel.getOwner() != null) {
             UserDTO userDTO = new UserDTO();
-            userPopulator.populate(savedModel.getUserModel(), userDTO, false);
+            userPopulator.populate(savedModel.getOwner(), userDTO, false);
             dto.setUserDTO(userDTO);
         }
 
@@ -174,8 +174,8 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
             response.setCategoryName(model.getCategory().getName());
         }
 
-        if (model.getUserModel() != null) {
-            response.setUserId(model.getUserModel().getId());
+        if (model.getOwner() != null) {
+            response.setUserId(model.getOwner().getId());
         }
 
         if (model.getAttributes() != null && !model.getAttributes().isEmpty()) {
@@ -218,11 +218,11 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         UserModel userModel = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        Set<Role> userRoles = userModel.getRoleModels().stream()
+        Set<Role> userRoles = userModel.getRoles().stream()
                 .map(role -> new Role(role.getId(), role.getName()))
                 .collect(Collectors.toSet());
 
-        List<B2BUnitModel> b2BUnits = b2bUnitRepository.findByUserModelId(userId);
+        List<B2BUnitModel> b2BUnits = b2bUnitRepository.findByOwnerId(userId);
 
         if (b2BUnits.isEmpty()) {
             return List.of(B2BUnitStatusDTO.rolesOnly(userRoles));
@@ -270,7 +270,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         if (hasLatLng) {
             resultsPage = b2bUnitRepository.findNearbyBusinessesWithCategoryFilter(latitude, longitude, radiusInKm, categoryName, pageable);
         } else if (hasPostalCode) {
-            resultsPage = b2bUnitRepository.findByUserAddressPostalCode(postalCode, pageable);
+            resultsPage = b2bUnitRepository.findByOwnerAddressPostalCode(postalCode, pageable);
         }
 
         if (hasSearchTerm && !resultsPage.isEmpty()) {
@@ -303,9 +303,9 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
                 .map(model -> {
                     B2BUnitDTO dto = new B2BUnitDTO();
                     b2bUnitPopulator.populate(model, dto);
-                    if (model.getUserModel() != null) {
+                    if (model.getOwner() != null) {
                         UserDTO userDTO = new UserDTO();
-                        userPopulator.populate(model.getUserModel(), userDTO, false);
+                        userPopulator.populate(model.getOwner(), userDTO, false);
                         dto.setUserDTO(userDTO);
                     }
                     return dto;

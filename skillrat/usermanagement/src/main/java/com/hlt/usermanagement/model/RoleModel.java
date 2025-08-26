@@ -1,31 +1,37 @@
 package com.hlt.usermanagement.model;
 
 import com.hlt.commonservice.enums.ERole;
-
-import lombok.Data;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
+
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
-@Table(name = "roles",
-        indexes = {@Index(name = "idx_roleid", columnList = "id", unique = true)})
-@Data
+@Table(
+        name = "ROLES",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"NAME"})
+        },
+        indexes = {
+                @Index(name = "idx_role_id", columnList = "ID", unique = true),
+                @Index(name = "idx_role_name", columnList = "NAME", unique = true)
+        }
+)
 @Getter
 @Setter
 public class RoleModel {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID", nullable = false, updatable = false)
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 50)
+    @Column(name = "NAME", length = 50, nullable = false, unique = true)
     private ERole name;
+
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+    private Set<UserModel> users = new HashSet<>();
 }
