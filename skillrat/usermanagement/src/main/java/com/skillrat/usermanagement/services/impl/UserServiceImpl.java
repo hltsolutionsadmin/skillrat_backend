@@ -255,7 +255,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
         B2BUnitDTO b2bUnit = Optional.ofNullable(user.getB2bUnit())
                 .map(this::convertToB2BDTO)
-                .orElseGet(() -> b2bUnitRepository.findByOwner(user)
+                .orElseGet(() -> b2bUnitRepository.findByAdmin(user)
                         .map(this::convertToB2BDTO)
                         .orElse(null));
 
@@ -278,7 +278,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         B2BUnitDTO dto = new B2BUnitDTO();
         dto.setId(unit.getId());
         dto.setBusinessName(unit.getBusinessName());
-        dto.setEnabled(unit.isEnabled());
+        dto.setEnabled(unit.getEnabled());
         return dto;
     }
 

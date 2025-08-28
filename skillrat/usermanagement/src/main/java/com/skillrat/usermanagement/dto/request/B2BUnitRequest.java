@@ -3,6 +3,7 @@ package com.skillrat.usermanagement.dto.request;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.skillrat.commonservice.dto.MediaDTO;
 
+import com.skillrat.usermanagement.dto.enums.BusinessType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -20,8 +22,15 @@ public class B2BUnitRequest {
     @NotBlank(message = "Business name is mandatory")
     private String businessName;
 
+
+    private String businessCode;
+
     @NotNull(message = "Category ID is mandatory")
     private Long categoryId;
+
+
+    @NotNull(message = "Business type is mandatory")
+    private BusinessType businessType;
 
     @NotBlank(message = "Address Line 1 is mandatory")
     private String addressLine1;
@@ -31,12 +40,14 @@ public class B2BUnitRequest {
     private String country;
     private String postalCode;
     private String contactNumber;
-    private Double latitude;
-    private Double longitude;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
     private Boolean enabled;
 
     private String gstNumber;
     private String fssaiNo;
+
+    private Boolean temporarilyClosed;
 
     private List<ProductAttributeRequest> attributes;
 
