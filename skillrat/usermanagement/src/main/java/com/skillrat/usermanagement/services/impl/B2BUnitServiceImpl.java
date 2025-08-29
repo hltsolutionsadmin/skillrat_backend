@@ -264,6 +264,30 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         );
     }
 
+    @Override
+    @Transactional
+    public B2BUnitDTO approveBusiness(Long businessId, Long adminUserId) {
+        B2BUnitModel business = b2bUnitRepository.findById(businessId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+
+        if (!business.getAdmin().getId().equals(adminUserId)) {
+            throw new HltCustomerException(ErrorCode.UNAUTHORIZED);
+        }
+
+        if (Boolean.TRUE.equals(business.getEnabled())) {
+            throw new HltCustomerException(ErrorCode.BUSINESS_ALREADY_APPROVED);
+        }
+
+        business.setEnabled(Boolean.TRUE);
+        business.setTemporarilyClosed(Boolean.FALSE);
+
+        b2bUnitRepository.save(business);
+
+        B2BUnitDTO dto = new B2BUnitDTO();
+        b2bUnitPopulator.populate(business, dto);
+        return dto;
+    }
+
 
 
     @Override

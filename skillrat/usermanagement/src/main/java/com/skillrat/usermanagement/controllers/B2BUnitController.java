@@ -152,6 +152,15 @@ public class B2BUnitController extends JTBaseEndpoint {
         return ResponseEntity.ok(addressDTO);
     }
 
+    @PutMapping("/{businessId}/approve")
+    public ResponseEntity<StandardResponse<B2BUnitDTO>> approveBusiness(
+            @PathVariable Long businessId,
+            @RequestParam Long adminUserId
+    ) {
+        B2BUnitDTO dto = b2BUnitService.approveBusiness(businessId, adminUserId);
+        return ResponseEntity.ok(StandardResponse.single("Business approved successfully", dto));
+    }
+
 
 
 }

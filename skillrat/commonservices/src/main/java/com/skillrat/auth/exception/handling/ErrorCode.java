@@ -32,7 +32,7 @@ public enum ErrorCode {
     APPLICATION_ALREADY_EXISTS(3002, "Application already exists for this requirement and applicant", HttpStatus.CONFLICT),
     APPLICATION_INVALID_STATUS(3003, "Invalid application status", HttpStatus.BAD_REQUEST),
     APPLICATION_UNAUTHORIZED_ACCESS(3004, "You are not authorized to access this application", HttpStatus.FORBIDDEN),
-
+    BUSINESS_ALREADY_APPROVED(2003, "Business already approved", HttpStatus.BAD_REQUEST),
     // ===========================
     // OTP & Token (1800–1899)
     // ===========================
