@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RequirementRepository extends JpaRepository<RequirementModel, Long> {
 
-    Page<RequirementModel> findByB2BUnitId(Long b2bUnitId, Pageable pageable);
+    Page<RequirementModel> findByB2bUnit(Long b2bUnitId, Pageable pageable);
 }
