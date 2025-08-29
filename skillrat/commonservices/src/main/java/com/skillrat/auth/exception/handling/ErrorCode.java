@@ -28,6 +28,11 @@ public enum ErrorCode {
     INSUFFICIENT_POINTS(3001, "Not enough reward points available", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED_ROLE_ASSIGNMENT(1006, "You are not allowed to assign this role", HttpStatus.FORBIDDEN),
     INVALID_BUSINESS_TYPE(1003, "Invalid Business Type code", HttpStatus.BAD_REQUEST),
+    APPLICATION_NOT_FOUND(3001, "Application not found", HttpStatus.NOT_FOUND),
+    APPLICATION_ALREADY_EXISTS(3002, "Application already exists for this requirement and applicant", HttpStatus.CONFLICT),
+    APPLICATION_INVALID_STATUS(3003, "Invalid application status", HttpStatus.BAD_REQUEST),
+    APPLICATION_UNAUTHORIZED_ACCESS(3004, "You are not authorized to access this application", HttpStatus.FORBIDDEN),
+
     // ===========================
     // OTP & Token (1800–1899)
     // ===========================

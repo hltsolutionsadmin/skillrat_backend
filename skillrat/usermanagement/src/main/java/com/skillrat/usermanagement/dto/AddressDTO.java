@@ -1,10 +1,12 @@
 package com.skillrat.usermanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.skillrat.usermanagement.dto.enums.RequirementType;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter

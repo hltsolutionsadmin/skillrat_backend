@@ -44,12 +44,9 @@ public class B2BUnitController extends JTBaseEndpoint {
     @Autowired
     private  MediaService mediaService;
 
-//    @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
+    @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
     @PostMapping("/onboard")
     public ResponseEntity<B2BUnitDTO> createB2BUnit(@Valid @RequestBody B2BUnitRequest request) throws IOException {
-        if (request.getLatitude() == null || request.getLongitude() == null) {
-            throw new IllegalArgumentException("Latitude and Longitude cannot be null");
-        }
         B2BUnitDTO response = b2BUnitService.createOrUpdate(request);
         return ResponseEntity.ok(response);
     }
