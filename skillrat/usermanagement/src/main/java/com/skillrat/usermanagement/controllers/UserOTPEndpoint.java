@@ -7,6 +7,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hlt.customerservices.CustomerIntegrationService;
 import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
@@ -19,15 +29,6 @@ import com.skillrat.usermanagement.services.UserService;
 import com.skillrat.utils.JTBaseEndpoint;
 
 import jakarta.validation.Valid;
-
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -76,7 +77,7 @@ public class UserOTPEndpoint extends JTBaseEndpoint {
     }
 
     @PostMapping("/trigger/otp")
-    public ResponseEntity<?> newUserSignUp( @Valid @RequestBody UserOTPDTO userOtpDto, @RequestParam(defaultValue = "true") boolean triggerOtp) throws IOException {
+    public ResponseEntity<?> newUserSignUp( @Valid @RequestBody UserOTPDTO userOtpDto) throws IOException {
 
         log.info("Entering newUserSignUp with Primary Contact: {}, OTP Type: {}", userOtpDto.getPrimaryContact(), userOtpDto.getOtpType());
         userOTPService.deleteByPrimaryContactAndOtpType(userOtpDto.getPrimaryContact(), userOtpDto.getOtpType());
