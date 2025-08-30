@@ -14,17 +14,25 @@ public enum ErrorCode {
     UNSUPPORTED_MAPPING_TYPE(1021, "Unsupported mapping type for the given role", HttpStatus.BAD_REQUEST),
     MAPPING_ALREADY_DEACTIVATED(1002, "User mapping is already deactivated", HttpStatus.UNPROCESSABLE_ENTITY),
     BUSINESS_NOT_FOUND(1002, "Business not found", HttpStatus.NOT_FOUND),
+    BUSINESS_CODE_ALREADY_EXISTS(1003, "Business code already exists", HttpStatus.CONFLICT),
     MAPPING_NOT_FOUND(1003, "Mapping not found", HttpStatus.NOT_FOUND),
     TELECALLER_MAPPING_LIMIT_EXCEEDED(1005, "Telecaller cannot be mapped to more than 2 hospitals", HttpStatus.CONFLICT),
     INVALID_ROLE(1007, "Invalid role provided", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED_OPERATION(1016, "Unauthorized operation", HttpStatus.UNAUTHORIZED),
     INVALID_ROLE_FOR_OPERATION(1017, "Invalid role for this operation", HttpStatus.FORBIDDEN),
     HOSPITAL_ADMIN_ALREADY_EXISTS(2001, "A hospital admin already exists for this hospital", HttpStatus.CONFLICT),
-
+    REQUIREMENT_NOT_FOUND(2001, "Requirement not found", HttpStatus.NOT_FOUND),
+    REQUIREMENT_ALREADY_EXISTS(2002, "Requirement already exists", HttpStatus.CONFLICT),
+    REQUIREMENT_INVALID_DATA(2003, "Invalid requirement data", HttpStatus.BAD_REQUEST),
     REWARD_NOT_FOUND(3000, "User reward balance not found", HttpStatus.NOT_FOUND),
     INSUFFICIENT_POINTS(3001, "Not enough reward points available", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED_ROLE_ASSIGNMENT(1006, "You are not allowed to assign this role", HttpStatus.FORBIDDEN),
-
+    INVALID_BUSINESS_TYPE(1003, "Invalid Business Type code", HttpStatus.BAD_REQUEST),
+    APPLICATION_NOT_FOUND(3001, "Application not found", HttpStatus.NOT_FOUND),
+    APPLICATION_ALREADY_EXISTS(3002, "Application already exists for this requirement and applicant", HttpStatus.CONFLICT),
+    APPLICATION_INVALID_STATUS(3003, "Invalid application status", HttpStatus.BAD_REQUEST),
+    APPLICATION_UNAUTHORIZED_ACCESS(3004, "You are not authorized to access this application", HttpStatus.FORBIDDEN),
+    BUSINESS_ALREADY_APPROVED(2003, "Business already approved", HttpStatus.BAD_REQUEST),
     // ===========================
     // OTP & Token (1800–1899)
     // ===========================

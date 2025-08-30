@@ -23,7 +23,7 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 
     Boolean existsByUsername(String username);
 
-    @Query("SELECT COUNT(u) > 0 FROM UserModel u WHERE u.email = :email AND u.id <> :userId")
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM UserModel u WHERE u.email = :email AND u.id <> :userId")
     Boolean existsByEmailAndNotUserId(@Param("email") String email, @Param("userId") Long userId);
 
     Optional<UserModel> findByEmail(String email);
@@ -32,12 +32,9 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 
     List<UserModel> findByRolesContaining(RoleModel roleModel);
 
-
     Boolean existsByPrimaryContact(String primaryContact);
 
     Optional<UserModel> findByPrimaryContact(String primaryContact);
-
-
 
     @Query("SELECT COUNT(u) FROM UserModel u WHERE u.b2bUnit.id = :businessId")
     long countUsersByBusinessId(@Param("businessId") Long businessId);

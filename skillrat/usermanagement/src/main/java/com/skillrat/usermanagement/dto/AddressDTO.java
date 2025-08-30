@@ -1,8 +1,12 @@
 package com.skillrat.usermanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.skillrat.usermanagement.dto.enums.RequirementType;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -16,8 +20,8 @@ public class AddressDTO {
     private String city;
     private String state;
     private String country;
-    private Double latitude;
-    private Double longitude;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
     private String postalCode;
     private Long userId;
     private Boolean isDefault;

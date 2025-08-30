@@ -1,45 +1,63 @@
 package com.skillrat.usermanagement.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.skillrat.usermanagement.dto.enums.BusinessType;
 import com.skillrat.usermanagement.dto.response.BusinessAttributeResponse;
-
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
-
 @Getter
 @Setter
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class B2BUnitDTO {
-	private Long id;
 
-	private String businessName;
+    private Long id;
 
-	private String contactNumber;
+    @NotNull(message = "Admin User  is mandatory")
+    private UserDTO adminUser;
 
-	private boolean enabled;
+    @NotBlank(message = "Business name is required")
+    @Size(max = 150, message = "Business name cannot exceed 150 characters")
+    private String businessName;
 
-	private Double businessLatitude;
+    @NotBlank(message = "Business code is required")
+    @Size(max = 50, message = "Business code cannot exceed 50 characters")
+    private String businessCode;
 
-	private Double businessLongitude;
+    @NotNull(message = "Business type is required")
+    private BusinessType type;
 
+    @NotNull(message = "Category  is required")
 	private String categoryName;
 
-	private LocalDateTime creationDate;
+    @NotBlank(message = "Contact number is required")
+    @Size(max = 20, message = "Contact number cannot exceed 20 characters")
+    @Pattern(regexp = "^[0-9+\\-() ]{6,20}$",
+            message = "Contact number contains invalid characters")
+    private String contactNumber;
 
-	private UserDTO userDTO;
+    @DecimalMin(value = "-90.0", inclusive = true, message = "Latitude must be >= -90")
+    @DecimalMax(value = "90.0", inclusive = true, message = "Latitude must be <= 90")
+    private BigDecimal businessLatitude;
 
-	private AddressDTO addressDTO;
+    @DecimalMin(value = "-180.0", inclusive = true, message = "Longitude must be >= -180")
+    @DecimalMax(value = "180.0", inclusive = true, message = "Longitude must be <= 180")
+    private BigDecimal businessLongitude;
 
-	private Set<BusinessAttributeResponse> attributes;
+    private Set<BusinessAttributeResponse> attributes;
 
-	private List<MultipartFile> mediaFiles;
-	private List<String> mediaUrls;
-	private List<MediaDTO> mediaList;
 
+    @NotNull(message = "Business address is required")
+    @Valid
+    private AddressDTO businessAddress;
+
+    @NotNull(message = "Enabled flag is required")
+    private Boolean enabled;
+
+    @NotNull(message = "Temporarily closed flag is required")
+    private Boolean temporarilyClosed;
 }

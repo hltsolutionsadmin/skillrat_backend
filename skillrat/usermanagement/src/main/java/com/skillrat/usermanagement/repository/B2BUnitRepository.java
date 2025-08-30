@@ -1,31 +1,33 @@
 package com.skillrat.usermanagement.repository;
 
+import com.skillrat.usermanagement.model.AddressModel;
+import com.skillrat.usermanagement.model.B2BUnitModel;
+import com.skillrat.usermanagement.model.UserModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.skillrat.usermanagement.model.AddressModel;
-import com.skillrat.usermanagement.model.B2BUnitModel;
-import com.skillrat.usermanagement.model.UserModel;
-
 import java.util.List;
 import java.util.Optional;
 
 public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
 
-    // 1. Find by owner and business name (ignore case)
-    Optional<B2BUnitModel> findByOwnerAndBusinessNameIgnoreCase(UserModel owner, String businessName);
+    // 1. Find by admin and business name (ignore case)
+    Optional<B2BUnitModel> findByAdminAndBusinessNameIgnoreCase(UserModel admin, String businessName);
 
-    // 2. Find by owner
-    Optional<B2BUnitModel> findByOwner(UserModel owner);
+    // 2. Find by category name ordered by created date (✅ correct property)
+    Page<B2BUnitModel> findByCategory_NameOrderByCreatedDateDesc(String categoryName, Pageable pageable);
 
-    // 3. Find by owner ID
-    @Query("SELECT b FROM B2BUnitModel b WHERE b.owner.id = :ownerId")
-    List<B2BUnitModel> findByOwnerId(@Param("ownerId") Long ownerId);
+    // 3. Find by admin
+    Optional<B2BUnitModel> findByAdmin(UserModel admin);
 
-    // 4. Find nearby businesses with optional category filter (native query with pagination)
+    // 4. Find by admin ID
+    @Query("SELECT b FROM B2BUnitModel b WHERE b.admin.id = :adminId")
+    List<B2BUnitModel> findByAdminId(@Param("adminId") Long adminId);
+
+    // 5. Find nearby businesses with optional category filter (native query with pagination)
     @Query(value = """
             SELECT * FROM (
                 SELECT bu.*, 
@@ -63,18 +65,15 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
                                                               @Param("categoryName") String categoryName,
                                                               Pageable pageable);
 
-    // 5. Find by owner's address postal code
+    // 6. Find by admin's address postal code
     @Query("""
         SELECT DISTINCT b
         FROM B2BUnitModel b
-        JOIN b.owner u
+        JOIN b.admin u
         JOIN u.addresses a
         WHERE a.postalCode = :postalCode
     """)
-    Page<B2BUnitModel> findByOwnerAddressPostalCode(@Param("postalCode") String postalCode, Pageable pageable);
-
-    // 6. Find by category name ordered by creation date
-    Page<B2BUnitModel> findByCategory_NameOrderByCreationDateDesc(String categoryName, Pageable pageable);
+    Page<B2BUnitModel> findByAdminAddressPostalCode(@Param("postalCode") String postalCode, Pageable pageable);
 
     // 7. Find by city and category name
     @Query("""
@@ -90,4 +89,7 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
     // 8. Get business address by unit ID
     @Query("SELECT b.businessAddress FROM B2BUnitModel b WHERE b.id = :unitId")
     Optional<AddressModel> findBusinessAddressByUnitId(@Param("unitId") Long unitId);
+
+    // 9. Check business code uniqueness
+    boolean existsByBusinessCode(String businessCode);
 }

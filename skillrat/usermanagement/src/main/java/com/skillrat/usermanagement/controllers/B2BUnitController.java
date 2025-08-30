@@ -1,9 +1,30 @@
 package com.skillrat.usermanagement.controllers;
 
-import com.skillrat.commonservice.dto.ApiResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.skillrat.commonservice.dto.StandardResponse;
 import com.skillrat.commonservice.user.UserDetailsImpl;
-import com.skillrat.usermanagement.dto.*;
+import com.skillrat.usermanagement.dto.AddressDTO;
+import com.skillrat.usermanagement.dto.B2BUnitDTO;
+import com.skillrat.usermanagement.dto.B2BUnitStatusDTO;
 import com.skillrat.usermanagement.dto.request.B2BUnitRequest;
 import com.skillrat.usermanagement.dto.response.B2BUnitListResponse;
 import com.skillrat.usermanagement.model.B2BUnitModel;
@@ -17,15 +38,6 @@ import com.skillrat.utils.SecurityUtils;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 @RestController
 @RequestMapping("/business")
@@ -44,12 +56,9 @@ public class B2BUnitController extends JTBaseEndpoint {
     @Autowired
     private  MediaService mediaService;
 
-    @PostMapping("/onboard")
     @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
+    @PostMapping("/onboard")
     public ResponseEntity<B2BUnitDTO> createB2BUnit(@Valid @RequestBody B2BUnitRequest request) throws IOException {
-        if (request.getLatitude() == null || request.getLongitude() == null) {
-            throw new IllegalArgumentException("Latitude and Longitude cannot be null");
-        }
         B2BUnitDTO response = b2BUnitService.createOrUpdate(request);
         return ResponseEntity.ok(response);
     }
@@ -153,6 +162,15 @@ public class B2BUnitController extends JTBaseEndpoint {
     public ResponseEntity<AddressDTO> getAddress(@PathVariable("id") Long unitId) {
         AddressDTO addressDTO = b2BUnitService.getAddressByB2BUnitId(unitId);
         return ResponseEntity.ok(addressDTO);
+    }
+
+    @PutMapping("/{businessId}/approve")
+    public ResponseEntity<StandardResponse<B2BUnitDTO>> approveBusiness(
+            @PathVariable Long businessId,
+            @RequestParam Long adminUserId
+    ) {
+        B2BUnitDTO dto = b2BUnitService.approveBusiness(businessId, adminUserId);
+        return ResponseEntity.ok(StandardResponse.single("Business approved successfully", dto));
     }
 
 

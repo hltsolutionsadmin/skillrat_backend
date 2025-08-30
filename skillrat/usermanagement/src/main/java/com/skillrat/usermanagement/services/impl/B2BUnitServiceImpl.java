@@ -66,12 +66,25 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
     @Transactional
     public B2BUnitDTO createOrUpdate(B2BUnitRequest request) throws IOException {
         UserModel currentUser = fetchCurrentUser();
-        Optional<B2BUnitModel> existingModelOpt = b2bUnitRepository
-                .findByOwnerAndBusinessNameIgnoreCase(currentUser, request.getBusinessName());
+        Optional<B2BUnitModel> existingOpt = b2bUnitRepository
+                .findByAdminAndBusinessNameIgnoreCase(currentUser, request.getBusinessName());
 
-        B2BUnitModel unit = existingModelOpt.orElseGet(B2BUnitModel::new);
-        unit.setOwner(currentUser);
-        populateBasicDetails(unit, request, existingModelOpt);
+        B2BUnitModel unit = existingOpt.orElseGet(B2BUnitModel::new);
+        unit.setAdmin(currentUser);
+
+        // Check if the businessCode already exists
+        if (request.getBusinessCode() != null) {
+            boolean codeExists = b2bUnitRepository.existsByBusinessCode(request.getBusinessCode());
+            if (codeExists && (unit.getId() == null || !unit.getBusinessCode().equals(request.getBusinessCode()))) {
+                throw new HltCustomerException(ErrorCode.BUSINESS_CODE_ALREADY_EXISTS);
+            }
+            unit.setBusinessCode(request.getBusinessCode());
+        } else if (unit.getId() == null) {
+            // Generate new businessCode only for new units
+            unit.setBusinessCode(generateBusinessCode());
+        }
+
+        populateBasicDetails(unit, request);
         populateAddress(unit, request);
         populateCategory(unit, request);
         populateAttributes(unit, request);
@@ -79,19 +92,28 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         B2BUnitModel saved = b2bUnitRepository.save(unit);
         return buildResponseDTO(saved);
     }
+
+    private String generateBusinessCode() {
+        return "BUS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
     private UserModel fetchCurrentUser() {
         UserDetailsImpl userDetails = SecurityUtils.getCurrentUserDetails();
         return userRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
     }
 
-    private void populateBasicDetails(B2BUnitModel unit, B2BUnitRequest request, Optional<B2BUnitModel> existingOpt) {
+    private void populateBasicDetails(B2BUnitModel unit, B2BUnitRequest request) {
         if (request.getBusinessName() != null) unit.setBusinessName(request.getBusinessName());
         if (request.getContactNumber() != null) unit.setContactNumber(request.getContactNumber());
         if (request.getLatitude() != null) unit.setBusinessLatitude(request.getLatitude());
         if (request.getLongitude() != null) unit.setBusinessLongitude(request.getLongitude());
-        //unit.setEnabled(existingOpt.map(B2BUnitModel::isEnabled).orElse(true));
+        if (request.getBusinessType() != null) unit.setType(request.getBusinessType());
+        if (request.getBusinessCode() != null) unit.setBusinessCode(request.getBusinessCode());
+        if (request.getEnabled() != null) unit.setEnabled(request.getEnabled());
+        if (request.getTemporarilyClosed() != null) unit.setTemporarilyClosed(request.getTemporarilyClosed());
     }
+
 
     private void populateAddress(B2BUnitModel unit, B2BUnitRequest request) {
         AddressModel address = Optional.ofNullable(unit.getBusinessAddress()).orElse(new AddressModel());
@@ -115,6 +137,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
             unit.setCategory(category);
         }
     }
+
     private void populateAttributes(B2BUnitModel unit, B2BUnitRequest request) {
         if (request.getAttributes() == null || request.getAttributes().isEmpty()) return;
 
@@ -126,25 +149,22 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
                 });
 
         attributes.clear();
-
         for (ProductAttributeRequest attr : request.getAttributes()) {
             BusinessAttributeModel model = new BusinessAttributeModel();
             model.setAttributeName(attr.getAttributeName());
             model.setAttributeValue(attr.getAttributeValue());
-            model.setB2bUnitModel(unit);
+            model.setB2bUnit(unit);
             attributes.add(model);
         }
     }
+
     private B2BUnitDTO buildResponseDTO(B2BUnitModel savedModel) {
-        B2BUnitDTO dto = new B2BUnitDTO();
-        b2bUnitPopulator.populate(savedModel, dto);
-
-        if (savedModel.getOwner() != null) {
+        B2BUnitDTO dto = b2bUnitPopulator.toDTO(savedModel);
+        if (savedModel.getAdmin() != null) {
             UserDTO userDTO = new UserDTO();
-            userPopulator.populate(savedModel.getOwner(), userDTO, false);
-            dto.setUserDTO(userDTO);
+            userPopulator.populate(savedModel.getAdmin(), userDTO);
+            dto.setAdminUser(userDTO);
         }
-
         return dto;
     }
 
@@ -163,15 +183,13 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
 
         response.setId(model.getId());
         response.setBusinessName(model.getBusinessName());
-        response.setEnabled(model.isEnabled());
-        response.setCreationDate(model.getCreationDate());
 
         if (model.getCategory() != null) {
             response.setCategoryName(model.getCategory().getName());
         }
 
-        if (model.getOwner() != null) {
-            response.setUserId(model.getOwner().getId());
+        if (model.getAdmin() != null) {
+            response.setUserId(model.getAdmin().getId());
         }
 
         if (model.getAttributes() != null && !model.getAttributes().isEmpty()) {
@@ -201,7 +219,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
 
         B2BUnitDTO dto = new B2BUnitDTO();
         b2bUnitPopulator.populate(model, dto);
-        dto.setEnabled(Boolean.TRUE.equals(model.isEnabled()));
+        dto.setEnabled(Boolean.TRUE.equals(model.getEnabled()));
 
         return dto;
     }
@@ -218,7 +236,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
                 .map(role -> new Role(role.getId(), role.getName()))
                 .collect(Collectors.toSet());
 
-        List<B2BUnitModel> b2BUnits = b2bUnitRepository.findByOwnerId(userId);
+        List<B2BUnitModel> b2BUnits = b2bUnitRepository.findByAdminId(userId);
 
         if (b2BUnits.isEmpty()) {
             return List.of(B2BUnitStatusDTO.rolesOnly(userRoles));
@@ -240,10 +258,34 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         return new B2BUnitStatusDTO(
                 b2BUnit.getId(),
                 b2BUnit.getBusinessName(),
-                b2BUnit.isEnabled(),
+                b2BUnit.getEnabled(),
                 userRoles,
                 attributes
         );
+    }
+
+    @Override
+    @Transactional
+    public B2BUnitDTO approveBusiness(Long businessId, Long adminUserId) {
+        B2BUnitModel business = b2bUnitRepository.findById(businessId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+
+        if (!business.getAdmin().getId().equals(adminUserId)) {
+            throw new HltCustomerException(ErrorCode.UNAUTHORIZED);
+        }
+
+        if (Boolean.TRUE.equals(business.getEnabled())) {
+            throw new HltCustomerException(ErrorCode.BUSINESS_ALREADY_APPROVED);
+        }
+
+        business.setEnabled(Boolean.TRUE);
+        business.setTemporarilyClosed(Boolean.FALSE);
+
+        b2bUnitRepository.save(business);
+
+        B2BUnitDTO dto = new B2BUnitDTO();
+        b2bUnitPopulator.populate(business, dto);
+        return dto;
     }
 
 
@@ -266,7 +308,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         if (hasLatLng) {
             resultsPage = b2bUnitRepository.findNearbyBusinessesWithCategoryFilter(latitude, longitude, radiusInKm, categoryName, pageable);
         } else if (hasPostalCode) {
-            resultsPage = b2bUnitRepository.findByOwnerAddressPostalCode(postalCode, pageable);
+            resultsPage = b2bUnitRepository.findByAdminAddressPostalCode(postalCode, pageable);
         }
 
         if (hasSearchTerm && !resultsPage.isEmpty()) {
@@ -299,10 +341,10 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
                 .map(model -> {
                     B2BUnitDTO dto = new B2BUnitDTO();
                     b2bUnitPopulator.populate(model, dto);
-                    if (model.getOwner() != null) {
+                    if (model.getAdmin() != null) {
                         UserDTO userDTO = new UserDTO();
-                        userPopulator.populate(model.getOwner(), userDTO, false);
-                        dto.setUserDTO(userDTO);
+                        userPopulator.populate(model.getAdmin(), userDTO, false);
+                        dto.setAdminUser(userDTO);
                     }
                     return dto;
                 })

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface B2BUnitService {
+
     B2BUnitDTO createOrUpdate(B2BUnitRequest request) throws IOException;
 
     Page<B2BUnitListResponse> listAllPaginated(int page, int size);
@@ -29,6 +30,8 @@ public interface B2BUnitService {
     Page<B2BUnitDTO> searchByCityAndCategory(String city, String categoryName, String searchTerm, Pageable pageable);
 
     AddressDTO getAddressByB2BUnitId(Long unitId);
+
+    B2BUnitDTO approveBusiness(Long businessId, Long adminUserId);
 
 
 }
