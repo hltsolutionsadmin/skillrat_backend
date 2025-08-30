@@ -1,6 +1,22 @@
 
 package com.skillrat.usermanagement.controllers;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.skillrat.auth.JwtUtils;
 import com.skillrat.auth.exception.handling.ErrorCode;
@@ -12,7 +28,6 @@ import com.skillrat.usermanagement.dto.enums.RewardEventType;
 import com.skillrat.usermanagement.dto.request.LoginRequest;
 import com.skillrat.usermanagement.dto.request.RefreshTokenRequest;
 import com.skillrat.usermanagement.dto.request.UsernameLoginRequest;
-import com.skillrat.usermanagement.event.RewardEvent;
 import com.skillrat.usermanagement.event.RewardEventPublisher;
 import com.skillrat.usermanagement.jwt.JwtResponse;
 import com.skillrat.usermanagement.model.B2BUnitModel;
@@ -29,17 +44,6 @@ import com.skillrat.utils.JTBaseEndpoint;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")

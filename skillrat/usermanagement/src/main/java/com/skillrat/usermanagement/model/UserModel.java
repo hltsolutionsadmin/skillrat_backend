@@ -19,12 +19,14 @@ import com.skillrat.auth.EncryptedStringConverter;
                 @UniqueConstraint(columnNames = {"USERNAME"}),
                 @UniqueConstraint(columnNames = {"EMAIL"}),
                 @UniqueConstraint(columnNames = {"EMAIL_HASH"}),
+                @UniqueConstraint(columnNames = {"PRIMARY_CONTACT"}),
                 @UniqueConstraint(columnNames = {"PRIMARY_CONTACT_HASH"})
         },
         indexes = {
                 @Index(name = "idx_username", columnList = "USERNAME", unique = true),
                 @Index(name = "idx_email", columnList = "EMAIL", unique = true),
                 @Index(name = "idx_email_hash", columnList = "EMAIL_HASH", unique = true),
+                @Index(name = "idx_primary_contact", columnList = "PRIMARY_CONTACT", unique = true),
                 @Index(name = "idx_mobile_hash", columnList = "PRIMARY_CONTACT_HASH", unique = true)
         }
 )
@@ -32,26 +34,26 @@ import com.skillrat.auth.EncryptedStringConverter;
 @Setter
 public class UserModel extends GenericModel {
 
-    @Column(name = "FULL_NAME", nullable = false)
+    @Column(name = "FULL_NAME", nullable = true)
     private String fullName;
 
     @Size(max = 20)
-    @Column(name = "USERNAME", nullable = false, unique = true)
+    @Column(name = "USERNAME", nullable = true, unique = true)
     private String username;
 
     @Email
     @Size(max = 50)
-    @Column(name = "EMAIL", nullable = false, unique = true)
+    @Column(name = "EMAIL", nullable = true, unique = true)
     private String email;
 
-    @Column(name = "EMAIL_HASH", nullable = false, unique = true)
+    @Column(name = "EMAIL_HASH", nullable = true, unique = true)
     private String emailHash;
 
     @NotBlank
     @Column(name = "PRIMARY_CONTACT", nullable = false)
     private String primaryContact;
 
-    @Column(name = "PRIMARY_CONTACT_HASH", nullable = false, unique = true)
+    @Column(name = "PRIMARY_CONTACT_HASH", nullable = true, unique = true)
     private String primaryContactHash;
 
     @Column(name = "GENDER")
@@ -64,7 +66,6 @@ public class UserModel extends GenericModel {
     private String fcmToken;
 
 
-    /** Many-to-Many with RoleModel */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "USER_ROLES",
@@ -73,7 +74,6 @@ public class UserModel extends GenericModel {
     )
     private Set<RoleModel> roles = new HashSet<>();
 
-    /** One-to-Many with AddressModel */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AddressModel> addresses = new ArrayList<>();
 
@@ -81,18 +81,14 @@ public class UserModel extends GenericModel {
     private LocalDate recentActivityDate;
 
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "PASSWORD", nullable = false)
+    @Column(name = "PASSWORD", nullable = true)
     private String password;
 
-//    @Column(name = "LAST_LOGOUT_DATE")
-//    private LocalDate lastLogoutDate;
 
-    /** Many-to-One with B2BUnit */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "B2B_UNIT_ID")
     private B2BUnitModel b2bUnit;
 
-    /** One-to-Many with ExperienceModel */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExperienceModel> experiences = new ArrayList<>();
 }
