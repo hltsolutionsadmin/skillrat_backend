@@ -1,12 +1,10 @@
 package com.skillrat.usermanagement.controllers;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +25,11 @@ import com.skillrat.usermanagement.dto.B2BUnitDTO;
 import com.skillrat.usermanagement.dto.B2BUnitStatusDTO;
 import com.skillrat.usermanagement.dto.request.B2BUnitRequest;
 import com.skillrat.usermanagement.dto.response.B2BUnitListResponse;
-import com.skillrat.usermanagement.model.B2BUnitModel;
 import com.skillrat.usermanagement.populator.B2BUnitPopulator;
 import com.skillrat.usermanagement.populator.UserPopulator;
 import com.skillrat.usermanagement.services.B2BUnitService;
 import com.skillrat.usermanagement.services.MediaService;
-import com.skillrat.utils.JTBaseEndpoint;
+import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.JuavaryaConstants;
 import com.skillrat.utils.SecurityUtils;
 
@@ -42,19 +39,13 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/business")
 @Slf4j
-public class B2BUnitController extends JTBaseEndpoint {
+@AllArgsConstructor
+public class B2BUnitController extends SRBaseEndpoint {
 
-    @Autowired
-    private B2BUnitService b2BUnitService;
-
-    @Autowired
-    private B2BUnitPopulator b2BUnitPopulator;
-
-    @Autowired
-    private  UserPopulator userPopulator;
-
-    @Autowired
-    private  MediaService mediaService;
+    private final B2BUnitService b2BUnitService;
+    private final B2BUnitPopulator b2BUnitPopulator;
+    private final UserPopulator userPopulator;
+    private final MediaService mediaService;
 
     @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
     @PostMapping("/onboard")

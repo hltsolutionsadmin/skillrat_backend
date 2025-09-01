@@ -21,7 +21,7 @@ import com.skillrat.usermanagement.repository.B2BUnitRepository;
 import com.skillrat.usermanagement.repository.BusinessCategoryRepository;
 import com.skillrat.usermanagement.repository.UserRepository;
 import com.skillrat.usermanagement.services.B2BUnitService;
-import com.skillrat.utils.JTBaseEndpoint;
+import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService {
+public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService {
 
     @Autowired
     private BusinessCategoryRepository categoryRepository;

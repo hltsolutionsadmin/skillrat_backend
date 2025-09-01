@@ -26,14 +26,14 @@ import com.skillrat.usermanagement.repository.SREducationRepository;
 import com.skillrat.usermanagement.repository.SRExperienceReposiroty;
 import com.skillrat.usermanagement.repository.UserRepository;
 import com.skillrat.usermanagement.services.SRExperienceService;
-import com.skillrat.utils.JTBaseEndpoint;
+import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 
 import jakarta.annotation.Resource;
 
 @SuppressWarnings("rawtypes")
 @Service("srExperienceService")
-public class SRExperienceServiceImpl extends JTBaseEndpoint implements SRExperienceService {
+public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperienceService {
 
 	@Resource(name = "srExperienceReposiroty")
 	private SRExperienceReposiroty reposiroty;
