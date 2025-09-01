@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class SRApplicationController {
 
-    private final SRApplicationService SRApplicationService;
+    private final SRApplicationService srApplicationService;
 
     private static final String MSG_CREATE_SUCCESS = "Application created successfully";
     private static final String MSG_FETCH_SUCCESS = "Application fetched successfully";
@@ -30,7 +30,7 @@ public class SRApplicationController {
     public ResponseEntity<StandardResponse<ApplicationDTO>> createApplication(
             @RequestBody ApplicationDTO applicationDTO) {
 
-        ApplicationDTO savedApplication = SRApplicationService.createApplication(applicationDTO);
+        ApplicationDTO savedApplication = srApplicationService.createApplication(applicationDTO);
         return ResponseEntity.ok(StandardResponse.single(MSG_CREATE_SUCCESS, savedApplication));
     }
 
@@ -39,7 +39,7 @@ public class SRApplicationController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<StandardResponse<ApplicationDTO>> getApplicationById(@PathVariable Long id) {
-        ApplicationDTO application = SRApplicationService.getApplicationById(id);
+        ApplicationDTO application = srApplicationService.getApplicationById(id);
         return ResponseEntity.ok(StandardResponse.single(MSG_FETCH_SUCCESS, application));
     }
 
@@ -53,7 +53,7 @@ public class SRApplicationController {
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<ApplicationDTO> applications = SRApplicationService.getApplicationsByRequirement(requirementId, pageable);
+        Page<ApplicationDTO> applications = srApplicationService.getApplicationsByRequirement(requirementId, pageable);
         return ResponseEntity.ok(StandardResponse.page(MSG_LIST_SUCCESS, applications));
     }
 
@@ -67,7 +67,7 @@ public class SRApplicationController {
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<ApplicationDTO> applications = SRApplicationService.getApplicationsByApplicant(applicantUserId, pageable);
+        Page<ApplicationDTO> applications = srApplicationService.getApplicationsByApplicant(applicantUserId, pageable);
         return ResponseEntity.ok(StandardResponse.page(MSG_LIST_SUCCESS, applications));
     }
 
@@ -79,7 +79,7 @@ public class SRApplicationController {
             @PathVariable Long id,
             @RequestBody ApplicationDTO applicationDTO) {
 
-        ApplicationDTO updatedApplication = SRApplicationService.updateApplication(id, applicationDTO);
+        ApplicationDTO updatedApplication = srApplicationService.updateApplication(id, applicationDTO);
         return ResponseEntity.ok(StandardResponse.single(MSG_UPDATE_SUCCESS, updatedApplication));
     }
 
@@ -88,7 +88,7 @@ public class SRApplicationController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<StandardResponse<Void>> deleteApplication(@PathVariable Long id) {
-        SRApplicationService.deleteApplication(id);
+        srApplicationService.deleteApplication(id);
         return ResponseEntity.ok(StandardResponse.message(MSG_DELETE_SUCCESS));
     }
 }

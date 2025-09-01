@@ -19,6 +19,7 @@ public class SRRequirementPopulator implements Populator<RequirementModel, Requi
         target.setDescription(source.getDescription());
         target.setType(source.getType());
         target.setLocation(source.getLocation());
+        target.setDesignation(source.getDesignation());
         target.setIsActive(source.getIsActive());
 
         if (source.getB2bUnit() != null) {

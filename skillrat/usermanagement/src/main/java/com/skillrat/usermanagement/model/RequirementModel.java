@@ -36,6 +36,9 @@ public class RequirementModel extends GenericModel {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
+    @Column(name = "designation", length = 255)
+    private String designation;
+
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 

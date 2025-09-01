@@ -35,5 +35,8 @@ public class ApplicationDTO {
 
     private LocalDateTime createdAt;
 
+    @NotNull(message = "Requirement details are required")
+    private RequirementDTO requirement;
+
     private LocalDateTime updatedAt;
 }
