@@ -72,10 +72,6 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         if (request.getBusinessCode() != null) {
             unit = b2bUnitRepository.findByBusinessCode(request.getBusinessCode())
                     .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
-//
-//            if (!unit.getAdmin().getId().equals(currentUser.getId())) {
-//                throw new HltCustomerException(ErrorCode.UNAUTHORIZED);
-//            }
 
         } else {
             // Create new if no businessCode provided
@@ -271,10 +267,6 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         B2BUnitModel business = b2bUnitRepository.findById(businessId)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
-        if (!business.getAdmin().getId().equals(adminUserId)) {
-            throw new HltCustomerException(ErrorCode.UNAUTHORIZED);
-        }
-
         if (Boolean.TRUE.equals(business.getEnabled())) {
             throw new HltCustomerException(ErrorCode.BUSINESS_ALREADY_APPROVED);
         }
@@ -288,43 +280,6 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         b2bUnitPopulator.populate(business, dto);
         return dto;
     }
-
-
-
-    @Override
-    public Page<B2BUnitModel> findB2BUnitsWithinRadius(
-            double latitude,
-            double longitude,
-            double radiusInKm,
-            String postalCode,
-            String searchTerm,
-            String categoryName,
-            Pageable pageable) {
-
-        Page<B2BUnitModel> resultsPage = Page.empty(pageable);
-        boolean hasLatLng = latitude != 0 && longitude != 0;
-        boolean hasPostalCode = postalCode != null && !postalCode.isBlank();
-        boolean hasSearchTerm = searchTerm != null && !searchTerm.isBlank();
-
-        if (hasLatLng) {
-            resultsPage = b2bUnitRepository.findNearbyBusinessesWithCategoryFilter(latitude, longitude, radiusInKm, categoryName, pageable);
-        } else if (hasPostalCode) {
-            resultsPage = b2bUnitRepository.findByAdminAddressPostalCode(postalCode, pageable);
-        }
-
-        if (hasSearchTerm && !resultsPage.isEmpty()) {
-            String lowerSearchTerm = searchTerm.toLowerCase();
-            List<B2BUnitModel> filteredList = resultsPage.stream()
-                    .filter(unit -> unit.getBusinessName() != null &&
-                            unit.getBusinessName().toLowerCase().contains(lowerSearchTerm))
-                    .collect(Collectors.toList());
-
-            return new PageImpl<>(filteredList, pageable, filteredList.size());
-        }
-
-        return resultsPage;
-    }
-
 
     @Override
     public Page<B2BUnitDTO> searchByCityAndCategory(String city, String categoryName, String searchTerm, Pageable pageable) {

@@ -63,7 +63,6 @@ public class B2BUnitController extends JTBaseEndpoint {
         return ResponseEntity.ok(response);
     }
 
-
     @GetMapping("/list")
     public ResponseEntity<StandardResponse<Page<B2BUnitListResponse>>> listBusinesses(
             @RequestParam(defaultValue = "0") int page,
@@ -96,52 +95,6 @@ public class B2BUnitController extends JTBaseEndpoint {
         return ResponseEntity.ok(b2bUnitStatusList);
     }
 
-
-
-        @GetMapping("/find")
-        public ResponseEntity<Page<B2BUnitDTO>> findNearbyUnits(
-                @RequestParam(required = false) Double latitude,
-                @RequestParam(required = false) Double longitude,
-                @RequestParam String categoryName,
-                @RequestParam(required = false, defaultValue = "10") double radius,
-                @RequestParam(required = false) String postalCode,
-                @RequestParam(required = false) String searchTerm,
-                @RequestParam(defaultValue = "0") int page,
-                @RequestParam(defaultValue = "10") int size) {
-
-            Pageable pageable = PageRequest.of(page, size);
-
-            double latValue = latitude != null ? latitude : 0;
-            double lngValue = longitude != null ? longitude : 0;
-
-            Page<B2BUnitModel> unitPage = b2BUnitService.findB2BUnitsWithinRadius(latValue, lngValue, radius, postalCode,searchTerm, categoryName, pageable);
-
-            if (unitPage.isEmpty()) {
-                Page<B2BUnitDTO> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-                return ResponseEntity.ok(emptyPage);
-            }
-
-
-//            List<B2BUnitDTO> dtoList = unitPage.getContent().stream()
-//                    .map(unit -> {
-//                        B2BUnitDTO dto = new B2BUnitDTO();
-//                        b2BUnitPopulator.populate(unit, dto);
-//                        if (unit.getUserModel() != null) {
-//                            UserDTO userDTO = new UserDTO();
-//                            userPopulator.populate(unit.getUserModel(), userDTO, false);
-//                            dto.setUserDTO(userDTO);
-//                        }
-//                        return dto;
-//                    }).toList();
-
-//            Page<B2BUnitDTO> dtoPage = new PageImpl<>(dtoList, pageable, unitPage.getTotalElements());
-
-//            return ResponseEntity.ok(dtoPage);
-            return  null;
-        }
-
-
-
     @GetMapping("/searchbycity")
     public ResponseEntity<StandardResponse<Page<B2BUnitDTO>>> searchByCity(
             @RequestParam String city,
@@ -172,8 +125,6 @@ public class B2BUnitController extends JTBaseEndpoint {
         B2BUnitDTO dto = b2BUnitService.approveBusiness(businessId, adminUserId);
         return ResponseEntity.ok(StandardResponse.single("Business approved successfully", dto));
     }
-
-
 
 }
 

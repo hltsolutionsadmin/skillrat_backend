@@ -24,7 +24,7 @@ import lombok.Setter;
 public class EducationModel extends GenericModel{
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "USER_ID", nullable = false) // <-- foreign key column
+    @JoinColumn(name = "USER_ID", nullable = false)
     private UserModel user;
 
 	@Column(name = "INSTITUTION", length = 1500, nullable = false)
