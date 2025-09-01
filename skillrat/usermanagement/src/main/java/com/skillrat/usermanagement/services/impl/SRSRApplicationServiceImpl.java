@@ -11,9 +11,9 @@ import com.skillrat.usermanagement.model.UserModel;
 import com.skillrat.usermanagement.populator.ApplicationPopulator;
 import com.skillrat.usermanagement.repository.ApplicationRepository;
 import com.skillrat.usermanagement.repository.B2BUnitRepository;
-import com.skillrat.usermanagement.repository.RequirementRepository;
+import com.skillrat.usermanagement.repository.SRRequirementRepository;
 import com.skillrat.usermanagement.repository.UserRepository;
-import com.skillrat.usermanagement.services.ApplicationService;
+import com.skillrat.usermanagement.services.SRApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class ApplicationServiceImpl implements ApplicationService {
+public class SRSRApplicationServiceImpl implements SRApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final B2BUnitRepository b2bUnitRepository;
-    private final RequirementRepository requirementRepository;
+    private final SRRequirementRepository SRRequirementRepository;
     private final UserRepository userRepository;
     private final ApplicationPopulator applicationPopulator;
 
@@ -38,7 +38,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         B2BUnitModel b2bUnit = b2bUnitRepository.findById(applicationDTO.getB2bUnitId())
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
-        RequirementModel requirement = requirementRepository.findById(applicationDTO.getRequirementId())
+        RequirementModel requirement = SRRequirementRepository.findById(applicationDTO.getRequirementId())
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.REQUIREMENT_NOT_FOUND));
 
         UserModel applicant = userRepository.findById(applicationDTO.getApplicantUserId())
