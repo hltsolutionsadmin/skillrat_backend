@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.Set;
+
 @Entity
 @Table(
         name = "b2b_unit",
@@ -24,14 +25,17 @@ import java.util.Set;
 public class B2BUnitModel extends AuditableModel {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "admin_user_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_b2bunit_admin"))
+    @JoinColumn(
+            name = "admin_user_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_b2bunit_admin")
+    )
     private UserModel admin;
 
-    @Column(name = "business_name", nullable = false, length = 150, unique = true)
+    @Column(name = "business_name", nullable = false, length = 150)
     private String businessName;
 
-    @Column(name = "business_code", nullable = false, length = 50, unique = true)
+    @Column(name = "business_code", nullable = false, length = 50)
     private String businessCode;
 
     @Enumerated(EnumType.STRING)
@@ -39,17 +43,20 @@ public class B2BUnitModel extends AuditableModel {
     private BusinessType type = BusinessType.OTHER;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id",
-            foreignKey = @ForeignKey(name = "fk_b2bunit_category"))
+    @JoinColumn(
+            name = "category_id",
+            foreignKey = @ForeignKey(name = "fk_b2bunit_category")
+    )
     private BusinessCategoryModel category;
 
     @Column(name = "contact_number", nullable = false, length = 20)
     private String contactNumber;
 
+    @Column(name = "business_latitude")
     private BigDecimal businessLatitude;
 
+    @Column(name = "business_longitude")
     private BigDecimal businessLongitude;
-
 
     @OneToMany(
             mappedBy = "b2bUnit",
@@ -60,13 +67,16 @@ public class B2BUnitModel extends AuditableModel {
     private Set<BusinessAttributeModel> attributes;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "address_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_b2bunit_address"))
+    @JoinColumn(
+            name = "address_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_b2bunit_address")
+    )
     private AddressModel businessAddress;
 
     @Column(name = "enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean enabled = Boolean.FALSE;
 
-    @Column(name = "is_temporarily_closed", nullable = false)
+    @Column(name = "is_temporarily_closed", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean temporarilyClosed = Boolean.FALSE;
 }

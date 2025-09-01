@@ -28,7 +28,6 @@ public class B2BUnitRequest {
     @NotNull(message = "Category ID is mandatory")
     private Long categoryId;
 
-
     @NotNull(message = "Business type is mandatory")
     private BusinessType businessType;
 

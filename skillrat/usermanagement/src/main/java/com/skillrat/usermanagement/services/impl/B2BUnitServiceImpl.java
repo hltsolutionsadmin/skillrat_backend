@@ -66,21 +66,21 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
     @Transactional
     public B2BUnitDTO createOrUpdate(B2BUnitRequest request) throws IOException {
         UserModel currentUser = fetchCurrentUser();
-        Optional<B2BUnitModel> existingOpt = b2bUnitRepository
-                .findByAdminAndBusinessNameIgnoreCase(currentUser, request.getBusinessName());
 
-        B2BUnitModel unit = existingOpt.orElseGet(B2BUnitModel::new);
-        unit.setAdmin(currentUser);
+        B2BUnitModel unit;
 
-        // Check if the businessCode already exists
         if (request.getBusinessCode() != null) {
-            boolean codeExists = b2bUnitRepository.existsByBusinessCode(request.getBusinessCode());
-            if (codeExists && (unit.getId() == null || !unit.getBusinessCode().equals(request.getBusinessCode()))) {
-                throw new HltCustomerException(ErrorCode.BUSINESS_CODE_ALREADY_EXISTS);
-            }
-            unit.setBusinessCode(request.getBusinessCode());
-        } else if (unit.getId() == null) {
-            // Generate new businessCode only for new units
+            unit = b2bUnitRepository.findByBusinessCode(request.getBusinessCode())
+                    .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+//
+//            if (!unit.getAdmin().getId().equals(currentUser.getId())) {
+//                throw new HltCustomerException(ErrorCode.UNAUTHORIZED);
+//            }
+
+        } else {
+            // Create new if no businessCode provided
+            unit = new B2BUnitModel();
+            unit.setAdmin(currentUser);
             unit.setBusinessCode(generateBusinessCode());
         }
 
@@ -92,6 +92,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         B2BUnitModel saved = b2bUnitRepository.save(unit);
         return buildResponseDTO(saved);
     }
+
 
     private String generateBusinessCode() {
         return "BUS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
