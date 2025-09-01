@@ -1,6 +1,8 @@
 package com.skillrat.commonservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jdk.jshell.Snippet;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +13,7 @@ import java.util.Date;
 @Getter
 @Setter
 @NoArgsConstructor
+
 public class MediaDTO {
 
     private Long id;
@@ -34,4 +37,7 @@ public class MediaDTO {
         this.mediaType = mediaType;
         this.url = url;
     }
+
+
+
 }

@@ -1,11 +1,13 @@
 package com.skillrat.usermanagement.dto;
 
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @Data
+@Builder
 public class MediaDTO {
 
     private Long id;

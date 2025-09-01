@@ -3,27 +3,20 @@ package com.skillrat.usermanagement.services.impl;
 import com.skillrat.auth.UserServiceAdapter;
 import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
-import com.skillrat.commonservice.dto.B2BUnitDTO;
-import com.skillrat.commonservice.dto.BasicOnboardUserDTO;
-import com.skillrat.commonservice.dto.MediaDTO;
-import com.skillrat.commonservice.dto.UserDTO;
+import com.skillrat.commonservice.dto.*;
 import com.skillrat.commonservice.enums.ERole;
 import com.skillrat.commonservice.user.UserDetailsImpl;
 import com.skillrat.usermanagement.dto.UserUpdateDTO;
 import com.skillrat.usermanagement.model.*;
-import com.skillrat.usermanagement.repository.B2BUnitRepository;
-import com.skillrat.usermanagement.repository.MediaRepository;
-import com.skillrat.usermanagement.repository.RoleRepository;
-import com.skillrat.usermanagement.repository.UserRepository;
+import com.skillrat.usermanagement.repository.*;
 import com.skillrat.usermanagement.services.UserService;
 import com.skillrat.utils.SecurityUtils;
-
 import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,34 +24,34 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 @Service
 @Slf4j
+@RequiredArgsConstructor // ✅ Still the best way for DI
 public class UserServiceImpl implements UserService, UserServiceAdapter {
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private RoleRepository roleRepository;
-    @Autowired private CaffeineCacheManager cacheManager;
-    @Autowired private MediaRepository mediaRepository;
-    @Autowired private B2BUnitRepository b2bUnitRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final CaffeineCacheManager cacheManager;
+    private final MediaRepository mediaRepository;
+    private final B2BUnitRepository b2bUnitRepository;
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public UserModel saveUser(UserModel userModel) {
         try {
             return userRepository.save(userModel);
         } catch (Exception ex) {
             log.error("Failed to save user: {}", userModel, ex);
-            throw ex; // Re-throw or wrap in custom exception
+            throw ex;
         }
     }
-
 
     @Override
     public Long onBoardUserWithCredentials(BasicOnboardUserDTO dto) {
         if (userRepository.existsByUsername(dto.getUsername())) {
             throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS);
         }
-
-        B2BUnitModel business = dto.getBusinessId() != null ? findB2BUnitById(dto.getBusinessId()) : null;
 
         UserModel user = new UserModel();
         user.setUsername(dto.getUsername());
@@ -67,7 +60,9 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRoles(fetchRoles(dto.getUserRoles()));
-        user.setB2bUnit(business);
+        if (dto.getBusinessId() != null) {
+            user.setB2bUnit(findB2BUnitById(dto.getBusinessId()));
+        }
 
         return saveUser(user).getId();
     }
@@ -87,25 +82,23 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
         user.setEmail(details.getEmail());
         user.setFullName(details.getFullName());
-        saveUser(user); // handles cache internally
+        saveUser(user);
     }
 
     @Override
     public Long onBoardUser(String fullName, String mobileNumber, Set<ERole> userRoles, Long b2bUnitId) {
-        Optional<UserModel> existingUserOpt = findByPrimaryContact(mobileNumber);
-        if (existingUserOpt.isPresent()) {
-            return existingUserOpt.get().getId();
-        }
-
-        B2BUnitModel b2bUnit = b2bUnitId != null ? findB2BUnitById(b2bUnitId) : null;
-
-        UserModel user = new UserModel();
-        user.setPrimaryContact(mobileNumber);
-        user.setRoles(fetchRoles(userRoles));
-        user.setFullName(fullName);
-        user.setB2bUnit(b2bUnit);
-
-        return saveUser(user).getId();
+        return findByPrimaryContact(mobileNumber)
+                .map(UserModel::getId)
+                .orElseGet(() -> {
+                    UserModel user = new UserModel();
+                    user.setPrimaryContact(mobileNumber);
+                    user.setRoles(fetchRoles(userRoles));
+                    user.setFullName(fullName);
+                    if (b2bUnitId != null) {
+                        user.setB2bUnit(findB2BUnitById(b2bUnitId));
+                    }
+                    return saveUser(user).getId();
+                });
     }
 
     @Override
@@ -137,11 +130,12 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         UserModel user = getUserByIdOrThrow(userId);
         UserDTO dto = convertToUserDto(user);
 
-        List<MediaDTO> mediaList = mediaRepository.findByCustomerId(userId)
-                .stream()
-                .map(this::convertToMediaDto)
-                .toList();
-        dto.setMedia(mediaList);
+        dto.setMedia(
+                mediaRepository.findByCustomerId(userId)
+                        .stream()
+                        .map(this::convertToMediaDto)
+                        .toList()
+        );
 
         return dto;
     }
@@ -161,38 +155,30 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         if (StringUtils.isEmpty(email)) {
             return null;
         }
-
         String emailHash = DigestUtils.sha256Hex(email.trim().toLowerCase());
         return userRepository.findByEmailHash(emailHash).orElse(null);
     }
 
-
     @Override
     public Optional<UserModel> findByPrimaryContact(String primaryContact) {
         return userRepository.findByPrimaryContactHash(DigestUtils.sha256Hex(primaryContact));
-
     }
-
 
     @Override
     public List<UserDTO> getUsersByRole(String roleName) {
-        ERole role = ERole.valueOf(roleName.toUpperCase());
-        RoleModel roleModel = getRoleByEnum(role);
-
-        return userRepository.findByRolesContaining(roleModel)
+        RoleModel role = getRoleByEnum(ERole.valueOf(roleName.toUpperCase()));
+        return userRepository.findByRolesContaining(role)
                 .stream()
                 .map(this::convertToUserDto)
-                .collect(Collectors.toList());
+                .toList();
     }
-
-
 
     @Override
     @Transactional
     public void clearFcmToken(Long userId) {
         UserModel user = getUserByIdOrThrow(userId);
         user.setFcmToken(null);
-        userRepository.save(user);
+        saveUser(user);
     }
 
     @Override
@@ -204,11 +190,11 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     public Optional<UserModel> findByUsername(@NotBlank String username) {
         return userRepository.findByUsername(username);
     }
+
     private void updateCache(Long userId, UserModel userModel) {
-        UserDTO dto = convertToUserDto(userModel);
         Cache userCache = cacheManager.getCache("users");
         if (userCache != null) {
-            userCache.put(userId, dto);
+            userCache.put(userId, convertToUserDto(userModel));
         }
     }
 
@@ -231,6 +217,8 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
     }
 
+
+
     private MediaDTO convertToMediaDto(MediaModel media) {
         MediaDTO dto = new MediaDTO();
         dto.setId(media.getId());
@@ -243,10 +231,22 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         return dto;
     }
 
+    private B2BUnitDTO convertToB2BDTO(B2BUnitModel unit) {
+        B2BUnitDTO dto = new B2BUnitDTO();
+        dto.setId(unit.getId());
+        dto.setBusinessName(unit.getBusinessName());
+        dto.setEnabled(unit.isEnabled());
+        return dto;
+    }
+
     public UserDTO convertToUserDto(UserModel user) {
-        Set<com.skillrat.commonservice.dto.Role> roles = user.getRoles().stream()
-                .map(role -> new com.skillrat.commonservice.dto.Role(role.getId(), role.getName()))
-                .collect(Collectors.toSet());
+        // map roles safely without assuming a constructor exists
+        Set<com.skillrat.commonservice.dto.Role> roles = user.getRoles().stream().map(r -> {
+            com.skillrat.commonservice.dto.Role rd = new com.skillrat.commonservice.dto.Role();
+            rd.setId(r.getId());
+            rd.setName(r.getName());
+            return rd;
+        }).collect(java.util.stream.Collectors.toSet());
 
         String profilePicture = Optional.ofNullable(
                         mediaRepository.findByCustomerIdAndMediaType(user.getId(), "PROFILE_PICTURE"))
@@ -259,32 +259,25 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                         .map(this::convertToB2BDTO)
                         .orElse(null));
 
-        return UserDTO.builder()
-                .id(user.getId())
-                .fullName(user.getFullName())
-                .primaryContact(user.getPrimaryContact())
-                .email(user.getEmail())
-                .token(user.getFcmToken())
-                .username(user.getUsername())
-                .gender(user.getGender())
-                .profilePicture(profilePicture)
-                .roles(roles)
-                .password(user.getPassword())
-                .b2bUnit(b2bUnit)
-                .build();
-    }
-
-    private B2BUnitDTO convertToB2BDTO(B2BUnitModel unit) {
-        B2BUnitDTO dto = new B2BUnitDTO();
-        dto.setId(unit.getId());
-        dto.setBusinessName(unit.getBusinessName());
-        dto.setEnabled(unit.isEnabled());
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setFullName(user.getFullName());
+        dto.setPrimaryContact(user.getPrimaryContact());
+        dto.setEmail(user.getEmail());
+        dto.setToken(user.getFcmToken());
+        dto.setUsername(user.getUsername());
+        dto.setGender(user.getGender());
+        dto.setProfilePicture(profilePicture);
+        dto.setRoles(roles);
+        dto.setPassword(user.getPassword());
+        dto.setB2bUnit(b2bUnit);
+        // dto.setMedia(...) is set separately in getUserById(...)
         return dto;
     }
+
+
 
     public Boolean existsByEmail(String email, Long userId) {
         return userRepository.existsByEmailAndNotUserId(email, userId);
     }
 }
-
-

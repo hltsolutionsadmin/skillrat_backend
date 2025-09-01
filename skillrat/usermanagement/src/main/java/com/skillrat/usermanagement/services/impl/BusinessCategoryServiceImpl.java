@@ -6,26 +6,32 @@ import com.skillrat.usermanagement.dto.request.BusinessCategoryRequest;
 import com.skillrat.usermanagement.model.BusinessCategoryModel;
 import com.skillrat.usermanagement.repository.BusinessCategoryRepository;
 import com.skillrat.usermanagement.services.BusinessCategoryService;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor // ✅ Lombok generates constructor for final fields
 public class BusinessCategoryServiceImpl implements BusinessCategoryService {
 
-    @Autowired
-    private BusinessCategoryRepository repository;
+    private final BusinessCategoryRepository repository; // injected by constructor
 
     @Override
     public BusinessCategoryModel createCategory(BusinessCategoryRequest request) {
-        if (repository.existsByName(request.getName())) {
-            throw new HltCustomerException( ErrorCode.ALREADY_EXISTS);
+        if (request == null || request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Category name must not be empty");
+        }
+
+        String name = request.getName().trim();
+
+        if (repository.existsByName(name)) {
+            throw new HltCustomerException(ErrorCode.ALREADY_EXISTS);
         }
 
         BusinessCategoryModel category = new BusinessCategoryModel();
-        category.setName(request.getName());
+        category.setName(name);
+
         return repository.save(category);
     }
 
@@ -36,6 +42,9 @@ public class BusinessCategoryServiceImpl implements BusinessCategoryService {
 
     @Override
     public void deleteById(Long id) {
+        if (!repository.existsById(id)) {
+            throw new HltCustomerException(ErrorCode.CATEGORY_NOT_FOUND);
+        }
         repository.deleteById(id);
     }
 
@@ -55,6 +64,4 @@ public class BusinessCategoryServiceImpl implements BusinessCategoryService {
         return repository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.CATEGORY_NOT_FOUND));
     }
-
-
 }
