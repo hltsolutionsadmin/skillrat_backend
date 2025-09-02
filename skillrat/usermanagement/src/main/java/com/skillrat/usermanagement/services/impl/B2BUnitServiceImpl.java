@@ -317,5 +317,22 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
         return addressDTO;
     }
 
+//    @Override
+//    public Page<B2BUnitListResponse> listUnapprovedBusinesses(int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("creationDate").descending());
+//        Page<B2BUnitModel> unapprovedUnits = b2bUnitRepository.findByEnabledFalse(pageable);
+//        return unapprovedUnits.map(this::mapToB2BUnitListResponse);
+//    }
+
+    @Override
+    public Page<B2BUnitListResponse> listUnapprovedBusinesses(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // no sorting applied
+        Page<B2BUnitModel> unapprovedUnits = b2bUnitRepository.findByEnabledFalse(pageable);
+
+        return unapprovedUnits.map(this::mapToB2BUnitListResponse);
+    }
+
+
+
 
 }

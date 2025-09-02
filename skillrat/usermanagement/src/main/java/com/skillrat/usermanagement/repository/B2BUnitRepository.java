@@ -94,4 +94,7 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
     boolean existsByBusinessCode(String businessCode);
 
     Optional<B2BUnitModel> findByBusinessCode(String businessCode);
+
+    Page<B2BUnitModel> findByEnabledFalse(Pageable pageable);
+
 }
