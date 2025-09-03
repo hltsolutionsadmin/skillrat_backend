@@ -4,7 +4,6 @@ import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.commonservice.user.UserDetailsImpl;
 import com.skillrat.usermanagement.dto.ApplicationDTO;
-
 import com.skillrat.usermanagement.dto.RequirementDTO;
 import com.skillrat.usermanagement.dto.enums.ApplicationStatus;
 import com.skillrat.usermanagement.model.*;
@@ -172,7 +171,6 @@ public class SRApplicationServiceImpl implements SRApplicationService {
                     return dto;
                 });
     }
-
 
     private void validateStartupAccess(UserModel currentUser, Long b2bUnitId) {
         boolean isOwner = b2bUnitRepository.existsByIdAndAdmin_Id(b2bUnitId, currentUser.getId());
