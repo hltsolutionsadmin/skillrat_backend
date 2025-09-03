@@ -16,4 +16,6 @@ public interface ApplicationRepository extends JpaRepository<ApplicationModel, L
 
     Page<ApplicationModel> findByB2bUnit_Id(Long b2bUnitId, Pageable pageable);
 
+    boolean existsByRequirementIdAndUserId(Long requirementId, Long userId);
+
 }

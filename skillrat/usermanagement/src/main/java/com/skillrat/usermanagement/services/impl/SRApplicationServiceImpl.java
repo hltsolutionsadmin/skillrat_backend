@@ -51,6 +51,11 @@ public class SRApplicationServiceImpl implements SRApplicationService {
             requirement = srRequirementRepository.save(requirement);
         }
 
+        boolean alreadyApplied = applicationRepository.existsByRequirementIdAndUserId(requirement.getId(), currentUser.getId());
+        if (alreadyApplied) {
+            throw new HltCustomerException(ErrorCode.APPLICATION_ALREADY_EXISTS);
+        }
+
         ApplicationModel application = buildApplication(applicationDTO, currentUser, b2bUnit, requirement);
         ApplicationModel saved = applicationRepository.save(application);
 
@@ -59,6 +64,7 @@ public class SRApplicationServiceImpl implements SRApplicationService {
 
         return result;
     }
+
 
 
     private UserModel fetchCurrentUser() {
