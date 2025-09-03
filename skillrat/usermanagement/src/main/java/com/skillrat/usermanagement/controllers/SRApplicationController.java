@@ -124,10 +124,10 @@ public class SRApplicationController {
         return ResponseEntity.ok(StandardResponse.message(MSG_DELETE_SUCCESS));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_USER_ADMIN')")
-    @GetMapping("/{b2bUnitId}")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+    @GetMapping("/startup/{b2bUnitId}/applications")
     public ResponseEntity<StandardResponse<Page<ApplicationDTO>>> getApplicationsForStartup(
-            @PathVariable Long b2bUnitId,
+            @PathVariable("b2bUnitId") Long b2bUnitId,
             Pageable pageable) {
 
         UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
@@ -137,4 +137,5 @@ public class SRApplicationController {
 
         return ResponseEntity.ok(StandardResponse.page("Applications fetched successfully", applications));
     }
+
 }
