@@ -51,7 +51,7 @@ public class SRApplicationServiceImpl implements SRApplicationService {
             requirement = srRequirementRepository.save(requirement);
         }
 
-        boolean alreadyApplied = applicationRepository.existsByRequirementIdAndUserId(requirement.getId(), currentUser.getId());
+        boolean alreadyApplied = applicationRepository.existsByRequirement_IdAndApplicant_Id(requirement.getId(), currentUser.getId());
         if (alreadyApplied) {
             throw new HltCustomerException(ErrorCode.APPLICATION_ALREADY_EXISTS);
         }

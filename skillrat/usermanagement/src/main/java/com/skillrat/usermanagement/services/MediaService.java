@@ -13,7 +13,7 @@ public interface MediaService {
     void uploadMedia(Long b2bUnitId, MediaDTO dto);
 
 
-
+//    boolean existsProfilePicture(Long id);
 
 
 }

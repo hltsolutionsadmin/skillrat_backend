@@ -12,6 +12,7 @@ import com.skillrat.usermanagement.model.MediaModel;
 import com.skillrat.usermanagement.model.UserModel;
 import com.skillrat.usermanagement.populator.MediaPopulator;
 import com.skillrat.usermanagement.repository.B2BUnitRepository;
+import com.skillrat.usermanagement.repository.MediaRepository;
 import com.skillrat.usermanagement.repository.UserRepository;
 import com.skillrat.usermanagement.services.MediaService;
 import com.skillrat.usermanagement.services.UserService;
@@ -55,6 +56,9 @@ public class UserEndpoint extends SRBaseEndpoint {
     private MediaService mediaService;
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private  MediaRepository mediaRepository;
 
     @GetMapping("/find/{userId}")
     public UserDTO getUserById(@PathVariable("userId") Long userId) {
@@ -137,7 +141,7 @@ public class UserEndpoint extends SRBaseEndpoint {
                 });
 
         Optional.ofNullable(details.getFcmToken()).ifPresent(userModel::setFcmToken);
-        Optional.ofNullable(details.getProfileCompleted()).ifPresent(userModel::setProfileCompleted);
+
         Long userId = loggedInUser.getId();
         List<MediaModel> mediaModels = new ArrayList<>();
 
@@ -217,13 +221,49 @@ public class UserEndpoint extends SRBaseEndpoint {
             }
         }
 
+        List<MediaDTO> mediaList = mediaRepository.findByCustomerId(userId)
+                .stream()
+                .map(this::convertToMediaDto)
+                .toList();
+
+        boolean completed = isProfileCompleted(userModel, mediaList);
+        userModel.setProfileCompleted(completed);
+
         userService.saveUser(userModel);
 
         log.info("UserModel and media details updated successfully for ID: {}", userId);
         return ResponseEntity.ok(
                 StandardResponse.single("User details updated successfully", "SUCCESS")
         );
+
+
     }
+
+    private MediaDTO convertToMediaDto(MediaModel media) {
+        MediaDTO dto = new MediaDTO();
+        dto.setId(media.getId());
+        dto.setUrl(media.getUrl());
+        dto.setName(media.getFileName());
+        dto.setDescription(media.getDescription());
+        dto.setExtension(media.getExtension());
+        dto.setCreationTime(media.getCreationTime());
+        dto.setMediaType(media.getMediaType());
+        return dto;
+    }
+
+    private boolean isProfileCompleted(UserModel userModel, List<MediaDTO> mediaList) {
+        boolean hasBasicDetails = StringUtils.hasText(userModel.getFullName())
+                && StringUtils.hasText(userModel.getEmail());
+
+        boolean hasProfilePic = mediaList.stream()
+                .anyMatch(m -> "PROFILE_PICTURE".equalsIgnoreCase(m.getMediaType()));
+
+        boolean hasExperience = userModel.getExperiences() != null && !userModel.getExperiences().isEmpty();
+
+        return hasBasicDetails && hasProfilePic && hasExperience;
+    }
+
+
 
 
     @PutMapping("/{id}")
