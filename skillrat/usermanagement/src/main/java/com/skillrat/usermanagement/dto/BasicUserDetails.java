@@ -54,6 +54,7 @@ public class BasicUserDetails {
     private Integer studentEndYear;
     private Long currentYear;
     private String password;
+    private Boolean profileCompleted;
 
 
 }

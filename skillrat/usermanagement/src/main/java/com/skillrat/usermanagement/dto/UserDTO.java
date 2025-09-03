@@ -36,5 +36,7 @@ public class UserDTO {
     @JsonIgnore
     private String password;
 
+    private Boolean profileCompleted;
+
 
 }

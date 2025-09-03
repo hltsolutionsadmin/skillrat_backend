@@ -270,6 +270,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .profilePicture(profilePicture)
                 .roles(roles)
                 .password(user.getPassword())
+                .profileCompleted(user.getProfileCompleted())
                 .b2bUnit(b2bUnit)
                 .build();
     }

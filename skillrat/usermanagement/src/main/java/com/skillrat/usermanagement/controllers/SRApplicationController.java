@@ -1,21 +1,34 @@
 package com.skillrat.usermanagement.controllers;
 
+import com.skillrat.auth.exception.handling.ErrorCode;
+import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.commonservice.dto.StandardResponse;
+import com.skillrat.commonservice.user.UserDetailsImpl;
 import com.skillrat.usermanagement.dto.ApplicationDTO;
+import com.skillrat.usermanagement.model.UserModel;
 import com.skillrat.usermanagement.services.SRApplicationService;
+import com.skillrat.usermanagement.services.UserService;
+import com.skillrat.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
+@Slf4j
 @RestController
 @RequestMapping("/v1/applications")
 @RequiredArgsConstructor
 public class SRApplicationController {
 
     private final SRApplicationService srApplicationService;
+
+    private  final UserService userService;
 
     private static final String MSG_CREATE_SUCCESS = "Application created successfully";
     private static final String MSG_FETCH_SUCCESS = "Application fetched successfully";
@@ -26,13 +39,32 @@ public class SRApplicationController {
     /**
      * Create a new application
      */
+    @PreAuthorize("hasAnyAuthority('ROLE_STUDENT','ROLE_USER_ADMIN')")
     @PostMapping
     public ResponseEntity<StandardResponse<ApplicationDTO>> createApplication(
             @RequestBody ApplicationDTO applicationDTO) {
 
+        UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
+        UserModel userModel = Optional.ofNullable(userService.findById(loggedInUser.getId()))
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+
+        validateAccess(userModel, loggedInUser);
+
         ApplicationDTO savedApplication = srApplicationService.createApplication(applicationDTO);
         return ResponseEntity.ok(StandardResponse.single(MSG_CREATE_SUCCESS, savedApplication));
     }
+
+
+    private void validateAccess(UserModel userModel, UserDetailsImpl loggedInUser) {
+        boolean isStudent = loggedInUser.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_STUDENT".equals(auth.getAuthority()));
+
+        if (isStudent && Boolean.FALSE.equals(userModel.getProfileCompleted())) {
+            throw new HltCustomerException(ErrorCode.PROFILE_NOT_COMPLETED);
+        }
+    }
+
+
 
     /**
      * Get application by ID
@@ -90,5 +122,19 @@ public class SRApplicationController {
     public ResponseEntity<StandardResponse<Void>> deleteApplication(@PathVariable Long id) {
         srApplicationService.deleteApplication(id);
         return ResponseEntity.ok(StandardResponse.message(MSG_DELETE_SUCCESS));
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_USER_ADMIN')")
+    @GetMapping("/{b2bUnitId}")
+    public ResponseEntity<StandardResponse<Page<ApplicationDTO>>> getApplicationsForStartup(
+            @PathVariable Long b2bUnitId,
+            Pageable pageable) {
+
+        UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
+        log.info("Fetching applications for startup [unitId={}] by admin [userId={}]", b2bUnitId, loggedInUser.getId());
+
+        Page<ApplicationDTO> applications = srApplicationService.getApplicationsForStartup(b2bUnitId, pageable);
+
+        return ResponseEntity.ok(StandardResponse.page("Applications fetched successfully", applications));
     }
 }

@@ -93,5 +93,7 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
     // 9. Check business code uniqueness
     boolean existsByBusinessCode(String businessCode);
 
+    boolean existsByIdAndAdmin_Id(Long id, Long adminId);
+
     Optional<B2BUnitModel> findByBusinessCode(String businessCode);
 }

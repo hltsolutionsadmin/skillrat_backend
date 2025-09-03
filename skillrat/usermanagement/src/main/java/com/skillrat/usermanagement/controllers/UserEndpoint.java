@@ -137,8 +137,7 @@ public class UserEndpoint extends SRBaseEndpoint {
                 });
 
         Optional.ofNullable(details.getFcmToken()).ifPresent(userModel::setFcmToken);
-
-
+        Optional.ofNullable(details.getProfileCompleted()).ifPresent(userModel::setProfileCompleted);
         Long userId = loggedInUser.getId();
         List<MediaModel> mediaModels = new ArrayList<>();
 

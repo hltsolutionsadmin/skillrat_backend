@@ -17,4 +17,7 @@ public interface SRApplicationService {
     Page<ApplicationDTO> getApplicationsByApplicant(Long applicantUserId, Pageable pageable);
 
     void deleteApplication(Long id);
+
+    Page<ApplicationDTO> getApplicationsForStartup(Long b2bUnitId, Pageable pageable);
+
 }

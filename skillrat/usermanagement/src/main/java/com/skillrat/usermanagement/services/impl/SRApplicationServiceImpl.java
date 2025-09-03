@@ -156,4 +156,29 @@ public class SRApplicationServiceImpl implements SRApplicationService {
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.APPLICATION_NOT_FOUND));
         applicationRepository.delete(application);
     }
+
+    @Override
+    public Page<ApplicationDTO> getApplicationsForStartup(Long b2bUnitId, Pageable pageable) {
+        UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
+        UserModel currentUser = userRepository.findById(loggedInUser.getId())
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+
+        validateStartupAccess(currentUser, b2bUnitId);
+
+        return applicationRepository.findByB2bUnit_Id(b2bUnitId, pageable)
+                .map(app -> {
+                    ApplicationDTO dto = new ApplicationDTO();
+                    applicationPopulator.populate(app, dto);
+                    return dto;
+                });
+    }
+
+
+    private void validateStartupAccess(UserModel currentUser, Long b2bUnitId) {
+        boolean isOwner = b2bUnitRepository.existsByIdAndAdmin_Id(b2bUnitId, currentUser.getId());
+        if (!isOwner) {
+            throw new HltCustomerException(ErrorCode.APPLICATION_UNAUTHORIZED_ACCESS);
+        }
+    }
+
 }

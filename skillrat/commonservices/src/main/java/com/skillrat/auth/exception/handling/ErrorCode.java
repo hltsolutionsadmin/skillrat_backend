@@ -19,6 +19,7 @@ public enum ErrorCode {
     TELECALLER_MAPPING_LIMIT_EXCEEDED(1005, "Telecaller cannot be mapped to more than 2 hospitals", HttpStatus.CONFLICT),
     INVALID_ROLE(1007, "Invalid role provided", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED_OPERATION(1016, "Unauthorized operation", HttpStatus.UNAUTHORIZED),
+    PROFILE_INCOMPLETE(1010, "Student profile not completed. Please complete your profile before applying.", HttpStatus.BAD_REQUEST),
     INVALID_ROLE_FOR_OPERATION(1017, "Invalid role for this operation", HttpStatus.FORBIDDEN),
     HOSPITAL_ADMIN_ALREADY_EXISTS(2001, "A hospital admin already exists for this hospital", HttpStatus.CONFLICT),
     REQUIREMENT_NOT_FOUND(2001, "Requirement not found", HttpStatus.NOT_FOUND),
@@ -33,6 +34,7 @@ public enum ErrorCode {
     APPLICATION_INVALID_STATUS(3003, "Invalid application status", HttpStatus.BAD_REQUEST),
     APPLICATION_UNAUTHORIZED_ACCESS(3004, "You are not authorized to access this application", HttpStatus.FORBIDDEN),
     BUSINESS_ALREADY_APPROVED(2003, "Business already approved", HttpStatus.BAD_REQUEST),
+    PROFILE_NOT_COMPLETED(1010, "Profile must be completed to perform this action", HttpStatus.FORBIDDEN),
     // ===========================
     // OTP & Token (1800–1899)
     // ===========================

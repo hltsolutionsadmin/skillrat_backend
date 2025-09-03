@@ -33,6 +33,7 @@ public class UserPopulator implements Populator<UserModel, UserDTO> {
         target.setPrimaryContact(source.getPrimaryContact());
         target.setGender(source.getGender());
 
+        target.setProfileCompleted(source.getProfileCompleted());
         target.setFcmToken(source.getFcmToken());
         target.setRecentActivityDate(source.getRecentActivityDate());
 

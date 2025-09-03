@@ -91,4 +91,8 @@ public class UserModel extends GenericModel {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExperienceModel> experiences = new ArrayList<>();
+
+    @Column(name = "PROFILE_COMPLETED", nullable = false)
+    private Boolean profileCompleted = Boolean.FALSE;
+
 }
