@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping(value = "/auth/jtuserotp")
 @Slf4j
-public class UserOTPEndpoint extends SRBaseEndpoint {
+public class UserOTPController extends SRBaseEndpoint {
 
     @Autowired
     private UserOTPService userOTPService;

@@ -9,6 +9,7 @@ import com.skillrat.usermanagement.model.UserModel;
 import com.skillrat.usermanagement.services.SRApplicationService;
 import com.skillrat.usermanagement.services.UserService;
 import com.skillrat.utils.SecurityUtils;
+import com.skillrat.utils.SRAppConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,14 +28,7 @@ import java.util.Optional;
 public class SRApplicationController {
 
     private final SRApplicationService srApplicationService;
-
-    private  final UserService userService;
-
-    private static final String MSG_CREATE_SUCCESS = "Application created successfully";
-    private static final String MSG_FETCH_SUCCESS = "Application fetched successfully";
-    private static final String MSG_LIST_SUCCESS = "Applications listed successfully";
-    private static final String MSG_UPDATE_SUCCESS = "Application updated successfully";
-    private static final String MSG_DELETE_SUCCESS = "Application deleted successfully";
+    private final UserService userService;
 
     /**
      * Create a new application
@@ -51,9 +45,8 @@ public class SRApplicationController {
         validateAccess(userModel, loggedInUser);
 
         ApplicationDTO savedApplication = srApplicationService.createApplication(applicationDTO);
-        return ResponseEntity.ok(StandardResponse.single(MSG_CREATE_SUCCESS, savedApplication));
+        return ResponseEntity.ok(StandardResponse.single(SRAppConstants.APPLICATION_CREATE_SUCCESS, savedApplication));
     }
-
 
     private void validateAccess(UserModel userModel, UserDetailsImpl loggedInUser) {
         boolean isStudent = loggedInUser.getAuthorities().stream()
@@ -64,15 +57,13 @@ public class SRApplicationController {
         }
     }
 
-
-
     /**
      * Get application by ID
      */
     @GetMapping("/{id}")
     public ResponseEntity<StandardResponse<ApplicationDTO>> getApplicationById(@PathVariable Long id) {
         ApplicationDTO application = srApplicationService.getApplicationById(id);
-        return ResponseEntity.ok(StandardResponse.single(MSG_FETCH_SUCCESS, application));
+        return ResponseEntity.ok(StandardResponse.single(SRAppConstants.APPLICATION_FETCH_SUCCESS, application));
     }
 
     /**
@@ -86,7 +77,7 @@ public class SRApplicationController {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<ApplicationDTO> applications = srApplicationService.getApplicationsByRequirement(requirementId, pageable);
-        return ResponseEntity.ok(StandardResponse.page(MSG_LIST_SUCCESS, applications));
+        return ResponseEntity.ok(StandardResponse.page(SRAppConstants.APPLICATION_LIST_SUCCESS, applications));
     }
 
     /**
@@ -100,7 +91,7 @@ public class SRApplicationController {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<ApplicationDTO> applications = srApplicationService.getApplicationsByApplicant(applicantUserId, pageable);
-        return ResponseEntity.ok(StandardResponse.page(MSG_LIST_SUCCESS, applications));
+        return ResponseEntity.ok(StandardResponse.page(SRAppConstants.APPLICATION_LIST_SUCCESS, applications));
     }
 
     /**
@@ -112,7 +103,7 @@ public class SRApplicationController {
             @RequestBody ApplicationDTO applicationDTO) {
 
         ApplicationDTO updatedApplication = srApplicationService.updateApplication(id, applicationDTO);
-        return ResponseEntity.ok(StandardResponse.single(MSG_UPDATE_SUCCESS, updatedApplication));
+        return ResponseEntity.ok(StandardResponse.single(SRAppConstants.APPLICATION_UPDATE_SUCCESS, updatedApplication));
     }
 
     /**
@@ -121,7 +112,7 @@ public class SRApplicationController {
     @DeleteMapping("/{id}")
     public ResponseEntity<StandardResponse<Void>> deleteApplication(@PathVariable Long id) {
         srApplicationService.deleteApplication(id);
-        return ResponseEntity.ok(StandardResponse.message(MSG_DELETE_SUCCESS));
+        return ResponseEntity.ok(StandardResponse.message(SRAppConstants.APPLICATION_DELETE_SUCCESS));
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
@@ -135,7 +126,6 @@ public class SRApplicationController {
 
         Page<ApplicationDTO> applications = srApplicationService.getApplicationsForStartup(b2bUnitId, pageable);
 
-        return ResponseEntity.ok(StandardResponse.page("Applications fetched successfully", applications));
+        return ResponseEntity.ok(StandardResponse.page(SRAppConstants.APPLICATION_LIST_SUCCESS, applications));
     }
-
 }

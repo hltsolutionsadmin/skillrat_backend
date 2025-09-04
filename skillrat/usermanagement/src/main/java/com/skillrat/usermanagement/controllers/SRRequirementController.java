@@ -3,6 +3,7 @@ package com.skillrat.usermanagement.controllers;
 import com.skillrat.commonservice.dto.StandardResponse;
 import com.skillrat.usermanagement.dto.RequirementDTO;
 import com.skillrat.usermanagement.services.SRRequirementService;
+import com.skillrat.utils.SRAppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,12 +18,6 @@ public class SRRequirementController {
 
     private final SRRequirementService srRequirementService;
 
-    private static final String MSG_CREATE_SUCCESS = "Requirement created successfully";
-    private static final String MSG_FETCH_SUCCESS = "Requirement fetched successfully";
-    private static final String MSG_LIST_SUCCESS = "Requirements listed successfully";
-    private static final String MSG_UPDATE_SUCCESS = "Requirement updated successfully";
-    private static final String MSG_DELETE_SUCCESS = "Requirement deleted successfully";
-
     /**
      * Create a new requirement
      */
@@ -31,7 +26,8 @@ public class SRRequirementController {
             @RequestBody RequirementDTO requirementDTO) {
 
         RequirementDTO savedRequirement = srRequirementService.createRequirement(requirementDTO);
-        return ResponseEntity.ok(StandardResponse.single(MSG_CREATE_SUCCESS, savedRequirement));
+        return ResponseEntity.ok(StandardResponse.single(
+                SRAppConstants.REQUIREMENT_CREATE_SUCCESS, savedRequirement));
     }
 
     /**
@@ -40,7 +36,8 @@ public class SRRequirementController {
     @GetMapping("/{id}")
     public ResponseEntity<StandardResponse<RequirementDTO>> getRequirementById(@PathVariable Long id) {
         RequirementDTO requirement = srRequirementService.getRequirementById(id);
-        return ResponseEntity.ok(StandardResponse.single(MSG_FETCH_SUCCESS, requirement));
+        return ResponseEntity.ok(StandardResponse.single(
+                SRAppConstants.REQUIREMENT_FETCH_SUCCESS, requirement));
     }
 
     /**
@@ -53,7 +50,8 @@ public class SRRequirementController {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<RequirementDTO> requirements = srRequirementService.getAllRequirements(pageable);
-        return ResponseEntity.ok(StandardResponse.page(MSG_LIST_SUCCESS, requirements));
+        return ResponseEntity.ok(StandardResponse.page(
+                SRAppConstants.REQUIREMENT_LIST_SUCCESS, requirements));
     }
 
     /**
@@ -65,7 +63,8 @@ public class SRRequirementController {
             @RequestBody RequirementDTO requirementDTO) {
 
         RequirementDTO updatedRequirement = srRequirementService.updateRequirement(id, requirementDTO);
-        return ResponseEntity.ok(StandardResponse.single(MSG_UPDATE_SUCCESS, updatedRequirement));
+        return ResponseEntity.ok(StandardResponse.single(
+                SRAppConstants.REQUIREMENT_UPDATE_SUCCESS, updatedRequirement));
     }
 
     /**
@@ -74,6 +73,6 @@ public class SRRequirementController {
     @DeleteMapping("/{id}")
     public ResponseEntity<StandardResponse<Void>> deleteRequirement(@PathVariable Long id) {
         srRequirementService.deleteRequirement(id);
-        return ResponseEntity.ok(StandardResponse.message(MSG_DELETE_SUCCESS));
+        return ResponseEntity.ok(StandardResponse.message(SRAppConstants.REQUIREMENT_DELETE_SUCCESS));
     }
 }

@@ -64,7 +64,7 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
 		if (dto.isAddingEducation() && ExperienceType.EDUCATION.toString().equals(dto.getType())) {
 			List<EducationModel> academics = new ArrayList<>(educationRepository.findByUser(currentUser));
 			mergeOrAddEducation(academics, dto.getAcademics(), currentUser);
-			experience.setEducation(academics);
+				experience.setEducation(academics);
 		}
 
 		reposiroty.save(experience);

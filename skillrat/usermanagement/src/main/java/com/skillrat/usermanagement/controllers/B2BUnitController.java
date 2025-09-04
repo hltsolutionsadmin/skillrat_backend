@@ -30,7 +30,7 @@ import com.skillrat.usermanagement.populator.UserPopulator;
 import com.skillrat.usermanagement.services.B2BUnitService;
 import com.skillrat.usermanagement.services.MediaService;
 import com.skillrat.utils.SRBaseEndpoint;
-import com.skillrat.utils.JuavaryaConstants;
+import com.skillrat.utils.SRAppConstants;
 import com.skillrat.utils.SecurityUtils;
 
 import jakarta.validation.Valid;
@@ -47,7 +47,7 @@ public class B2BUnitController extends SRBaseEndpoint {
     private final UserPopulator userPopulator;
     private final MediaService mediaService;
 
-    @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
+    @PreAuthorize(SRAppConstants.ROLE_SUPER_ADMIN)
     @PostMapping("/onboard")
     public ResponseEntity<B2BUnitDTO> createB2BUnit(@Valid @RequestBody B2BUnitRequest request) throws IOException {
         B2BUnitDTO response = b2BUnitService.createOrUpdate(request);

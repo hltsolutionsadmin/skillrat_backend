@@ -39,7 +39,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/user")
 @Slf4j
-public class UserEndpoint extends SRBaseEndpoint {
+public class UserController extends SRBaseEndpoint {
     @Autowired
     private UserService userService;
 
