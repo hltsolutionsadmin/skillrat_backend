@@ -16,7 +16,7 @@ import com.skillrat.usermanagement.repository.UserRepository;
 import com.skillrat.usermanagement.services.MediaService;
 import com.skillrat.usermanagement.services.UserService;
 import com.skillrat.utils.AbstractConverter;
-import com.skillrat.utils.JTBaseEndpoint;
+import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 
 import jakarta.validation.Valid;
@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -34,13 +33,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @RestController
 @RequestMapping("/user")
 @Slf4j
-public class UserEndpoint extends JTBaseEndpoint {
+public class UserEndpoint extends SRBaseEndpoint {
     @Autowired
     private UserService userService;
 

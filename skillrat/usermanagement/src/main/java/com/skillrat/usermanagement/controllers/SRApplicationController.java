@@ -2,7 +2,7 @@ package com.skillrat.usermanagement.controllers;
 
 import com.skillrat.commonservice.dto.StandardResponse;
 import com.skillrat.usermanagement.dto.ApplicationDTO;
-import com.skillrat.usermanagement.services.ApplicationService;
+import com.skillrat.usermanagement.services.SRApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/v1/applications")
 @RequiredArgsConstructor
-public class ApplicationController {
+public class SRApplicationController {
 
-    private final ApplicationService applicationService;
+    private final SRApplicationService SRApplicationService;
 
     private static final String MSG_CREATE_SUCCESS = "Application created successfully";
     private static final String MSG_FETCH_SUCCESS = "Application fetched successfully";
@@ -30,7 +30,7 @@ public class ApplicationController {
     public ResponseEntity<StandardResponse<ApplicationDTO>> createApplication(
             @RequestBody ApplicationDTO applicationDTO) {
 
-        ApplicationDTO savedApplication = applicationService.createApplication(applicationDTO);
+        ApplicationDTO savedApplication = SRApplicationService.createApplication(applicationDTO);
         return ResponseEntity.ok(StandardResponse.single(MSG_CREATE_SUCCESS, savedApplication));
     }
 
@@ -39,7 +39,7 @@ public class ApplicationController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<StandardResponse<ApplicationDTO>> getApplicationById(@PathVariable Long id) {
-        ApplicationDTO application = applicationService.getApplicationById(id);
+        ApplicationDTO application = SRApplicationService.getApplicationById(id);
         return ResponseEntity.ok(StandardResponse.single(MSG_FETCH_SUCCESS, application));
     }
 
@@ -53,7 +53,7 @@ public class ApplicationController {
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<ApplicationDTO> applications = applicationService.getApplicationsByRequirement(requirementId, pageable);
+        Page<ApplicationDTO> applications = SRApplicationService.getApplicationsByRequirement(requirementId, pageable);
         return ResponseEntity.ok(StandardResponse.page(MSG_LIST_SUCCESS, applications));
     }
 
@@ -67,7 +67,7 @@ public class ApplicationController {
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<ApplicationDTO> applications = applicationService.getApplicationsByApplicant(applicantUserId, pageable);
+        Page<ApplicationDTO> applications = SRApplicationService.getApplicationsByApplicant(applicantUserId, pageable);
         return ResponseEntity.ok(StandardResponse.page(MSG_LIST_SUCCESS, applications));
     }
 
@@ -79,7 +79,7 @@ public class ApplicationController {
             @PathVariable Long id,
             @RequestBody ApplicationDTO applicationDTO) {
 
-        ApplicationDTO updatedApplication = applicationService.updateApplication(id, applicationDTO);
+        ApplicationDTO updatedApplication = SRApplicationService.updateApplication(id, applicationDTO);
         return ResponseEntity.ok(StandardResponse.single(MSG_UPDATE_SUCCESS, updatedApplication));
     }
 
@@ -88,7 +88,7 @@ public class ApplicationController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<StandardResponse<Void>> deleteApplication(@PathVariable Long id) {
-        applicationService.deleteApplication(id);
+        SRApplicationService.deleteApplication(id);
         return ResponseEntity.ok(StandardResponse.message(MSG_DELETE_SUCCESS));
     }
 }

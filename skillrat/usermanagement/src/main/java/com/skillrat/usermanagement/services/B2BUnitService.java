@@ -24,14 +24,12 @@ public interface B2BUnitService {
 
     List<B2BUnitStatusDTO> getBusinessNameAndApprovalStatusForLoggedInUser();
 
-    Page<B2BUnitModel> findB2BUnitsWithinRadius(double latitude, double longitude, double radiusInKm,
-                                                String postalCode, String searchTerm, String categoryName, Pageable pageable);
-
     Page<B2BUnitDTO> searchByCityAndCategory(String city, String categoryName, String searchTerm, Pageable pageable);
 
     AddressDTO getAddressByB2BUnitId(Long unitId);
 
     B2BUnitDTO approveBusiness(Long businessId, Long adminUserId);
 
+    Page<B2BUnitListResponse> listUnapprovedBusinesses(int page, int size);
 
 }

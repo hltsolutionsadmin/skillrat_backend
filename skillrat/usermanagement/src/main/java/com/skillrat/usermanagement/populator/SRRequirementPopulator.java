@@ -1,13 +1,12 @@
 package com.skillrat.usermanagement.populator;
 
-import com.skillrat.usermanagement.dto.AddressDTO;
 import com.skillrat.usermanagement.dto.RequirementDTO;
 import com.skillrat.usermanagement.model.RequirementModel;
 import com.skillrat.utils.Populator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RequirementPopulator implements Populator<RequirementModel, RequirementDTO> {
+public class SRRequirementPopulator implements Populator<RequirementModel, RequirementDTO> {
 
     @Override
     public void populate(RequirementModel source, RequirementDTO target) {

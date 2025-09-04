@@ -10,7 +10,7 @@ import com.skillrat.usermanagement.populator.AddressPopulator;
 import com.skillrat.usermanagement.repository.AddressRepository;
 import com.skillrat.usermanagement.services.AddressService;
 import com.skillrat.usermanagement.services.UserService;
-import com.skillrat.utils.JTBaseEndpoint;
+import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AddressServiceImpl extends JTBaseEndpoint implements AddressService {
+public class AddressServiceImpl extends SRBaseEndpoint implements AddressService {
 
     @Autowired
     private AddressRepository addressRepository;

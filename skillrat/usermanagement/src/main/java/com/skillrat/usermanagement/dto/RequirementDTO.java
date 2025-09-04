@@ -34,7 +34,7 @@ public class RequirementDTO {
     @NotNull(message = "B2B Unit ID is required")
     private Long b2bUnitId;
 
-    @NotNull(message = "Created by User ID is required")
+
     private Long createdByUserId;
 
     @FutureOrPresent(message = "Start date must be today or in the future")
