@@ -255,12 +255,12 @@ public class UserEndpoint extends SRBaseEndpoint {
         boolean hasBasicDetails = StringUtils.hasText(userModel.getFullName())
                 && StringUtils.hasText(userModel.getEmail());
 
-        boolean hasProfilePic = mediaList.stream()
-                .anyMatch(m -> "PROFILE_PICTURE".equalsIgnoreCase(m.getMediaType()));
+//        boolean hasProfilePic = mediaList.stream()
+//                .anyMatch(m -> "PROFILE_PICTURE".equalsIgnoreCase(m.getMediaType()));
 
-        boolean hasExperience = userModel.getExperiences() != null && !userModel.getExperiences().isEmpty();
-
-        return hasBasicDetails && hasProfilePic && hasExperience;
+        boolean hasValidExperience = userModel.getExperiences() != null && userModel.getExperiences().stream()
+                .anyMatch(exp -> exp.getEducation() != null && !exp.getEducation().isEmpty());
+        return hasBasicDetails && hasValidExperience;
     }
 
 
