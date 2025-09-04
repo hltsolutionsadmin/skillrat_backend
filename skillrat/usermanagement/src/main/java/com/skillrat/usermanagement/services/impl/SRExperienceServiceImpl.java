@@ -26,8 +26,8 @@ import com.skillrat.usermanagement.populator.ExperiencePopulator;
 import com.skillrat.usermanagement.repository.B2BUnitRepository;
 import com.skillrat.usermanagement.repository.SREducationRepository;
 import com.skillrat.usermanagement.repository.SRExperienceReposiroty;
-import com.skillrat.usermanagement.repository.UserRepository;
 import com.skillrat.usermanagement.repository.SRInternshipOrJobRepository;
+import com.skillrat.usermanagement.repository.UserRepository;
 import com.skillrat.usermanagement.services.SRExperienceService;
 import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
@@ -64,26 +64,19 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
             return ResponseEntity.badRequest().body(new MessageResponse("Invalid user"));
         }
 
-//
-        List<ExperienceModel> experienceList = reposiroty.findByUser(currentUser);
-        ExperienceModel experience = experienceList.isEmpty()
-                ? new ExperienceModel()
-                : experienceList.get(0);  // Get the first item if exists
-
+        ExperienceModel experience = new ExperienceModel();
         experience.setUser(currentUser);
 
-
-        // ✅ Education
+        // ✅ Education handling
         if (dto.isAddingEducation() && ExperienceType.EDUCATION.toString().equals(dto.getType())) {
             List<EducationModel> academics = new ArrayList<>(educationRepository.findByUser(currentUser));
             mergeOrAddEducation(academics, dto.getAcademics(), currentUser);
             experience.setEducation(academics);
         }
 
-        // ✅ Internships or Jobs
+        // ✅ Internship & Job handling
         if (ExperienceType.INTERNSHIP.toString().equals(dto.getType())
                 || ExperienceType.JOB.toString().equals(dto.getType())) {
-
             List<InternshipOrJobModel> existing = new ArrayList<>(internshipOrJobRepository.findByUser(currentUser));
             mergeOrAddInternship(existing, dto.getInternships(), currentUser, experience);
             experience.setInternshipsAndJobs(existing);
@@ -94,7 +87,7 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
         return ResponseEntity.ok(new MessageResponse("Success"));
     }
 
-    // 🔹 Handle Education
+    // 🔹 Education helpers
     private void mergeOrAddEducation(List<EducationModel> academics, List<EducationDTO> incoming, UserModel user) {
         for (EducationDTO educationDTO : incoming) {
             Optional<EducationModel> match = academics.stream()
@@ -131,7 +124,7 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
         return model;
     }
 
-    // 🔹 Handle Internships & Jobs
+    // 🔹 Internship & Job helpers
     private void mergeOrAddInternship(List<InternshipOrJobModel> existing,
                                       List<InternshipOrJobDTO> incoming,
                                       UserModel user,

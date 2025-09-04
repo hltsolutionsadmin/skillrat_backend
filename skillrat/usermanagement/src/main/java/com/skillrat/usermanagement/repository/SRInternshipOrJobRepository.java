@@ -13,7 +13,6 @@ import com.skillrat.usermanagement.model.UserModel;
 @Repository("srInternshipOrJobRepository")
 public interface SRInternshipOrJobRepository extends JpaRepository<InternshipOrJobModel, Long> {
 
-//     ✅ Fetch all internships/jobs for a specific user
    List<InternshipOrJobModel> findByUser(UserModel user);
 
 

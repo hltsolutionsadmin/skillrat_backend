@@ -29,10 +29,7 @@ public class ExperienceDTO {
 	private EducationDTO educationDTO;
 	private List<EducationDTO> academics;
 
-    // INTERNSHIP / JOB
-//    private InternshipOrJobDTO internshipOrJob;
 
-    // Change this from single object → List
     private List<InternshipOrJobDTO> internships;
 
 

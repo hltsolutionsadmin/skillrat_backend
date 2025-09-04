@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class InternshipOrJobDTO {
+
     private Long id;
     private String companyName;
     private String roleTitle;

@@ -18,6 +18,7 @@ import lombok.Setter;
 @Setter
 public class InternshipOrJobModel extends GenericModel {
 
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "USER_ID", nullable = false)
     private UserModel user;
@@ -32,11 +33,13 @@ public class InternshipOrJobModel extends GenericModel {
     @Column(name = "ROLE_TITLE", nullable = false, length = 255)
     private String roleTitle;
 
+
     @Column(name = "DESCRIPTION", length = 2000)
     private String description;
 
     @Column(name = "START_DATE", nullable = false)
     private LocalDate startDate;
+
 
     @Column(name = "END_DATE", nullable = true)
     private LocalDate endDate;
