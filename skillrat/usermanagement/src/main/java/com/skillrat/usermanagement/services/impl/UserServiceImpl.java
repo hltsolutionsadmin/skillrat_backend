@@ -21,6 +21,7 @@ import com.skillrat.utils.SecurityUtils;
 import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,21 +34,23 @@ import java.util.*;
 import java.util.stream.Collectors;
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService, UserServiceAdapter {
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private RoleRepository roleRepository;
-    @Autowired private CaffeineCacheManager cacheManager;
-    @Autowired private MediaRepository mediaRepository;
-    @Autowired private B2BUnitRepository b2bUnitRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final CaffeineCacheManager cacheManager;
+    private final MediaRepository mediaRepository;
+    private final B2BUnitRepository b2bUnitRepository;
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public UserModel saveUser(UserModel userModel) {
         try {
             return userRepository.save(userModel);
         } catch (Exception ex) {
             log.error("Failed to save user: {}", userModel, ex);
-            throw ex; // Re-throw or wrap in custom exception
+            throw ex;
         }
     }
 
@@ -87,7 +90,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
         user.setEmail(details.getEmail());
         user.setFullName(details.getFullName());
-        saveUser(user); // handles cache internally
+        saveUser(user);
     }
 
     @Override
