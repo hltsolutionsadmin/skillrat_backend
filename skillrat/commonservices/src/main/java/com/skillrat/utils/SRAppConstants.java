@@ -74,6 +74,11 @@ public interface SRAppConstants {
     String APPLICATION_LIST_SUCCESS = "Applications listed successfully";
     String APPLICATION_UPDATE_SUCCESS = "Application updated successfully";
     String APPLICATION_DELETE_SUCCESS = "Application deleted successfully";
+
+    String REWARD_POINTS_ADD_SUCCESS    = "Reward points added successfully";
+    String REWARD_POINTS_DEDUCT_SUCCESS = "Reward points deducted successfully";
+    String REWARD_POINTS_TOTAL_SUCCESS  = "Total reward points fetched successfully";
+    String REWARD_TXN_SAVE_SUCCESS      = "Reward transaction saved successfully";
 }
 
 

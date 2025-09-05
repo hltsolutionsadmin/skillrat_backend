@@ -6,7 +6,7 @@ import com.skillrat.usermanagement.model.RewardPointModel;
 
 import java.util.Optional;
 
-public interface RewardPointRepository extends JpaRepository<RewardPointModel, Long> {
+public interface SRRewardPointRepository extends JpaRepository<RewardPointModel, Long> {
 
     Optional<RewardPointModel> findByUserIdAndUserType(Long userId, String userType);
 }

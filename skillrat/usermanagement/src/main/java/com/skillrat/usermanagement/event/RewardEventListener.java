@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import com.skillrat.usermanagement.services.RewardService;
+import com.skillrat.usermanagement.services.SRRewardService;
 
 @Slf4j
 @Component
@@ -13,12 +13,12 @@ import com.skillrat.usermanagement.services.RewardService;
 public class RewardEventListener {
 
 
-    private final RewardService rewardService;
+    private final SRRewardService SRRewardService;
 
     @EventListener
     public void handleRewardEvent(RewardEvent event) {
         log.info("Processing reward event: {}", event.getEventType());
-        rewardService.addPoints(
+        SRRewardService.addPoints(
                 event.getUserId(),
                 event.getUserType(),
                 event.getPoints(),
