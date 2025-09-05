@@ -1,6 +1,7 @@
 package com.skillrat.usermanagement.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -13,4 +14,7 @@ public interface SREducationRepository extends JpaRepository<EducationModel, Lon
 	List<EducationModel> findByUser(UserModel user);
 
 	EducationModel findByUserAndEducationLevel(UserModel user, EducationLevel level);
+
+    Optional<EducationModel> findByIdAndUser(Long id, UserModel user);
+
 }

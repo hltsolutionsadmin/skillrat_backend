@@ -15,6 +15,9 @@ public interface SRInternshipOrJobRepository extends JpaRepository<InternshipOrJ
 
    List<InternshipOrJobModel> findByUser(UserModel user);
 
+    Optional<InternshipOrJobModel> findByIdAndUser(Long id, UserModel user);
+    List<InternshipOrJobModel> findByCompanyNameIgnoreCase(String companyName);
+
 
 
 }

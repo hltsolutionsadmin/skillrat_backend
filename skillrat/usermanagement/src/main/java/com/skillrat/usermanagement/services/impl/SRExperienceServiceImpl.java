@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -32,34 +32,41 @@ import com.skillrat.usermanagement.services.SRExperienceService;
 import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 
-import jakarta.annotation.Resource;
-
-@SuppressWarnings("rawtypes")
 @Service("srExperienceService")
 public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperienceService {
 
-    @Resource(name = "srExperienceReposiroty")
-    private SRExperienceReposiroty reposiroty;
+    private final SRExperienceReposiroty reposiroty;
+    private final UserRepository userRepository;
+    private final B2BUnitRepository b2bUnitRepository;
+    private final SREducationRepository educationRepository;
+    private final SRInternshipOrJobRepository internshipOrJobRepository;
+    private final ExperiencePopulator experiencePopulator;
 
-    @Autowired
-    private UserRepository userRepository;
+    // Single constructor — Spring will autowire all required beans
+    public SRExperienceServiceImpl(SRExperienceReposiroty reposiroty,
+                                   UserRepository userRepository,
+                                   B2BUnitRepository b2bUnitRepository,
+                                   SREducationRepository educationRepository,
+                                   SRInternshipOrJobRepository internshipOrJobRepository,
+                                   ExperiencePopulator experiencePopulator) {
+        this.reposiroty = reposiroty;
+        this.userRepository = userRepository;
+        this.b2bUnitRepository = b2bUnitRepository;
+        this.educationRepository = educationRepository;
+        this.internshipOrJobRepository = internshipOrJobRepository;
+        this.experiencePopulator = experiencePopulator;
+    }
 
-    @Autowired
-    private B2BUnitRepository b2bUnitRepository;
-
-    @Autowired
-    private SREducationRepository educationRepository;
-
-    @Autowired
-    private SRInternshipOrJobRepository internshipOrJobRepository;
-
-    @Autowired
-    private ExperiencePopulator experiencePopulator;
-
+    // ---------------------------
+    // Save Experience
+    // ---------------------------
     @Override
     public ResponseEntity<MessageResponse> save(ExperienceDTO dto) {
-        UserModel currentUser = fetchCurrentUser();
+        if (dto == null) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Request body is empty"));
+        }
 
+        UserModel currentUser = fetchCurrentUser();
         if (currentUser == null || currentUser.getId() == null) {
             return ResponseEntity.badRequest().body(new MessageResponse("Invalid user"));
         }
@@ -67,18 +74,24 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
         ExperienceModel experience = new ExperienceModel();
         experience.setUser(currentUser);
 
-        // ✅ Education handling
-        if (dto.isAddingEducation() && ExperienceType.EDUCATION.toString().equals(dto.getType())) {
+        // Education handling (only when DTO indicates adding academics and type is EDUCATION)
+        if (dto.isAddingEducation() && ExperienceType.EDUCATION.toString().equalsIgnoreCase(dto.getType())) {
             List<EducationModel> academics = new ArrayList<>(educationRepository.findByUser(currentUser));
-            mergeOrAddEducation(academics, dto.getAcademics(), currentUser);
+            if (dto.getAcademics() != null) {
+                mergeOrAddEducation(academics, dto.getAcademics(), currentUser);
+            }
             experience.setEducation(academics);
         }
 
-        // ✅ Internship & Job handling
-        if (ExperienceType.INTERNSHIP.toString().equals(dto.getType())
-                || ExperienceType.JOB.toString().equals(dto.getType())) {
+        // Internship & Job handling (if type is INTERNSHIP or JOB)
+        if (dto.getType() != null &&
+                (ExperienceType.INTERNSHIP.toString().equalsIgnoreCase(dto.getType())
+                        || ExperienceType.JOB.toString().equalsIgnoreCase(dto.getType()))) {
+
             List<InternshipOrJobModel> existing = new ArrayList<>(internshipOrJobRepository.findByUser(currentUser));
-            mergeOrAddInternship(existing, dto.getInternships(), currentUser, experience);
+            if (dto.getInternships() != null) {
+                mergeOrAddInternship(existing, dto.getInternships(), currentUser, experience);
+            }
             experience.setInternshipsAndJobs(existing);
         }
 
@@ -87,9 +100,16 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
         return ResponseEntity.ok(new MessageResponse("Success"));
     }
 
-    // 🔹 Education helpers
+    // ---------------------------
+    // Education helpers
+    // ---------------------------
     private void mergeOrAddEducation(List<EducationModel> academics, List<EducationDTO> incoming, UserModel user) {
+        if (incoming == null || academics == null) return;
+
         for (EducationDTO educationDTO : incoming) {
+            if (educationDTO == null || educationDTO.getLevel() == null) {
+                continue;
+            }
             Optional<EducationModel> match = academics.stream()
                     .filter(existing -> existing.getEducationLevel() != null
                             && existing.getEducationLevel().name().equalsIgnoreCase(educationDTO.getLevel()))
@@ -104,6 +124,7 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
     }
 
     private void updateEducation(EducationModel model, EducationDTO dto) {
+        if (model == null || dto == null) return;
         model.setInstitution(dto.getInstitution());
         model.setMarks(dto.getMarks());
         model.setCgpa(dto.getCgpa());
@@ -113,7 +134,9 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
 
     private EducationModel createEducation(EducationDTO dto, UserModel user) {
         EducationModel model = new EducationModel();
-        model.setEducationLevel(EducationLevel.valueOf(dto.getLevel().toUpperCase()));
+        if (dto.getLevel() != null) {
+            model.setEducationLevel(EducationLevel.valueOf(dto.getLevel().toUpperCase()));
+        }
         model.setInstitution(dto.getInstitution());
         model.setCgpa(dto.getCgpa());
         model.setMarks(dto.getMarks());
@@ -124,14 +147,23 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
         return model;
     }
 
-    // 🔹 Internship & Job helpers
+    // ---------------------------
+    // Internship & Job helpers
+    // ---------------------------
     private void mergeOrAddInternship(List<InternshipOrJobModel> existing,
                                       List<InternshipOrJobDTO> incoming,
                                       UserModel user,
                                       ExperienceModel experience) {
+        if (incoming == null || existing == null) return;
+
         for (InternshipOrJobDTO dto : incoming) {
+            if (dto == null || dto.getCompanyName() == null || dto.getRoleTitle() == null) {
+                continue;
+            }
+
             Optional<InternshipOrJobModel> match = existing.stream()
-                    .filter(e -> e.getCompanyName().equalsIgnoreCase(dto.getCompanyName())
+                    .filter(e -> e.getCompanyName() != null && e.getRoleTitle() != null
+                            && e.getCompanyName().equalsIgnoreCase(dto.getCompanyName())
                             && e.getRoleTitle().equalsIgnoreCase(dto.getRoleTitle()))
                     .findFirst();
 
@@ -144,6 +176,7 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
     }
 
     private void updateInternship(InternshipOrJobModel model, InternshipOrJobDTO dto) {
+        if (model == null || dto == null) return;
         model.setCompanyName(dto.getCompanyName());
         model.setRoleTitle(dto.getRoleTitle());
         model.setDescription(dto.getDescription());
@@ -166,10 +199,86 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
         return model;
     }
 
-    // 🔹 Fetch current user
+    // ---------------------------
+    // Current user helper
+    // ---------------------------
     private UserModel fetchCurrentUser() {
         UserDetailsImpl userDetails = SecurityUtils.getCurrentUserDetails();
+        if (userDetails == null || userDetails.getId() == null) {
+            throw new HltCustomerException(ErrorCode.USER_NOT_FOUND);
+        }
         return userRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    // =========================================================
+    // GET Methods
+    // =========================================================
+    @Override
+    public ResponseEntity<List<ExperienceDTO>> getAllExperiencesForCurrentUser() {
+        UserModel currentUser = fetchCurrentUser();
+        List<ExperienceModel> experiences = reposiroty.findByUser(currentUser);
+        List<ExperienceDTO> dtos = experiences.stream()
+                .filter(Objects::nonNull)
+                .map(experiencePopulator::toDTO)
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    @Override
+    public ResponseEntity<List<EducationDTO>> getEducationsForCurrentUser() {
+        UserModel currentUser = fetchCurrentUser();
+        List<EducationModel> educations = educationRepository.findByUser(currentUser);
+        List<EducationDTO> dtos = educations.stream()
+                .filter(Objects::nonNull)
+                .map(experiencePopulator::toEducationDTO)
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    @Override
+    public ResponseEntity<List<InternshipOrJobDTO>> getInternshipsAndJobsForCurrentUser() {
+        UserModel currentUser = fetchCurrentUser();
+        List<InternshipOrJobModel> internships = internshipOrJobRepository.findByUser(currentUser);
+        List<InternshipOrJobDTO> dtos = internships.stream()
+                .filter(Objects::nonNull)
+                .map(experiencePopulator::toInternshipOrJobDTO)
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    @Override
+    public ResponseEntity<EducationDTO> getEducationById(Long educationId) {
+        UserModel currentUser = fetchCurrentUser();
+        EducationModel education = educationRepository.findByIdAndUser(educationId, currentUser)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.NOT_FOUND));
+        return ResponseEntity.ok(experiencePopulator.toEducationDTO(education));
+    }
+
+    @Override
+    public ResponseEntity<InternshipOrJobDTO> getInternshipOrJobById(Long internshipId) {
+        UserModel currentUser = fetchCurrentUser();
+        InternshipOrJobModel internship = internshipOrJobRepository.findByIdAndUser(internshipId, currentUser)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.NOT_FOUND));
+        return ResponseEntity.ok(experiencePopulator.toInternshipOrJobDTO(internship));
+    }
+
+    @Override
+    public ResponseEntity<ExperienceDTO> getExperienceById(Long experienceId) {
+        UserModel currentUser = fetchCurrentUser();
+        ExperienceModel experience = reposiroty.findByIdAndUser(experienceId, currentUser)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.NOT_FOUND));
+        return ResponseEntity.ok(experiencePopulator.toDTO(experience));
+    }
+
+    @Override
+    public ResponseEntity<List<UserModel>> getUsersByCompanyName(String companyName) {
+        List<InternshipOrJobModel> internships = internshipOrJobRepository.findByCompanyNameIgnoreCase(companyName);
+        List<UserModel> users = internships.stream()
+                .map(InternshipOrJobModel::getUser)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        return ResponseEntity.ok(users);
     }
 }
