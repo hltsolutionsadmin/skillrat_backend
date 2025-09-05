@@ -2,7 +2,7 @@ package com.skillrat.usermanagement.services.impl;
 
 import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
-import com.skillrat.usermanagement.azure.service.AwsBlobService;
+import com.skillrat.usermanagement.azure.service.AzureBlobService;
 import com.skillrat.usermanagement.dto.MediaDTO;
 import com.skillrat.usermanagement.model.B2BUnitModel;
 import com.skillrat.usermanagement.model.MediaModel;
@@ -25,7 +25,7 @@ public class MediaServiceImpl implements MediaService {
     private final MediaPopulator mediaPopulator;
 
     @Lazy
-    private final AwsBlobService awsBlobService;
+    private final AzureBlobService azureBlobService;
 
     @Override
     @Transactional

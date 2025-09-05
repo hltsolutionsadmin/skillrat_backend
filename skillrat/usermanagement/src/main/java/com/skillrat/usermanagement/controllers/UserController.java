@@ -5,7 +5,7 @@ import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.commonservice.dto.*;
 import com.skillrat.commonservice.enums.ERole;
 import com.skillrat.commonservice.user.UserDetailsImpl;
-import com.skillrat.usermanagement.azure.service.AwsBlobService;
+import com.skillrat.usermanagement.azure.service.AzureBlobService;
 import com.skillrat.usermanagement.dto.BasicUserDetails;
 import com.skillrat.usermanagement.dto.UserUpdateDTO;
 import com.skillrat.usermanagement.model.MediaModel;
@@ -44,7 +44,7 @@ public class UserController extends SRBaseEndpoint {
     private UserService userService;
 
     @Autowired
-    private AwsBlobService awsBlobService;
+    private AzureBlobService azureBlobService;
 
     @Autowired
     private MediaPopulator mediaPopulator;
@@ -146,7 +146,7 @@ public class UserController extends SRBaseEndpoint {
         List<MediaModel> mediaModels = new ArrayList<>();
 
         if (details.getProfilePicture() != null && !details.getProfilePicture().isEmpty()) {
-            MediaModel profilePicMedia = awsBlobService.uploadCustomerPictureFile(
+            MediaModel profilePicMedia = azureBlobService.uploadCustomerPictureFile(
                     userId, details.getProfilePicture(), userId);
 
             String originalFilename = details.getProfilePicture().getOriginalFilename();
@@ -165,7 +165,7 @@ public class UserController extends SRBaseEndpoint {
         if (details.getMediaFiles() != null && !details.getMediaFiles().isEmpty()) {
             for (MultipartFile file : details.getMediaFiles()) {
                 if (!file.isEmpty()) {
-                    MediaModel uploadedMedia = awsBlobService.uploadFile(file);
+                    MediaModel uploadedMedia = azureBlobService.uploadFile(file);
                     String originalFilename = file.getOriginalFilename();
 
                     uploadedMedia.setFileName(originalFilename);
@@ -336,7 +336,7 @@ public class UserController extends SRBaseEndpoint {
         UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
 
         if (!ObjectUtils.isEmpty(loggedInUser)) {
-            MediaModel mediaModel = awsBlobService.uploadCustomerPictureFile(loggedInUser.getId(), profilePicture,
+            MediaModel mediaModel = azureBlobService.uploadCustomerPictureFile(loggedInUser.getId(), profilePicture,
                     loggedInUser.getId());
             MediaDTO mediaDTO = (MediaDTO) getConvertedInstance().convert(mediaModel);
             log.info("Profile picture uploaded successfully for user with ID {}", loggedInUser.getId());

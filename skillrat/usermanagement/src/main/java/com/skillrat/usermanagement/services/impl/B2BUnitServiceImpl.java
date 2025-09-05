@@ -4,7 +4,7 @@ import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.commonservice.dto.Role;
 import com.skillrat.commonservice.user.UserDetailsImpl;
-import com.skillrat.usermanagement.azure.service.AwsBlobService;
+import com.skillrat.usermanagement.azure.service.AzureBlobService;
 import com.skillrat.usermanagement.dto.AddressDTO;
 import com.skillrat.usermanagement.dto.B2BUnitDTO;
 import com.skillrat.usermanagement.dto.B2BUnitStatusDTO;
@@ -57,7 +57,7 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
 
 
     @Autowired
-    private AwsBlobService awsBlobService;
+    private AzureBlobService azureBlobService;
 
     @Autowired
     private AddressPopulator addressPopulator;
