@@ -3,7 +3,7 @@ package com.skillrat.usermanagement.services;
 import com.skillrat.usermanagement.dto.enums.RewardEventType;
 import com.skillrat.usermanagement.model.RewardTransactionModel;
 
-public interface RewardService {
+public interface SRRewardService {
 
     /**
      * Add reward points to a user asynchronously.

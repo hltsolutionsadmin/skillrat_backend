@@ -2,7 +2,8 @@ package com.skillrat.usermanagement.controllers;
 
 import com.skillrat.commonservice.dto.StandardResponse;
 import com.skillrat.usermanagement.dto.RequirementDTO;
-import com.skillrat.usermanagement.services.RequirementService;
+import com.skillrat.usermanagement.services.SRRequirementService;
+import com.skillrat.utils.SRAppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,15 +14,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/v1/requirements")
 @RequiredArgsConstructor
-public class RequirementController {
+public class SRRequirementController {
 
-    private final RequirementService requirementService;
-
-    private static final String MSG_CREATE_SUCCESS = "Requirement created successfully";
-    private static final String MSG_FETCH_SUCCESS = "Requirement fetched successfully";
-    private static final String MSG_LIST_SUCCESS = "Requirements listed successfully";
-    private static final String MSG_UPDATE_SUCCESS = "Requirement updated successfully";
-    private static final String MSG_DELETE_SUCCESS = "Requirement deleted successfully";
+    private final SRRequirementService srRequirementService;
 
     /**
      * Create a new requirement
@@ -30,8 +25,9 @@ public class RequirementController {
     public ResponseEntity<StandardResponse<RequirementDTO>> createRequirement(
             @RequestBody RequirementDTO requirementDTO) {
 
-        RequirementDTO savedRequirement = requirementService.createRequirement(requirementDTO);
-        return ResponseEntity.ok(StandardResponse.single(MSG_CREATE_SUCCESS, savedRequirement));
+        RequirementDTO savedRequirement = srRequirementService.createRequirement(requirementDTO);
+        return ResponseEntity.ok(StandardResponse.single(
+                SRAppConstants.REQUIREMENT_CREATE_SUCCESS, savedRequirement));
     }
 
     /**
@@ -39,8 +35,9 @@ public class RequirementController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<StandardResponse<RequirementDTO>> getRequirementById(@PathVariable Long id) {
-        RequirementDTO requirement = requirementService.getRequirementById(id);
-        return ResponseEntity.ok(StandardResponse.single(MSG_FETCH_SUCCESS, requirement));
+        RequirementDTO requirement = srRequirementService.getRequirementById(id);
+        return ResponseEntity.ok(StandardResponse.single(
+                SRAppConstants.REQUIREMENT_FETCH_SUCCESS, requirement));
     }
 
     /**
@@ -52,8 +49,9 @@ public class RequirementController {
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<RequirementDTO> requirements = requirementService.getAllRequirements(pageable);
-        return ResponseEntity.ok(StandardResponse.page(MSG_LIST_SUCCESS, requirements));
+        Page<RequirementDTO> requirements = srRequirementService.getAllRequirements(pageable);
+        return ResponseEntity.ok(StandardResponse.page(
+                SRAppConstants.REQUIREMENT_LIST_SUCCESS, requirements));
     }
 
     /**
@@ -64,8 +62,9 @@ public class RequirementController {
             @PathVariable Long id,
             @RequestBody RequirementDTO requirementDTO) {
 
-        RequirementDTO updatedRequirement = requirementService.updateRequirement(id, requirementDTO);
-        return ResponseEntity.ok(StandardResponse.single(MSG_UPDATE_SUCCESS, updatedRequirement));
+        RequirementDTO updatedRequirement = srRequirementService.updateRequirement(id, requirementDTO);
+        return ResponseEntity.ok(StandardResponse.single(
+                SRAppConstants.REQUIREMENT_UPDATE_SUCCESS, updatedRequirement));
     }
 
     /**
@@ -73,7 +72,7 @@ public class RequirementController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<StandardResponse<Void>> deleteRequirement(@PathVariable Long id) {
-        requirementService.deleteRequirement(id);
-        return ResponseEntity.ok(StandardResponse.message(MSG_DELETE_SUCCESS));
+        srRequirementService.deleteRequirement(id);
+        return ResponseEntity.ok(StandardResponse.message(SRAppConstants.REQUIREMENT_DELETE_SUCCESS));
     }
 }

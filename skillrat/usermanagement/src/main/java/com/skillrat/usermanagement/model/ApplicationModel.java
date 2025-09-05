@@ -54,9 +54,6 @@ public class ApplicationModel extends GenericModel {
 	@Column(name = "cover_letter", columnDefinition = "TEXT")
 	private String coverLetter;
 
-	/**
-	 * Media references for resumes, portfolios, etc.
-	 */
 	@OneToMany
 	@JoinTable(name = "application_media", joinColumns = @JoinColumn(name = "application_id"), inverseJoinColumns = @JoinColumn(name = "media_id"))
 	private List<MediaModel> mediaFiles;

@@ -12,11 +12,12 @@ import com.skillrat.usermanagement.model.MediaModel;
 import com.skillrat.usermanagement.model.UserModel;
 import com.skillrat.usermanagement.populator.MediaPopulator;
 import com.skillrat.usermanagement.repository.B2BUnitRepository;
+import com.skillrat.usermanagement.repository.MediaRepository;
 import com.skillrat.usermanagement.repository.UserRepository;
 import com.skillrat.usermanagement.services.MediaService;
 import com.skillrat.usermanagement.services.UserService;
 import com.skillrat.utils.AbstractConverter;
-import com.skillrat.utils.JTBaseEndpoint;
+import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 
 import jakarta.validation.Valid;
@@ -26,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -34,13 +34,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @RestController
 @RequestMapping("/user")
 @Slf4j
-public class UserEndpoint extends JTBaseEndpoint {
+public class UserController extends SRBaseEndpoint {
     @Autowired
     private UserService userService;
 
@@ -57,6 +56,9 @@ public class UserEndpoint extends JTBaseEndpoint {
     private MediaService mediaService;
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private  MediaRepository mediaRepository;
 
     @GetMapping("/find/{userId}")
     public UserDTO getUserById(@PathVariable("userId") Long userId) {
@@ -140,7 +142,6 @@ public class UserEndpoint extends JTBaseEndpoint {
 
         Optional.ofNullable(details.getFcmToken()).ifPresent(userModel::setFcmToken);
 
-
         Long userId = loggedInUser.getId();
         List<MediaModel> mediaModels = new ArrayList<>();
 
@@ -220,13 +221,49 @@ public class UserEndpoint extends JTBaseEndpoint {
             }
         }
 
+        List<MediaDTO> mediaList = mediaRepository.findByCustomerId(userId)
+                .stream()
+                .map(this::convertToMediaDto)
+                .toList();
+
+        boolean completed = isProfileCompleted(userModel, mediaList);
+        userModel.setProfileCompleted(completed);
+
         userService.saveUser(userModel);
 
         log.info("UserModel and media details updated successfully for ID: {}", userId);
         return ResponseEntity.ok(
                 StandardResponse.single("User details updated successfully", "SUCCESS")
         );
+
+
     }
+
+    private MediaDTO convertToMediaDto(MediaModel media) {
+        MediaDTO dto = new MediaDTO();
+        dto.setId(media.getId());
+        dto.setUrl(media.getUrl());
+        dto.setName(media.getFileName());
+        dto.setDescription(media.getDescription());
+        dto.setExtension(media.getExtension());
+        dto.setCreationTime(media.getCreationTime());
+        dto.setMediaType(media.getMediaType());
+        return dto;
+    }
+
+    private boolean isProfileCompleted(UserModel userModel, List<MediaDTO> mediaList) {
+        boolean hasBasicDetails = StringUtils.hasText(userModel.getFullName())
+                && StringUtils.hasText(userModel.getEmail());
+
+//        boolean hasProfilePic = mediaList.stream()
+//                .anyMatch(m -> "PROFILE_PICTURE".equalsIgnoreCase(m.getMediaType()));
+
+        boolean hasValidExperience = userModel.getExperiences() != null && userModel.getExperiences().stream()
+                .anyMatch(exp -> exp.getEducation() != null && !exp.getEducation().isEmpty());
+        return hasBasicDetails && hasValidExperience;
+    }
+
+
 
 
     @PutMapping("/{id}")

@@ -4,7 +4,7 @@ import com.skillrat.usermanagement.dto.ApplicationDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface ApplicationService {
+public interface SRApplicationService {
 
     ApplicationDTO createApplication(ApplicationDTO applicationDTO);
 
@@ -17,4 +17,7 @@ public interface ApplicationService {
     Page<ApplicationDTO> getApplicationsByApplicant(Long applicantUserId, Pageable pageable);
 
     void deleteApplication(Long id);
+
+    Page<ApplicationDTO> getApplicationsForStartup(Long b2bUnitId, Pageable pageable);
+
 }

@@ -5,9 +5,9 @@ import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.usermanagement.dto.enums.RewardEventType;
 import com.skillrat.usermanagement.model.RewardPointModel;
 import com.skillrat.usermanagement.model.RewardTransactionModel;
-import com.skillrat.usermanagement.repository.RewardPointRepository;
+import com.skillrat.usermanagement.repository.SRRewardPointRepository;
 import com.skillrat.usermanagement.repository.RewardTransactionRepository;
-import com.skillrat.usermanagement.services.RewardService;
+import com.skillrat.usermanagement.services.SRRewardService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +20,9 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RewardServiceImpl implements RewardService {
+public class SRRewardServiceImpl implements SRRewardService {
 
-    private final RewardPointRepository rewardPointRepo;
+    private final SRRewardPointRepository rewardPointRepo;
     private final RewardTransactionRepository rewardTxnRepo;
 
     @Override

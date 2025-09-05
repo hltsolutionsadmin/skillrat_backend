@@ -12,5 +12,11 @@ public interface ApplicationRepository extends JpaRepository<ApplicationModel, L
 
     Page<ApplicationModel> findByApplicant_Id(Long applicantUserId, Pageable pageable);
 
-    Page<ApplicationModel> findByApplicant_IdAndStatus(Long applicantUserId, ApplicationStatus status, Pageable pageable);
+//    Page<ApplicationModel> findByApplicant_IdAndStatus(Long applicantUserId, ApplicationStatus status, Pageable pageable);
+
+    Page<ApplicationModel> findByB2bUnit_Id(Long b2bUnitId, Pageable pageable);
+
+    boolean existsByRequirement_IdAndApplicant_Id(Long requirementId, Long applicantUserId);
+
+
 }

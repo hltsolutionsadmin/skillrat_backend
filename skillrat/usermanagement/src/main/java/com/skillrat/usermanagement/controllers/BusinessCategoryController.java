@@ -4,7 +4,7 @@ import com.skillrat.usermanagement.dto.BusinessCategoryDTO;
 import com.skillrat.usermanagement.dto.request.BusinessCategoryRequest;
 import com.skillrat.usermanagement.model.BusinessCategoryModel;
 import com.skillrat.usermanagement.services.BusinessCategoryService;
-import com.skillrat.utils.JuavaryaConstants;
+import com.skillrat.utils.SRAppConstants;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class BusinessCategoryController {
     private final BusinessCategoryService businessCategoryService;
 
     @PostMapping("/add")
-    @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
+    @PreAuthorize(SRAppConstants.ROLE_SUPER_ADMIN)
     public ResponseEntity<?> addCategory(@Valid @RequestBody BusinessCategoryRequest request) {
         BusinessCategoryModel createdCategory = businessCategoryService.createCategory(request);
         return ResponseEntity
@@ -35,7 +35,7 @@ public class BusinessCategoryController {
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
+    @PreAuthorize(SRAppConstants.ROLE_SUPER_ADMIN)
     public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
         businessCategoryService.deleteById(id);
         return ResponseEntity

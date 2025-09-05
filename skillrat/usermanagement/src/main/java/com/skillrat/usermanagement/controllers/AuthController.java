@@ -39,7 +39,7 @@ import com.skillrat.usermanagement.services.RoleService;
 import com.skillrat.usermanagement.services.UserOTPService;
 import com.skillrat.usermanagement.services.UserService;
 import com.skillrat.usermanagement.services.impl.UserDetailsServiceImpl;
-import com.skillrat.utils.JTBaseEndpoint;
+import com.skillrat.utils.SRBaseEndpoint;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/auth")
 @Slf4j
 @RequiredArgsConstructor
-public class AuthController extends JTBaseEndpoint {
+public class AuthController extends SRBaseEndpoint {
 
     private static final String SIGN_IN = "SIGNIN";
     private static final String DELIVERY = "DELIVERY";

@@ -4,7 +4,7 @@ import com.skillrat.usermanagement.dto.RequirementDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface RequirementService {
+public interface SRRequirementService {
 
     /**
      * Create a new requirement

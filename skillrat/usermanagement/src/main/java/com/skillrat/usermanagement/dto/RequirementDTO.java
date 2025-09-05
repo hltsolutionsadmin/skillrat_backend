@@ -17,6 +17,10 @@ public class RequirementDTO {
     @Size(max = 255, message = "Title must not exceed 255 characters")
     private String title;
 
+    @NotBlank(message = "Designation is required")
+    @Size(max = 255, message = "Designation must not exceed 255 characters")
+    private String designation;
+
     @NotBlank(message = "Description is required")
     @Size(max = 2000, message = "Description must not exceed 2000 characters")
     private String description;
@@ -34,7 +38,7 @@ public class RequirementDTO {
     @NotNull(message = "B2B Unit ID is required")
     private Long b2bUnitId;
 
-    @NotNull(message = "Created by User ID is required")
+
     private Long createdByUserId;
 
     @FutureOrPresent(message = "Start date must be today or in the future")

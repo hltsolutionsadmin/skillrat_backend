@@ -17,7 +17,7 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
     // 1. Find by admin and business name (ignore case)
     Optional<B2BUnitModel> findByAdminAndBusinessNameIgnoreCase(UserModel admin, String businessName);
 
-    // 2. Find by category name ordered by created date (✅ correct property)
+    // 2. Find by category name ordered by created date
     Page<B2BUnitModel> findByCategory_NameOrderByCreatedDateDesc(String categoryName, Pageable pageable);
 
     // 3. Find by admin
@@ -92,4 +92,8 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
 
     // 9. Check business code uniqueness
     boolean existsByBusinessCode(String businessCode);
+
+    boolean existsByIdAndAdmin_Id(Long id, Long adminId);
+
+    Optional<B2BUnitModel> findByBusinessCode(String businessCode);
 }

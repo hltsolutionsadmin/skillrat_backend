@@ -26,7 +26,7 @@ import com.skillrat.usermanagement.model.UserModel;
 import com.skillrat.usermanagement.model.UserOTPModel;
 import com.skillrat.usermanagement.services.UserOTPService;
 import com.skillrat.usermanagement.services.UserService;
-import com.skillrat.utils.JTBaseEndpoint;
+import com.skillrat.utils.SRBaseEndpoint;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping(value = "/auth/jtuserotp")
 @Slf4j
-public class UserOTPEndpoint extends JTBaseEndpoint {
+public class UserOTPController extends SRBaseEndpoint {
 
     @Autowired
     private UserOTPService userOTPService;
