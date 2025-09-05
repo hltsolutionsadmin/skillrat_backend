@@ -24,8 +24,6 @@ public class MediaServiceImpl implements MediaService {
     private final B2BUnitRepository b2bUnitRepository;
     private final MediaPopulator mediaPopulator;
 
-    @Lazy
-    private final AzureBlobService azureBlobService;
 
     @Override
     @Transactional

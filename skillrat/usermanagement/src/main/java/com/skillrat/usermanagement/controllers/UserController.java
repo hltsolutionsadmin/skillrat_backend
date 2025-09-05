@@ -22,6 +22,7 @@ import com.skillrat.utils.SecurityUtils;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,26 +40,16 @@ import java.util.*;
 @RestController
 @RequestMapping("/user")
 @Slf4j
+@RequiredArgsConstructor
 public class UserController extends SRBaseEndpoint {
-    @Autowired
-    private UserService userService;
 
-    @Autowired
-    private AzureBlobService azureBlobService;
-
-    @Autowired
-    private MediaPopulator mediaPopulator;
-
-    @Autowired
-    private B2BUnitRepository b2bUnitRepository;
-
-    @Autowired
-    private MediaService mediaService;
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private  MediaRepository mediaRepository;
+    private final UserService userService;
+    private final AzureBlobService azureBlobService;
+    private final MediaPopulator mediaPopulator;
+    private final B2BUnitRepository b2bUnitRepository;
+    private final MediaService mediaService;
+    private final UserRepository userRepository;
+    private final MediaRepository mediaRepository;
 
     @GetMapping("/find/{userId}")
     public UserDTO getUserById(@PathVariable("userId") Long userId) {

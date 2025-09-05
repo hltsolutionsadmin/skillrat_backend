@@ -24,8 +24,8 @@ import com.skillrat.usermanagement.services.B2BUnitService;
 import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -38,29 +38,16 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService {
 
-    @Autowired
-    private BusinessCategoryRepository categoryRepository;
-
-    @Autowired
-    private B2BUnitRepository b2bUnitRepository;
-
-    @Autowired
-    private B2BUnitPopulator b2bUnitPopulator;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserPopulator userPopulator;
-
-
-    @Autowired
-    private AzureBlobService azureBlobService;
-
-    @Autowired
-    private AddressPopulator addressPopulator;
+    private final BusinessCategoryRepository categoryRepository;
+    private final B2BUnitRepository b2bUnitRepository;
+    private final B2BUnitPopulator b2bUnitPopulator;
+    private final UserRepository userRepository;
+    private final UserPopulator userPopulator;
+    private final AzureBlobService azureBlobService;
+    private final AddressPopulator addressPopulator;
 
     @Override
     @Transactional
@@ -202,13 +189,6 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
         return response;
     }
 
-    private B2BUnitDTO convertToDTO(B2BUnitModel model) {
-        B2BUnitDTO dto = new B2BUnitDTO();
-        b2bUnitPopulator.populate(model, dto);
-        return dto;
-    }
-
-
     @Override
     public B2BUnitDTO getById(Long id) {
         B2BUnitModel model = b2bUnitRepository.findById(id)
@@ -241,7 +221,8 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
 
         return b2BUnits.stream()
                 .map(b2BUnit -> mapToStatusDTO(b2BUnit, userRoles))
-                .collect(Collectors.toList());
+                .toList();
+
     }
     private B2BUnitStatusDTO mapToStatusDTO(B2BUnitModel b2BUnit, Set<Role> userRoles) {
         Set<BusinessAttributeResponse> attributes = b2BUnit.getAttributes().stream()
@@ -291,8 +272,7 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
                     String businessName = model.getBusinessName();
                     return businessName != null && businessName.toLowerCase().contains(searchTerm.toLowerCase());
                 })
-                .collect(Collectors.toList());
-
+                .toList();
         List<B2BUnitDTO> dtoList = filteredModels.stream()
                 .map(model -> {
                     B2BUnitDTO dto = new B2BUnitDTO();
@@ -304,7 +284,7 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
                     }
                     return dto;
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return new PageImpl<>(dtoList, pageable, filteredModels.size());
     }
