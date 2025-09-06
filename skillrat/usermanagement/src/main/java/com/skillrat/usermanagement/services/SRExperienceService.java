@@ -34,4 +34,9 @@ public interface SRExperienceService {
 
     // ✅ Get list of users by company name
     ResponseEntity<List<UserModel>> getUsersByCompanyName(String companyName);
+
+    ResponseEntity<MessageResponse> updateByUserId(Long userId, ExperienceDTO dto);
+
+    ResponseEntity<MessageResponse> deleteAllByUserId(Long userId);
+
 }

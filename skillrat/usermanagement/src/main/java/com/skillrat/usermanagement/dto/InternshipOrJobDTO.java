@@ -15,4 +15,6 @@ public class InternshipOrJobDTO {
     private String description;
     private LocalDate startDate;
     private LocalDate endDate;
+    // ADD this (string to be safe and match usage elsewhere)
+    private String type;
 }

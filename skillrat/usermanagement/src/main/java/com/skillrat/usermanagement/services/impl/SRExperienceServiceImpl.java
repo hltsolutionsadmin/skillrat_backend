@@ -281,4 +281,46 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
                 .toList();
         return ResponseEntity.ok(users);
     }
+
+    @Override
+    public ResponseEntity<MessageResponse> updateByUserId(Long userId, ExperienceDTO dto) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+
+        // Update Education
+        if (dto.getAcademics() != null && !dto.getAcademics().isEmpty()) {
+            List<EducationModel> existing = educationRepository.findByUser(user);
+            mergeOrAddEducation(existing, dto.getAcademics(), user);
+            educationRepository.saveAll(existing);
+        }
+
+        // Update Internship/Job
+        if (dto.getInternships() != null && !dto.getInternships().isEmpty()) {
+            List<InternshipOrJobModel> existing = internshipOrJobRepository.findByUser(user);
+            mergeOrAddInternship(existing, dto.getInternships(), user, null); // no experience linked directly here
+            internshipOrJobRepository.saveAll(existing);
+        }
+
+        return ResponseEntity.ok(new MessageResponse("Updated education and internship/job for user ID: " + userId));
+    }
+
+    @Override
+    public ResponseEntity<MessageResponse> deleteAllByUserId(Long userId) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+
+        // Delete all Education
+        List<EducationModel> educations = educationRepository.findByUser(user);
+        if (!educations.isEmpty()) {
+            educationRepository.deleteAll(educations);
+        }
+
+        // Delete all Internship/Job
+        List<InternshipOrJobModel> jobs = internshipOrJobRepository.findByUser(user);
+        if (!jobs.isEmpty()) {
+            internshipOrJobRepository.deleteAll(jobs);
+        }
+
+        return ResponseEntity.ok(new MessageResponse("Deleted all education and internship/job for user ID: " + userId));
+    }
 }

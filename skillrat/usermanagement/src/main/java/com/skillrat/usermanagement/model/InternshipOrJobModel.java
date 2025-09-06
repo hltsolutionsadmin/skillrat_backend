@@ -2,12 +2,8 @@ package com.skillrat.usermanagement.model;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.skillrat.usermanagement.dto.enums.ExperienceType;
+import jakarta.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +20,7 @@ public class InternshipOrJobModel extends GenericModel {
     private UserModel user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "EXPERIENCE_ID", nullable = false)
+    @JoinColumn(name = "EXPERIENCE_ID", nullable = true)
     private ExperienceModel experience;
 
     @Column(name = "COMPANY_NAME", nullable = false, length = 500)
@@ -43,4 +39,8 @@ public class InternshipOrJobModel extends GenericModel {
 
     @Column(name = "END_DATE", nullable = true)
     private LocalDate endDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "TYPE", length = 30)
+    private ExperienceType type;
 }

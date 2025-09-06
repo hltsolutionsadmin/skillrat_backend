@@ -58,9 +58,9 @@ public class ExperienceModel extends GenericModel {
     @Column(name = "END_DATE")
     private LocalDate endDate;
 
-
     @OneToMany(mappedBy = "experience", cascade = CascadeType.ALL, orphanRemoval = true)
     @Valid
     private List<InternshipOrJobModel> internshipsAndJobs;
+
 
 }

@@ -17,6 +17,14 @@ import java.util.List;
 @RequestMapping("/experience")
 public class SRExperienceController {
 
+    private final SRExperienceService srExperienceService;
+
+    // Constructor injection
+    public SRExperienceController(SRExperienceService srExperienceService) {
+        this.srExperienceService = srExperienceService;
+    }
+
+
     @Resource(name = "srExperienceService")
     private SRExperienceService experienceService;
 
@@ -78,4 +86,17 @@ public class SRExperienceController {
     public ResponseEntity<List<UserModel>> getUsersByCompanyName(@RequestParam String companyName) {
         return experienceService.getUsersByCompanyName(companyName);
     }
+
+    @PutMapping("/user/{userId}/update-details")
+    public ResponseEntity<MessageResponse> updateDetailsByUserId(
+            @PathVariable Long userId,
+            @RequestBody ExperienceDTO dto) {
+        return srExperienceService.updateByUserId(userId, dto);
+    }
+
+    @DeleteMapping("/user/{userId}/delete-details")
+    public ResponseEntity<MessageResponse> deleteDetailsByUserId(@PathVariable Long userId) {
+        return srExperienceService.deleteAllByUserId(userId);
+    }
+
 }
