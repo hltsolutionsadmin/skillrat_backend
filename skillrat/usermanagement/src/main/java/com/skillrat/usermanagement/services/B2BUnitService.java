@@ -30,5 +30,6 @@ public interface B2BUnitService {
 
     B2BUnitDTO approveBusiness(Long businessId, Long adminUserId);
 
+    Page<B2BUnitListResponse> listUnapprovedBusinesses(int page, int size);
 
 }

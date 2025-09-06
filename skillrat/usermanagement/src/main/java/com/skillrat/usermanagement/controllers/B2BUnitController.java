@@ -117,6 +117,15 @@ public class B2BUnitController extends SRBaseEndpoint {
         return ResponseEntity.ok(StandardResponse.single("Business approved successfully", dto));
     }
 
+    @GetMapping("/unapproved")
+    public ResponseEntity<Page<B2BUnitListResponse>> getUnapprovedBusinesses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<B2BUnitListResponse> result = b2BUnitService.listUnapprovedBusinesses(page, size);
+        return ResponseEntity.ok(result);
+    }
+
+
 }
 
 
