@@ -3,6 +3,10 @@ package com.skillrat.usermanagement.populator;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.skillrat.usermanagement.dto.InternshipDTO;
+import com.skillrat.usermanagement.dto.JobDTO;
+import com.skillrat.usermanagement.model.InternshipModel;
+import com.skillrat.usermanagement.model.JobModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -19,7 +23,14 @@ public class ExperiencePopulator implements Populator<ExperienceModel, Experienc
 	@Autowired
 	private EducationPopulator educationPopulator;
 
-	public ExperienceDTO toDTO(ExperienceModel source) {
+    @Autowired
+    private InternshipPopulator internshipPopulator;
+
+    @Autowired
+    private JobPopulator jobPopulator;
+
+
+    public ExperienceDTO toDTO(ExperienceModel source) {
 		if (source == null) {
 			return null;
 		}
@@ -57,7 +68,28 @@ public class ExperiencePopulator implements Populator<ExperienceModel, Experienc
 			target.setAcademics(dtos);
 		}
 
-		target.setStartDate(source.getStartDate());
+        if (!CollectionUtils.isEmpty(source.getInternships())) {
+            List<InternshipDTO> dtos = new ArrayList<>();
+            for (InternshipModel model : source.getInternships()) {
+                InternshipDTO dto = new InternshipDTO();
+                internshipPopulator.populate(model, dto);
+                dtos.add(dto);
+            }
+            target.setInternships(dtos);
+        }
+
+        if (!CollectionUtils.isEmpty(source.getJobs())) {
+            List<JobDTO> dtos = new ArrayList<>();
+            for (JobModel model : source.getJobs()) {
+                JobDTO dto = new JobDTO();
+                jobPopulator.populate(model, dto);
+                dtos.add(dto);
+            }
+            target.setJobs(dtos);
+        }
+
+
+        target.setStartDate(source.getStartDate());
 		target.setEndDate(source.getEndDate());
 	}
 }

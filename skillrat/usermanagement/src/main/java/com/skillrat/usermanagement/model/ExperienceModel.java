@@ -52,6 +52,15 @@ public class ExperienceModel extends GenericModel {
     @Valid
     private List<EducationModel> education;
 
+    // ✅ Internship Experiences
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    private List<InternshipModel> internships;
+
+    // ✅ Job Experiences
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    private List<JobModel> jobs;
 
     @Column(name = "START_DATE")
     private LocalDate startDate;

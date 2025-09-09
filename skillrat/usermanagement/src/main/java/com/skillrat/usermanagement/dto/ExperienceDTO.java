@@ -5,15 +5,13 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExperienceDTO {
 	private Long id;
@@ -28,4 +26,9 @@ public class ExperienceDTO {
 	private LocalDate endDate;
 	private EducationDTO educationDTO;
 	private List<EducationDTO> academics;
+
+    private List<InternshipDTO> internships;
+
+    private List<JobDTO> jobs;
+
 }
