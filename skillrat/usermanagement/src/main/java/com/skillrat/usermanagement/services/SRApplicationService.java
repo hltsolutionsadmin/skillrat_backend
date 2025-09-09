@@ -1,23 +1,23 @@
 package com.skillrat.usermanagement.services;
 
-import com.skillrat.usermanagement.dto.ApplicationDTO;
+import com.skillrat.usermanagement.model.ApplicationModel;
+import com.skillrat.usermanagement.model.UserModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface SRApplicationService {
 
-    ApplicationDTO createApplication(ApplicationDTO applicationDTO);
+    ApplicationModel createApplication(ApplicationModel application);
 
-    ApplicationDTO updateApplication(Long id, ApplicationDTO applicationDTO);
+    ApplicationModel updateApplication(ApplicationModel application);
 
-    ApplicationDTO getApplicationById(Long id);
+    ApplicationModel getApplicationById(Long id);
 
-    Page<ApplicationDTO> getApplicationsByRequirement(Long requirementId, Pageable pageable);
+    Page<ApplicationModel> getApplicationsByRequirement(Long requirementId, Pageable pageable);
 
-    Page<ApplicationDTO> getApplicationsByApplicant(Long applicantUserId, Pageable pageable);
+    Page<ApplicationModel> getApplicationsByApplicant(Long applicantUserId, Pageable pageable);
 
     void deleteApplication(Long id);
 
-    Page<ApplicationDTO> getApplicationsForStartup(Long b2bUnitId, Pageable pageable);
-
+    Page<ApplicationModel> getApplicationsForStartup(Long b2bUnitId, UserModel currentUser, Pageable pageable);
 }

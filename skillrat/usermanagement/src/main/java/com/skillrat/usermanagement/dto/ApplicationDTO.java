@@ -14,29 +14,29 @@ public class ApplicationDTO {
 
     private Long id;
 
-    @NotNull(message = "B2B Unit ID is required")
-    private Long b2bUnitId;
-
     @NotNull(message = "Requirement ID is required")
+    @Positive(message = "Requirement ID must be a positive number")
     private Long requirementId;
 
-    @NotNull(message = "Applicant User ID is required")
+    @Positive(message = "B2B Unit ID must be a positive number")
+    private Long b2bUnitId;
+
+    @Positive(message = "Applicant User ID must be a positive number")
     private Long applicantUserId;
 
-    @NotNull(message = "Status is required")
+    @NotNull(message = "Application status cannot be null")
     private ApplicationStatus status;
 
     @Size(max = 2000, message = "Cover letter must not exceed 2000 characters")
     private String coverLetter;
 
-    @NotNull(message = "At least one media file is required")
-    @Size(min = 1, message = "At least one media file must be provided")
-    private Set<@NotNull MediaDTO> mediaFiles;
+    private Set <MediaDTO> mediaFiles;
 
+    @PastOrPresent(message = "CreatedAt cannot be in the future")
     private LocalDateTime createdAt;
 
-    @NotNull(message = "Requirement details are required")
-    private RequirementDTO requirement;
-
+    @PastOrPresent(message = "UpdatedAt cannot be in the future")
     private LocalDateTime updatedAt;
+
+    private RequirementDTO requirement;
 }
