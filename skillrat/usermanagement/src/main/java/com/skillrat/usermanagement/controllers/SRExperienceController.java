@@ -1,86 +1,93 @@
+
 package com.skillrat.usermanagement.controllers;
 
+import com.skillrat.commonservice.dto.StandardResponse;
 import com.skillrat.usermanagement.dto.EducationDTO;
 import com.skillrat.usermanagement.dto.InternshipDTO;
 import com.skillrat.usermanagement.dto.JobDTO;
+import com.skillrat.usermanagement.dto.ExperienceDTO;
+import com.skillrat.usermanagement.services.SRExperienceService;
+import com.skillrat.utils.SRAppConstants;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.skillrat.commonservice.dto.MessageResponse;
-import com.skillrat.usermanagement.dto.ExperienceDTO;
-import com.skillrat.usermanagement.services.SRExperienceService;
-
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-
-
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/experience")
+@RequestMapping("/v1/experience")
+@RequiredArgsConstructor
 public class SRExperienceController {
 
-    @Resource(name = "srExperienceService")
-    private SRExperienceService experienceService;
+    private final SRExperienceService experienceService;
 
+    /**
+     * Add experience (Education / Internship / Job)
+     */
     @PostMapping("/add")
-    public ResponseEntity<MessageResponse> addExperience(@Valid @RequestBody ExperienceDTO dto) {
-        return experienceService.save(dto);
+    public ResponseEntity<StandardResponse<Void>> addExperience(@Valid @RequestBody ExperienceDTO dto) {
+        experienceService.save(dto);
+        return ResponseEntity.ok(StandardResponse.message(SRAppConstants.EXPERIENCE_CREATE_SUCCESS));
     }
 
-//    GetMapping
-//    public ResponseEntity<ExperienceProfileDTO> getMyExperience() {
-//        return experienceService.getMyExperience();
-//    }
-@GetMapping
-public ResponseEntity<ExperienceDTO> getMyExperience() {
-    return experienceService.getExperience();
-}
+    /**
+     * Get my complete experience
+     */
+    @GetMapping
+    public ResponseEntity<StandardResponse<ExperienceDTO>> getMyExperience() {
+        ExperienceDTO dto = experienceService.getExperience().getBody();
+        return ResponseEntity.ok(StandardResponse.single(
+                SRAppConstants.EXPERIENCE_FETCH_SUCCESS, dto));
+    }
 
-
-    // ---------------- GET EDUCATION
+    // ---------------- GET EDUCATION ----------------
     @GetMapping("/education")
-    public ResponseEntity<List<EducationDTO>> getMyEducation() {
-        return experienceService.getEducation();
+    public ResponseEntity<StandardResponse<List<EducationDTO>>> getMyEducation() {
+        List<EducationDTO> list = experienceService.getEducation().getBody();
+        return ResponseEntity.ok(StandardResponse.list(
+                SRAppConstants.EDUCATION_LIST_SUCCESS, list));
     }
 
     @GetMapping("/education/{id}")
-    public ResponseEntity<EducationDTO> getEducationById(@PathVariable Long id) {
-
-        return experienceService.getEducationById(id);
+    public ResponseEntity<StandardResponse<EducationDTO>> getEducationById(@PathVariable Long id) {
+        EducationDTO dto = experienceService.getEducationById(id).getBody();
+        return ResponseEntity.ok(StandardResponse.single(
+                SRAppConstants.EDUCATION_FETCH_SUCCESS, dto));
     }
 
-    // ---------------- GET INTERNSHIPS
-//    @GetMapping("/internships")
-//    public ResponseEntity<List<InternshipDTO>> getMyInternships() {
-//        return experienceService.getMyInternships();
-//    }
+    // ---------------- GET INTERNSHIPS ----------------
     @GetMapping("/internships")
-    public ResponseEntity<Page<InternshipDTO>> getMyInternships(Pageable pageable) {
-        return experienceService.getInternships(pageable);
+    public ResponseEntity<StandardResponse<Page<InternshipDTO>>> getMyInternships(Pageable pageable) {
+        Page<InternshipDTO> page = experienceService.getInternships(pageable).getBody();
+        return ResponseEntity.ok(StandardResponse.page(
+                SRAppConstants.INTERNSHIP_LIST_SUCCESS, page));
     }
 
     @GetMapping("/internships/{id}")
-    public ResponseEntity<InternshipDTO> getInternshipById(@PathVariable Long id) {
-        return experienceService.getInternshipById(id);
+    public ResponseEntity<StandardResponse<InternshipDTO>> getInternshipById(@PathVariable Long id) {
+        InternshipDTO dto = experienceService.getInternshipById(id).getBody();
+        return ResponseEntity.ok(StandardResponse.single(
+                SRAppConstants.INTERNSHIP_FETCH_SUCCESS, dto));
     }
 
-    // ---------------- GET JOBS
-//    @GetMapping("/jobs")
-//    public ResponseEntity<List<JobDTO>> getMyJobs() {
-//        return experienceService.getMyJobs();
-//    }
-
+    // ---------------- GET JOBS ----------------
     @GetMapping("/jobs")
-    public ResponseEntity<Page<JobDTO>> getMyJobs(Pageable pageable) {
-        return experienceService.getJobs(pageable);
+    public ResponseEntity<StandardResponse<Page<JobDTO>>> getMyJobs(Pageable pageable) {
+        Page<JobDTO> page = experienceService.getJobs(pageable).getBody();
+        return ResponseEntity.ok(StandardResponse.page(
+                SRAppConstants.JOB_LIST_SUCCESS, page));
     }
-
 
     @GetMapping("/jobs/{id}")
-    public ResponseEntity<JobDTO> getJobById(@PathVariable Long id) {
-        return experienceService.getJobById(id);
+    public ResponseEntity<StandardResponse<JobDTO>> getJobById(@PathVariable Long id) {
+        JobDTO dto = experienceService.getJobById(id).getBody();
+        return ResponseEntity.ok(StandardResponse.single(
+                SRAppConstants.JOB_FETCH_SUCCESS, dto));
     }
+
+
+
 }

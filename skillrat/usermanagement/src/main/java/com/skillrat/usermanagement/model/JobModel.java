@@ -35,4 +35,7 @@ public class JobModel extends GenericModel {
 
     @Column(name = "END_DATE", nullable = false)
     private LocalDate endDate;
+
+
+
 }

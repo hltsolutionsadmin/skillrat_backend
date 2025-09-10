@@ -7,7 +7,8 @@ import com.skillrat.usermanagement.dto.InternshipDTO;
 import com.skillrat.usermanagement.dto.JobDTO;
 import com.skillrat.usermanagement.model.InternshipModel;
 import com.skillrat.usermanagement.model.JobModel;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -18,16 +19,13 @@ import com.skillrat.usermanagement.model.ExperienceModel;
 import com.skillrat.utils.Populator;
 
 @Component
+@RequiredArgsConstructor
 public class ExperiencePopulator implements Populator<ExperienceModel, ExperienceDTO> {
 
-	@Autowired
-	private EducationPopulator educationPopulator;
+    private final EducationPopulator educationPopulator;
+    private final InternshipPopulator internshipPopulator;
+    private final JobPopulator jobPopulator;
 
-    @Autowired
-    private InternshipPopulator internshipPopulator;
-
-    @Autowired
-    private JobPopulator jobPopulator;
 
 
     public ExperienceDTO toDTO(ExperienceModel source) {
@@ -59,7 +57,7 @@ public class ExperiencePopulator implements Populator<ExperienceModel, Experienc
 			target.setB2bUnitId(source.getB2bUnit().getId());
 		}
 		if (!CollectionUtils.isEmpty(source.getEducation())) {
-			List<EducationDTO> dtos = new ArrayList<EducationDTO>();
+			List<EducationDTO> dtos = new ArrayList<>();
 			for (EducationModel model : source.getEducation()) {
 				EducationDTO dto = new EducationDTO();
 				educationPopulator.populate(model, dto);

@@ -5,9 +5,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,6 @@ import com.skillrat.commonservice.dto.MessageResponse;
 import com.skillrat.commonservice.user.UserDetailsImpl;
 import com.skillrat.usermanagement.dto.EducationDTO;
 import com.skillrat.usermanagement.dto.ExperienceDTO;
-//import com.skillrat.usermanagement.dto.ExperienceProfileDTO;
 import com.skillrat.usermanagement.dto.InternshipDTO;
 import com.skillrat.usermanagement.dto.JobDTO;
 import com.skillrat.usermanagement.dto.enums.EducationLevel;
@@ -41,33 +41,21 @@ import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
 
-import jakarta.annotation.Resource;
+
+
 
 @SuppressWarnings("rawtypes")
 @Service("srExperienceService")
+@RequiredArgsConstructor
 public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperienceService {
 
-    @Resource(name = "srExperienceReposiroty")
-    private SRExperienceReposiroty reposiroty;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private B2BUnitRepository b2bUnitRepository;
-
-    @Autowired
-    private SREducationRepository educationRepository;
-
-    @Autowired
-    private SRInternshipRepository internshipRepository;
-
-    @Autowired
-    private SRJobRepository jobRepository;
-
-    @Autowired
-    private ExperiencePopulator experiencePopulator;
-
+    private final SRExperienceReposiroty reposiroty;
+    private final UserRepository userRepository;
+    private final B2BUnitRepository b2bUnitRepository;
+    private final SREducationRepository educationRepository;
+    private final SRInternshipRepository internshipRepository;
+    private final SRJobRepository jobRepository;
+    private final ExperiencePopulator experiencePopulator;
     // -------------------------- CREATE/UPDATE (already had) --------------------------
     @Override
     public ResponseEntity<MessageResponse> save(ExperienceDTO dto) {
@@ -109,25 +97,6 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
 
     // -------------------------- NEW: READ/GET --------------------------
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public ResponseEntity<ExperienceDTO> getExperience() {
-//        UserModel currentUser = fetchCurrentUser();
-//
-//        List<EducationDTO> edu = educationRepository.findByUser(currentUser).stream()
-//                .map(this::toEducationDTO)
-//                .collect(Collectors.toList());
-//
-//        List<InternshipDTO> ints = internshipRepository.findByUser(currentUser).stream()
-//                .map(this::toInternshipDTO)
-//                .collect(Collectors.toList());
-//
-//        List<JobDTO> jobs = jobRepository.findByUser(currentUser).stream()
-//                .map(this::toJobDTO)
-//                .collect(Collectors.toList());
-//
-//        return ResponseEntity.ok(new ExperienceDTO(edu, ints, jobs));
-//    }
 
     @Override
     public ResponseEntity<ExperienceDTO> getExperience() {
@@ -156,9 +125,8 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
     @Transactional(readOnly = true)
     public ResponseEntity<List<EducationDTO>> getEducation() {
         UserModel currentUser = fetchCurrentUser();
-        List<EducationDTO> list = educationRepository.findByUser(currentUser).stream()
-                .map(this::toEducationDTO)
-                .collect(Collectors.toList());
+        List<EducationDTO> list = educationRepository.findByUser(currentUser).stream().map(this::toEducationDTO).toList();
+
         return ResponseEntity.ok(list);
     }
 
@@ -171,15 +139,6 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public ResponseEntity<List<InternshipDTO>> getMyInternships() {
-//        UserModel currentUser = fetchCurrentUser();
-//        List<InternshipDTO> list = internshipRepository.findByUser(currentUser).stream()
-//                .map(this::toInternshipDTO)
-//                .collect(Collectors.toList());
-//        return ResponseEntity.ok(list);
-//    }
 
     @Override
     @Transactional(readOnly = true)
@@ -199,15 +158,7 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public ResponseEntity<List<JobDTO>> getMyJobs() {
-//        UserModel currentUser = fetchCurrentUser();
-//        List<JobDTO> list = jobRepository.findByUser(currentUser).stream()
-//                .map(this::toJobDTO)
-//                .collect(Collectors.toList());
-//        return ResponseEntity.ok(list);
-//    }
+
 @Override
 @Transactional(readOnly = true)
 public ResponseEntity<Page<JobDTO>> getJobs(Pageable pageable) {
@@ -224,6 +175,7 @@ public ResponseEntity<Page<JobDTO>> getJobs(Pageable pageable) {
                 .map(model -> ResponseEntity.ok(toJobDTO(model)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
 
     // -------------------------- MAPPING: Model -> DTO --------------------------
     private EducationDTO toEducationDTO(EducationModel m) {

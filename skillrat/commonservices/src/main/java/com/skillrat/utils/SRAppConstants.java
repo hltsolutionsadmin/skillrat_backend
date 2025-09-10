@@ -79,6 +79,43 @@ public interface SRAppConstants {
     String REWARD_POINTS_DEDUCT_SUCCESS = "Reward points deducted successfully";
     String REWARD_POINTS_TOTAL_SUCCESS  = "Total reward points fetched successfully";
     String REWARD_TXN_SAVE_SUCCESS      = "Reward transaction saved successfully";
+
+    // =======================================
+    // Experience Messages
+    // =======================================
+    String EXPERIENCE_CREATE_SUCCESS = "Experience added successfully";
+    String EXPERIENCE_FETCH_SUCCESS  = "Experience fetched successfully";
+
+    // =======================================
+    // Education Messages
+    // =======================================
+    String EDUCATION_CREATE_SUCCESS = "Education added successfully";
+    String EDUCATION_FETCH_SUCCESS  = "Education details fetched successfully";
+    String EDUCATION_LIST_SUCCESS   = "Education details listed successfully";
+    String EDUCATION_UPDATE_SUCCESS = "Education updated successfully";
+    String EDUCATION_DELETE_SUCCESS = "Education deleted successfully";
+
+    // =======================================
+    // Internship Messages
+    // =======================================
+    String INTERNSHIP_CREATE_SUCCESS = "Internship added successfully";
+    String INTERNSHIP_FETCH_SUCCESS  = "Internship details fetched successfully";
+    String INTERNSHIP_LIST_SUCCESS   = "Internships listed successfully";
+    String INTERNSHIP_UPDATE_SUCCESS = "Internship updated successfully";
+    String INTERNSHIP_DELETE_SUCCESS = "Internship deleted successfully";
+
+    // =======================================
+    // Job Messages
+    // =======================================
+    String JOB_CREATE_SUCCESS = "Job added successfully";
+    String JOB_FETCH_SUCCESS  = "Job details fetched successfully";
+    String JOB_LIST_SUCCESS   = "Jobs listed successfully";
+    String JOB_UPDATE_SUCCESS = "Job updated successfully";
+    String JOB_DELETE_SUCCESS = "Job deleted successfully";
+
+
+
+
 }
 
 

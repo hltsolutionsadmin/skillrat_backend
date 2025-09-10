@@ -13,5 +13,6 @@ import com.skillrat.usermanagement.model.UserModel;
 public interface SRJobRepository extends JpaRepository<JobModel, Long> {
     List<JobModel> findByUser(UserModel user );
     Optional<JobModel> findByIdAndUser(Long id, UserModel user);
-    Page<JobModel> findByUser(UserModel user, Pageable pageable); //
+    Page<JobModel> findByUser(UserModel user, Pageable pageable);
+
 }

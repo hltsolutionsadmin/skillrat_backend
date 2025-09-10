@@ -16,4 +16,6 @@ public interface SREducationRepository extends JpaRepository<EducationModel, Lon
 	EducationModel findByUserAndEducationLevel(UserModel user, EducationLevel level);
 
     Optional<EducationModel> findByIdAndUser(Long id, UserModel user);
+
+
 }

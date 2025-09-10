@@ -35,4 +35,7 @@ public class InternshipModel extends GenericModel {
 
     @Column(name = "END_DATE", nullable = false)
     private LocalDate endDate;
+
+
+
 }

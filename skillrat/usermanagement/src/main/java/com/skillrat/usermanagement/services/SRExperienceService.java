@@ -22,13 +22,15 @@ public interface SRExperienceService {
     ResponseEntity<List<EducationDTO>> getEducation();
     ResponseEntity<EducationDTO> getEducationById(Long id);
 
-    //ResponseEntity<List<InternshipDTO>> getMyInternships();
+
     ResponseEntity<Page<InternshipDTO>> getInternships(Pageable pageable);
     ResponseEntity<InternshipDTO> getInternshipById(Long id);
 
-    //ResponseEntity<List<JobDTO>> getMyJobs();
+
     ResponseEntity<Page<JobDTO>> getJobs(Pageable pageable);
     ResponseEntity<JobDTO> getJobById(Long id);
+
+
 
 
 }

@@ -21,32 +21,36 @@ import lombok.Setter;
 @Table(name = "Education")
 @Getter
 @Setter
-public class EducationModel extends GenericModel{
+public class EducationModel extends GenericModel {
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "USER_ID", nullable = false)
     private UserModel user;
 
-	@Column(name = "INSTITUTION", length = 1500, nullable = false)
-	private String institution;
+    @Column(name = "INSTITUTION", length = 1500, nullable = false)
+    private String institution;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "EDUCATION_LEVEL")
-	private EducationLevel educationLevel;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "EDUCATION_LEVEL")
+    private EducationLevel educationLevel;
 
-	@Min(3)
-	@Max(10)
-	@Column(name = "CGPA",nullable = true)
-	private Float cgpa;
-	
-	@Min(200)
-	@Max(1000)
-	@Column(name = "MARKS",nullable = true)
-	private int marks;
-	
-	@Column(name = "START_DATE",nullable = false)
-	private LocalDate startDate;
-	
-	@Column(name = "END_DATE",nullable = false)
-	private LocalDate endDate;
+    @Min(3)
+    @Max(10)
+    @Column(name = "CGPA", nullable = true)
+    private Float cgpa;
+
+    @Min(200)
+    @Max(1000)
+    @Column(name = "MARKS", nullable = true)
+    private int marks;
+
+    @Column(name = "START_DATE", nullable = false)
+    private LocalDate startDate;
+
+    @Column(name = "END_DATE", nullable = false)
+    private LocalDate endDate;
+
+
+
+
 }

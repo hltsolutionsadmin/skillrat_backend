@@ -14,6 +14,8 @@ public interface SRInternshipRepository extends JpaRepository<InternshipModel, L
     List<InternshipModel> findByUser(UserModel user );
     Optional<InternshipModel> findByIdAndUser(Long id, UserModel user);
     Page<InternshipModel> findByUser(UserModel user, Pageable pageable);
+
+
 }
 
 
