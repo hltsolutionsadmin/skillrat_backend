@@ -12,5 +12,7 @@ import com.skillrat.usermanagement.model.UserModel;
 public interface SRExperienceReposiroty extends JpaRepository<ExperienceModel, Long> {
 	
 	List<ExperienceModel> findByUser(UserModel user);
+
+
 	
 }

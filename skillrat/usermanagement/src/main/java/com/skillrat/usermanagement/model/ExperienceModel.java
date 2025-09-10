@@ -47,15 +47,26 @@ public class ExperienceModel extends GenericModel {
     @JoinColumn(name = "B2B_UNIT_ID", nullable = true)
     private B2BUnitModel b2bUnit;
     
-    
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @Valid
     private List<EducationModel> education;
 
+    // Internship Experiences
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    private List<InternshipModel> internships;
+
+    //  Job Experiences
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    private List<JobModel> jobs;
 
     @Column(name = "START_DATE")
     private LocalDate startDate;
 
     @Column(name = "END_DATE")
     private LocalDate endDate;
+
+
 }
