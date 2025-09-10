@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class InternshipDTO {
-    private Long id;                // optional: useful for future updates
+    private Long id;
     private String companyName;
     private String role;
     private LocalDate startDate;

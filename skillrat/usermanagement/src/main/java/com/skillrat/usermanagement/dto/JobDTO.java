@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class JobDTO {
-    private Long id;                // optional
+    private Long id;
     private String companyName;
     private String position;
     private LocalDate startDate;
