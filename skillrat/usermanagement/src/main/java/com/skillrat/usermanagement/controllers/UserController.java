@@ -81,7 +81,7 @@ public class UserController extends SRBaseEndpoint {
         Long userId = currentUser.getId();
 
         try {
-            ERole parsedRole = ERole.valueOf(role);
+            ERole parsedRole = ERole.valueOf(role.toUpperCase().trim());
             userService.addUserRole(userId, parsedRole);
 
             return ResponseEntity.ok().body(
