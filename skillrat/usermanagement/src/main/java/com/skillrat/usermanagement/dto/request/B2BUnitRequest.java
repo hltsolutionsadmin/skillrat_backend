@@ -68,7 +68,6 @@ public class B2BUnitRequest {
     @Email(message = "Admin email should be valid")
     private String adminEmail;
 
-    @NotBlank(message = "Admin password is mandatory")
     private String adminPassword;
 
 

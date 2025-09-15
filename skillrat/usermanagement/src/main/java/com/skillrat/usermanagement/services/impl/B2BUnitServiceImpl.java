@@ -6,7 +6,6 @@ import com.skillrat.commonservice.dto.BasicOnboardUserDTO;
 import com.skillrat.commonservice.dto.Role;
 import com.skillrat.commonservice.enums.ERole;
 import com.skillrat.commonservice.user.UserDetailsImpl;
-import com.skillrat.usermanagement.azure.service.AzureBlobService;
 import com.skillrat.usermanagement.dto.AddressDTO;
 import com.skillrat.usermanagement.dto.B2BUnitDTO;
 import com.skillrat.usermanagement.dto.B2BUnitStatusDTO;
@@ -55,49 +54,60 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
     @Override
     @Transactional
     public B2BUnitDTO createOrUpdate(B2BUnitRequest request) throws IOException {
-        //  Onboard admin user and fetch UserModel
-        BasicOnboardUserDTO basicOnboardUserDTO = buildBasicOnboardUserDTO(request);
-        Long onboardedUserId = userService.onBoardUserWithCredentials(basicOnboardUserDTO);
-        UserModel currentUser = fetchCurrentUser(onboardedUserId);
+        B2BUnitModel unit;
 
-        //  Fetch existing or create new B2B unit
-        B2BUnitModel unit = fetchOrCreateUnit(request, currentUser);
+        if (request.getBusinessCode() != null) {
+            //Update flow: Fetch existing unit
+            unit = b2bUnitRepository.findByBusinessCode(request.getBusinessCode())
+                    .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
-        //Populate all fields
-        populateBasicDetails(unit, request);
-        populateAddress(unit, request);
-        populateCategory(unit, request);
-        populateAttributes(unit, request);
+            // Update existing unit fields
+            populateBasicDetails(unit, request);
+            populateAddress(unit, request);
+            populateCategory(unit, request);
+            populateAttributes(unit, request);
 
-        // Save and return DTO
-        B2BUnitModel saved = b2bUnitRepository.save(unit);
-        return buildResponseDTO(saved);
+            // Save updated unit
+            B2BUnitModel updated = b2bUnitRepository.save(unit);
+            return buildResponseDTO(updated);
+
+        } else {
+            // Create flow: new unit first
+            unit = new B2BUnitModel();
+            unit.setBusinessCode(generateBusinessCode());
+
+            // Populate details before saving
+            populateBasicDetails(unit, request);
+            populateAddress(unit, request);
+            populateCategory(unit, request);
+            populateAttributes(unit, request);
+
+            // Save once to generate businessId
+            B2BUnitModel savedUnit = b2bUnitRepository.save(unit);
+
+            // Onboard admin user now that businessId exists
+            BasicOnboardUserDTO basicOnboardUserDTO = buildBasicOnboardUserDTO(request, savedUnit.getId());
+            Long onboardedUserId = userService.onBoardUserWithCredentials(basicOnboardUserDTO);
+            UserModel currentUser = fetchCurrentUser(onboardedUserId);
+
+            // Link admin and save again
+            savedUnit.setAdmin(currentUser);
+            B2BUnitModel finalSaved = b2bUnitRepository.save(savedUnit);
+
+            return buildResponseDTO(finalSaved);
+        }
     }
 
-    private BasicOnboardUserDTO buildBasicOnboardUserDTO(B2BUnitRequest request) {
-        Set<ERole> roles = Set.of(ERole.ROLE_BUSINESS_ADMIN);
-
+    private BasicOnboardUserDTO buildBasicOnboardUserDTO(B2BUnitRequest request, Long businessId) {
         return BasicOnboardUserDTO.builder()
                 .username(request.getAdminUsername())
                 .email(request.getAdminEmail())
                 .fullName(request.getAdminFullName())
                 .primaryContact(request.getAdminMobile())
                 .password(request.getAdminPassword())
-                .userRoles(roles)
-                .businessId(request.getBusinessId())
+                .userRoles(Set.of(ERole.ROLE_BUSINESS_ADMIN))
+                .businessId(businessId)
                 .build();
-    }
-
-    private B2BUnitModel fetchOrCreateUnit(B2BUnitRequest request, UserModel currentUser) {
-        return Optional.ofNullable(request.getBusinessCode())
-                .map(code -> b2bUnitRepository.findByBusinessCode(code)
-                        .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)))
-                .orElseGet(() -> {
-                    B2BUnitModel unit = new B2BUnitModel();
-                    unit.setAdmin(currentUser);
-                    unit.setBusinessCode(generateBusinessCode());
-                    return unit;
-                });
     }
 
     private void populateBasicDetails(B2BUnitModel unit, B2BUnitRequest request) {
@@ -106,7 +116,6 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
         Optional.ofNullable(request.getLatitude()).ifPresent(unit::setBusinessLatitude);
         Optional.ofNullable(request.getLongitude()).ifPresent(unit::setBusinessLongitude);
         Optional.ofNullable(request.getBusinessType()).ifPresent(unit::setType);
-        Optional.ofNullable(request.getBusinessCode()).ifPresent(unit::setBusinessCode);
         Optional.ofNullable(request.getEnabled()).ifPresent(unit::setEnabled);
         Optional.ofNullable(request.getTemporarilyClosed()).ifPresent(unit::setTemporarilyClosed);
     }
@@ -174,6 +183,7 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
         return userRepository.findById(userId)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
     }
+
 
     @Override
     public Page<B2BUnitListResponse> listAllPaginated(int page, int size) {
