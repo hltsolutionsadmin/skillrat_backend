@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.skillrat.commonservice.dto.MediaDTO;
 
 import com.skillrat.usermanagement.dto.enums.BusinessType;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -22,6 +23,7 @@ public class B2BUnitRequest {
     @NotBlank(message = "Business name is mandatory")
     private String businessName;
 
+    private Long businessId;
 
     private String businessCode;
 
@@ -53,6 +55,21 @@ public class B2BUnitRequest {
     private List<MultipartFile> mediaFiles;
     private List<String> mediaUrls;
     private List<MediaDTO> media;
+
+    @NotBlank(message = "Admin username is mandatory")
+    private String adminUsername;
+
+    @NotBlank(message = "Admin full name is mandatory")
+    private String adminFullName;
+
+    @NotBlank(message = "Admin mobile is mandatory")
+    private String adminMobile;
+
+    @Email(message = "Admin email should be valid")
+    private String adminEmail;
+
+    @NotBlank(message = "Admin password is mandatory")
+    private String adminPassword;
 
 
 }

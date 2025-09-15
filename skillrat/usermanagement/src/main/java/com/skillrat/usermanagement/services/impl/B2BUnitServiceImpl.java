@@ -2,7 +2,9 @@ package com.skillrat.usermanagement.services.impl;
 
 import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
+import com.skillrat.commonservice.dto.BasicOnboardUserDTO;
 import com.skillrat.commonservice.dto.Role;
+import com.skillrat.commonservice.enums.ERole;
 import com.skillrat.commonservice.user.UserDetailsImpl;
 import com.skillrat.usermanagement.azure.service.AzureBlobService;
 import com.skillrat.usermanagement.dto.AddressDTO;
@@ -21,6 +23,7 @@ import com.skillrat.usermanagement.repository.B2BUnitRepository;
 import com.skillrat.usermanagement.repository.BusinessCategoryRepository;
 import com.skillrat.usermanagement.repository.UserRepository;
 import com.skillrat.usermanagement.services.B2BUnitService;
+import com.skillrat.usermanagement.services.UserService;
 import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 
@@ -46,70 +49,79 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
     private final B2BUnitPopulator b2bUnitPopulator;
     private final UserRepository userRepository;
     private final UserPopulator userPopulator;
-    private final AzureBlobService azureBlobService;
+    private final UserService userService;
     private final AddressPopulator addressPopulator;
 
     @Override
     @Transactional
     public B2BUnitDTO createOrUpdate(B2BUnitRequest request) throws IOException {
-        UserModel currentUser = fetchCurrentUser();
+        //  Onboard admin user and fetch UserModel
+        BasicOnboardUserDTO basicOnboardUserDTO = buildBasicOnboardUserDTO(request);
+        Long onboardedUserId = userService.onBoardUserWithCredentials(basicOnboardUserDTO);
+        UserModel currentUser = fetchCurrentUser(onboardedUserId);
 
-        B2BUnitModel unit;
+        //  Fetch existing or create new B2B unit
+        B2BUnitModel unit = fetchOrCreateUnit(request, currentUser);
 
-        if (request.getBusinessCode() != null) {
-            unit = b2bUnitRepository.findByBusinessCode(request.getBusinessCode())
-                    .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
-
-        } else {
-            // Create new if no businessCode provided
-            unit = new B2BUnitModel();
-            unit.setAdmin(currentUser);
-            unit.setBusinessCode(generateBusinessCode());
-        }
-
+        //Populate all fields
         populateBasicDetails(unit, request);
         populateAddress(unit, request);
         populateCategory(unit, request);
         populateAttributes(unit, request);
 
+        // Save and return DTO
         B2BUnitModel saved = b2bUnitRepository.save(unit);
         return buildResponseDTO(saved);
     }
 
+    private BasicOnboardUserDTO buildBasicOnboardUserDTO(B2BUnitRequest request) {
+        Set<ERole> roles = Set.of(ERole.ROLE_BUSINESS_ADMIN);
 
-    private String generateBusinessCode() {
-        return "BUS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        return BasicOnboardUserDTO.builder()
+                .username(request.getAdminUsername())
+                .email(request.getAdminEmail())
+                .fullName(request.getAdminFullName())
+                .primaryContact(request.getAdminMobile())
+                .password(request.getAdminPassword())
+                .userRoles(roles)
+                .businessId(request.getBusinessId())
+                .build();
     }
 
-    private UserModel fetchCurrentUser() {
-        UserDetailsImpl userDetails = SecurityUtils.getCurrentUserDetails();
-        return userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+    private B2BUnitModel fetchOrCreateUnit(B2BUnitRequest request, UserModel currentUser) {
+        return Optional.ofNullable(request.getBusinessCode())
+                .map(code -> b2bUnitRepository.findByBusinessCode(code)
+                        .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)))
+                .orElseGet(() -> {
+                    B2BUnitModel unit = new B2BUnitModel();
+                    unit.setAdmin(currentUser);
+                    unit.setBusinessCode(generateBusinessCode());
+                    return unit;
+                });
     }
 
     private void populateBasicDetails(B2BUnitModel unit, B2BUnitRequest request) {
-        if (request.getBusinessName() != null) unit.setBusinessName(request.getBusinessName());
-        if (request.getContactNumber() != null) unit.setContactNumber(request.getContactNumber());
-        if (request.getLatitude() != null) unit.setBusinessLatitude(request.getLatitude());
-        if (request.getLongitude() != null) unit.setBusinessLongitude(request.getLongitude());
-        if (request.getBusinessType() != null) unit.setType(request.getBusinessType());
-        if (request.getBusinessCode() != null) unit.setBusinessCode(request.getBusinessCode());
-        if (request.getEnabled() != null) unit.setEnabled(request.getEnabled());
-        if (request.getTemporarilyClosed() != null) unit.setTemporarilyClosed(request.getTemporarilyClosed());
+        Optional.ofNullable(request.getBusinessName()).ifPresent(unit::setBusinessName);
+        Optional.ofNullable(request.getContactNumber()).ifPresent(unit::setContactNumber);
+        Optional.ofNullable(request.getLatitude()).ifPresent(unit::setBusinessLatitude);
+        Optional.ofNullable(request.getLongitude()).ifPresent(unit::setBusinessLongitude);
+        Optional.ofNullable(request.getBusinessType()).ifPresent(unit::setType);
+        Optional.ofNullable(request.getBusinessCode()).ifPresent(unit::setBusinessCode);
+        Optional.ofNullable(request.getEnabled()).ifPresent(unit::setEnabled);
+        Optional.ofNullable(request.getTemporarilyClosed()).ifPresent(unit::setTemporarilyClosed);
     }
 
-
     private void populateAddress(B2BUnitModel unit, B2BUnitRequest request) {
-        AddressModel address = Optional.ofNullable(unit.getBusinessAddress()).orElse(new AddressModel());
+        AddressModel address = Optional.ofNullable(unit.getBusinessAddress()).orElseGet(AddressModel::new);
 
-        if (request.getAddressLine1() != null) address.setAddressLine1(request.getAddressLine1());
-        if (request.getStreet() != null) address.setStreet(request.getStreet());
-        if (request.getCity() != null) address.setCity(request.getCity());
-        if (request.getState() != null) address.setState(request.getState());
-        if (request.getCountry() != null) address.setCountry(request.getCountry());
-        if (request.getPostalCode() != null) address.setPostalCode(request.getPostalCode());
-        if (request.getLatitude() != null) address.setLatitude(request.getLatitude());
-        if (request.getLongitude() != null) address.setLongitude(request.getLongitude());
+        Optional.ofNullable(request.getAddressLine1()).ifPresent(address::setAddressLine1);
+        Optional.ofNullable(request.getStreet()).ifPresent(address::setStreet);
+        Optional.ofNullable(request.getCity()).ifPresent(address::setCity);
+        Optional.ofNullable(request.getState()).ifPresent(address::setState);
+        Optional.ofNullable(request.getCountry()).ifPresent(address::setCountry);
+        Optional.ofNullable(request.getPostalCode()).ifPresent(address::setPostalCode);
+        Optional.ofNullable(request.getLatitude()).ifPresent(address::setLatitude);
+        Optional.ofNullable(request.getLongitude()).ifPresent(address::setLongitude);
 
         unit.setBusinessAddress(address);
     }
@@ -133,23 +145,34 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
                 });
 
         attributes.clear();
-        for (ProductAttributeRequest attr : request.getAttributes()) {
+        request.getAttributes().stream().map(attr -> {
             BusinessAttributeModel model = new BusinessAttributeModel();
             model.setAttributeName(attr.getAttributeName());
             model.setAttributeValue(attr.getAttributeValue());
             model.setB2bUnit(unit);
-            attributes.add(model);
-        }
+            return model;
+        }).forEach(attributes::add);
     }
 
     private B2BUnitDTO buildResponseDTO(B2BUnitModel savedModel) {
         B2BUnitDTO dto = b2bUnitPopulator.toDTO(savedModel);
-        if (savedModel.getAdmin() != null) {
+
+        Optional.ofNullable(savedModel.getAdmin()).ifPresent(admin -> {
             UserDTO userDTO = new UserDTO();
-            userPopulator.populate(savedModel.getAdmin(), userDTO);
+            userPopulator.populate(admin, userDTO);
             dto.setAdminUser(userDTO);
-        }
+        });
+
         return dto;
+    }
+
+    private String generateBusinessCode() {
+        return "BUS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private UserModel fetchCurrentUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Override

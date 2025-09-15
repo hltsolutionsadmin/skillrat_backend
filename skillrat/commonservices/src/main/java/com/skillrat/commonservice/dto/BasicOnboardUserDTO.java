@@ -40,4 +40,7 @@ public class BasicOnboardUserDTO {
 
     }
 
+    public BasicOnboardUserDTO() {
+
+    }
 }
