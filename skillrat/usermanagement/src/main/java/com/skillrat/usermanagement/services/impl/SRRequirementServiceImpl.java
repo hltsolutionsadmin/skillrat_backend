@@ -56,7 +56,9 @@ public class SRRequirementServiceImpl implements SRRequirementService {
         model.setIsActive(dto.getIsActive());
         model.setStartDate(dto.getStartDate());
         model.setEndDate(dto.getEndDate());
-
+        model.setBusinessName(dto.getBusinessName());
+        model.setDepartment(dto.getDepartment());
+        model.setStipend(dto.getStipend());
         model.setEligibilityCriteria(dto.getEligibilityCriteria());
         model.setResponsibilities(dto.getResponsibilities());
         model.setSkillsRequired(dto.getSkillsRequired());
