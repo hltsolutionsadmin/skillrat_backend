@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(
@@ -18,12 +19,8 @@ import java.time.LocalDateTime;
 )
 @Getter
 @Setter
+@AttributeOverride(name = "id", column = @Column(name = "requirement_id"))
 public class RequirementModel extends GenericModel {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "requirement_id", updatable = false, nullable = false)
-    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
@@ -54,9 +51,6 @@ public class RequirementModel extends GenericModel {
     )
     private UserModel createdBy;
 
-    @Column(name = "location", length = 255)
-    private String location;
-
     @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean isActive = Boolean.TRUE;
 
@@ -65,4 +59,40 @@ public class RequirementModel extends GenericModel {
 
     @Column(name = "end_date")
     private LocalDateTime endDate;
+
+    @Column(name = "skills_required", length = 500)
+    private String skillsRequired;
+
+    @Column(name = "code", nullable = false, unique = true, length = 100)
+    private String code;
+
+    @Column(name = "business_name", length = 255)
+    private String businessName;
+
+    @Column(name = "department", length = 255)
+    private String department;
+
+    @Column(name = "stipend")
+    private Double stipend;
+
+    @Column(name = "remote", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean remote = Boolean.FALSE;
+
+    @Column(name = "eligibility_criteria", length = 500)
+    private String eligibilityCriteria;
+
+    @Column(name = "responsibilities", columnDefinition = "TEXT")
+    private String responsibilities;
+
+    @Column(name = "benefits", columnDefinition = "TEXT")
+    private String benefits;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "requirement_addresses",
+            joinColumns = @JoinColumn(name = "requirement_id"),
+            inverseJoinColumns = @JoinColumn(name = "address_id")
+    )
+    private List<AddressModel> addresses;
+
 }

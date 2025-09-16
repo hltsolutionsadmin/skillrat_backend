@@ -5,11 +5,8 @@ import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.usermanagement.dto.ApplicationDTO;
 import com.skillrat.usermanagement.dto.MediaDTO;
 import com.skillrat.usermanagement.dto.RequirementDTO;
-import com.skillrat.usermanagement.model.ApplicationModel;
-import com.skillrat.usermanagement.model.MediaModel;
-import com.skillrat.usermanagement.model.RequirementModel;
-import com.skillrat.usermanagement.model.B2BUnitModel;
-import com.skillrat.usermanagement.model.UserModel;
+import com.skillrat.usermanagement.dto.AddressDTO;
+import com.skillrat.usermanagement.model.*;
 import com.skillrat.usermanagement.repository.B2BUnitRepository;
 import com.skillrat.usermanagement.repository.SRRequirementRepository;
 import com.skillrat.usermanagement.services.UserService;
@@ -73,7 +70,6 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
             target.setApplicant(applicant);
         }
 
-
         if (dto.getRequirementId() != null) {
             RequirementModel requirement = requirementRepository.findById(dto.getRequirementId())
                     .orElseThrow(() -> new HltCustomerException(ErrorCode.REQUIREMENT_NOT_FOUND));
@@ -109,7 +105,6 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
         target.setDesignation(source.getDesignation());
         target.setDescription(source.getDescription());
         target.setType(source.getType());
-        target.setLocation(source.getLocation());
         target.setIsActive(source.getIsActive());
         target.setStartDate(source.getStartDate());
         target.setEndDate(source.getEndDate());
@@ -117,5 +112,31 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
         target.setB2bUnitId(source.getB2bUnit() != null ? source.getB2bUnit().getId() : null);
         target.setCreatedAt(source.getCreatedAt());
         target.setUpdatedAt(source.getUpdatedAt());
+
+        target.setSkillsRequired(source.getSkillsRequired());
+        target.setCode(source.getCode());
+        target.setBusinessName(source.getBusinessName());
+        target.setDepartment(source.getDepartment());
+        target.setStipend(source.getStipend());
+        target.setRemote(source.getRemote());
+        target.setEligibilityCriteria(source.getEligibilityCriteria());
+        target.setResponsibilities(source.getResponsibilities());
+        target.setBenefits(source.getBenefits());
+
+        if (source.getAddresses() != null && !source.getAddresses().isEmpty()) {
+            List<AddressDTO> addresses = source.getAddresses().stream()
+                    .map(addr -> {
+                        AddressDTO dto = new AddressDTO();
+                        dto.setId(addr.getId());
+                        dto.setStreet(addr.getStreet());
+                        dto.setCity(addr.getCity());
+                        dto.setState(addr.getState());
+                        dto.setCountry(addr.getCountry());
+                        return dto;
+                    })
+                    .toList();
+            target.setAddresses(addresses);
+        }
+
     }
 }

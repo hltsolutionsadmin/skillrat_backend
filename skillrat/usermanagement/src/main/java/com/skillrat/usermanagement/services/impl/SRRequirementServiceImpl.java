@@ -2,7 +2,9 @@ package com.skillrat.usermanagement.services.impl;
 
 import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
+import com.skillrat.usermanagement.dto.AddressDTO;
 import com.skillrat.usermanagement.dto.RequirementDTO;
+import com.skillrat.usermanagement.model.AddressModel;
 import com.skillrat.usermanagement.model.B2BUnitModel;
 import com.skillrat.usermanagement.model.RequirementModel;
 import com.skillrat.usermanagement.model.UserModel;
@@ -17,6 +19,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -46,16 +52,51 @@ public class SRRequirementServiceImpl implements SRRequirementService {
         model.setDesignation(dto.getDesignation());
         model.setDescription(dto.getDescription());
         model.setType(dto.getType());
-        model.setLocation(dto.getLocation());
         model.setIsActive(dto.getIsActive());
         model.setStartDate(dto.getStartDate());
         model.setEndDate(dto.getEndDate());
 
+        model.setEligibilityCriteria(dto.getEligibilityCriteria());
+        model.setResponsibilities(dto.getResponsibilities());
+        model.setSkillsRequired(dto.getSkillsRequired());
+        model.setBenefits(dto.getBenefits());
+        model.setCode(dto.getCode());
         model.setB2bUnit(fetchB2BUnit(dto.getB2bUnitId()));
         model.setCreatedBy(fetchCurrentUser());
 
+        if (dto.getAddresses() != null && !dto.getAddresses().isEmpty()) {
+            List<AddressModel> addressModels = dto.getAddresses().stream()
+                    .map(this::convertAddressDTOToModel)
+                    .toList();
+            model.setAddresses(addressModels);
+        }
+
+
         return model;
     }
+
+    private AddressModel convertAddressDTOToModel(AddressDTO dto) {
+        if (dto == null) return null;
+
+        AddressModel model = new AddressModel();
+        model.setId(dto.getId());
+        model.setAddressLine1(dto.getAddressLine1());
+        model.setAddressLine2(dto.getAddressLine2());
+        model.setStreet(dto.getStreet());
+        model.setCity(dto.getCity());
+        model.setState(dto.getState());
+        model.setCountry(dto.getCountry());
+        model.setPostalCode(dto.getPostalCode());
+        model.setLatitude(dto.getLatitude());
+        model.setLongitude(dto.getLongitude());
+        model.setIsDefault(dto.getIsDefault());
+
+        return model;
+    }
+
+
+
+
 
 
     private B2BUnitModel fetchB2BUnit(Long b2bUnitId) {
@@ -78,7 +119,6 @@ public class SRRequirementServiceImpl implements SRRequirementService {
         model.setTitle(requirementDTO.getTitle());
         model.setDescription(requirementDTO.getDescription());
         model.setType(requirementDTO.getType());
-        model.setLocation(requirementDTO.getLocation());
 
         RequirementModel updated = srRequirementRepository.save(model);
         RequirementDTO response = new RequirementDTO();

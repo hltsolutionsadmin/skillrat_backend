@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -39,8 +41,8 @@ public class RequirementDTO {
     @NotNull(message = "B2B Unit ID is required")
     private Long b2bUnitId;
 
-
     private Long createdByUserId;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @FutureOrPresent(message = "Start date must be today or in the future")
     private LocalDateTime startDate;
@@ -55,5 +57,32 @@ public class RequirementDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 
+    @Size(max = 500, message = "Skills required must not exceed 500 characters")
+    private String skillsRequired;
 
+    @NotBlank(message = "Code is required")
+    @Size(max = 100, message = "Code must not exceed 100 characters")
+    private String code;
+
+    @Size(max = 255, message = "Business name must not exceed 255 characters")
+    private String businessName;
+
+    @Size(max = 255, message = "Department must not exceed 255 characters")
+    private String department;
+
+    private Double stipend;
+
+    @NotNull(message = "Remote flag is required")
+    private Boolean remote;
+
+    @Size(max = 500, message = "Eligibility criteria must not exceed 500 characters")
+    private String eligibilityCriteria;
+
+    @Size(max = 2000, message = "Responsibilities must not exceed 2000 characters")
+    private String responsibilities;
+
+    @Size(max = 2000, message = "Benefits must not exceed 2000 characters")
+    private String benefits;
+
+    private List<AddressDTO> addresses;
 }
