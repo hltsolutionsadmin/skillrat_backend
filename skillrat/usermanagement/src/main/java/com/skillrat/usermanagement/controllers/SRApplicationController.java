@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,25 +42,32 @@ public class SRApplicationController {
     private final B2BUnitRepository b2bUnitRepository;
 
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StandardResponse<ApplicationDTO>> createApplication(
-            @Valid @RequestBody ApplicationDTO applicationDTO) {
+            @ModelAttribute ApplicationDTO applicationDTO) {
 
+        // Fetch the currently logged-in user
         UserModel currentUser = fetchCurrentUser();
 
-//        if (!Boolean.TRUE.equals(currentUser.getProfileCompleted())) {
-//            throw new HltCustomerException(ErrorCode.PROFILE_NOT_COMPLETED);
-//        }
+        // Optional: validate profile completion
+//    if (!Boolean.TRUE.equals(currentUser.getProfileCompleted())) {
+//        throw new HltCustomerException(ErrorCode.PROFILE_NOT_COMPLETED);
+//    }
 
+        // Convert DTO to entity and set applicant
         ApplicationModel application = dtoToEntity(applicationDTO, currentUser);
 
+        // Save the application
         ApplicationModel saved = srApplicationService.createApplication(application);
 
         log.info("Application created [appId={}] by user [userId={}]", saved.getId(), currentUser.getId());
 
+        // Return standardized response
         return ResponseEntity.status(201)
                 .body(StandardResponse.single(SRAppConstants.APPLICATION_CREATE_SUCCESS, entityToDto(saved)));
     }
+
+
 
     @GetMapping("/{id}")
     public ResponseEntity<StandardResponse<ApplicationDTO>> getApplicationById(@PathVariable Long id) {
