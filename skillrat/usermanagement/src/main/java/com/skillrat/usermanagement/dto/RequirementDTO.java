@@ -1,5 +1,6 @@
 package com.skillrat.usermanagement.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.skillrat.usermanagement.dto.enums.RequirementType;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
@@ -40,13 +41,19 @@ public class RequirementDTO {
 
 
     private Long createdByUserId;
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @FutureOrPresent(message = "Start date must be today or in the future")
     private LocalDateTime startDate;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Future(message = "End date must be in the future")
     private LocalDateTime endDate;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
+
+
 }

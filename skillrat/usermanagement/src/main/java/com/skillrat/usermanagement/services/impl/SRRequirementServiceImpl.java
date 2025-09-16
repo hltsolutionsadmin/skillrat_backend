@@ -41,16 +41,22 @@ public class SRRequirementServiceImpl implements SRRequirementService {
 
     private RequirementModel mapToModel(RequirementDTO dto) {
         RequirementModel model = new RequirementModel();
+
         model.setTitle(dto.getTitle());
+        model.setDesignation(dto.getDesignation());
         model.setDescription(dto.getDescription());
         model.setType(dto.getType());
         model.setLocation(dto.getLocation());
-        model.setIsActive(Boolean.TRUE);
+        model.setIsActive(dto.getIsActive());
+        model.setStartDate(dto.getStartDate());
+        model.setEndDate(dto.getEndDate());
 
         model.setB2bUnit(fetchB2BUnit(dto.getB2bUnitId()));
         model.setCreatedBy(fetchCurrentUser());
+
         return model;
     }
+
 
     private B2BUnitModel fetchB2BUnit(Long b2bUnitId) {
         return b2BUnitRepository.findById(b2bUnitId)
