@@ -85,4 +85,7 @@ public class RequirementDTO {
     private String benefits;
 
     private List<AddressDTO> addresses;
+
+    private Boolean applied;
+
 }

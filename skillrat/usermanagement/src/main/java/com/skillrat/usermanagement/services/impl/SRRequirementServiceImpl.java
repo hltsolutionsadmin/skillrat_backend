@@ -9,6 +9,7 @@ import com.skillrat.usermanagement.model.B2BUnitModel;
 import com.skillrat.usermanagement.model.RequirementModel;
 import com.skillrat.usermanagement.model.UserModel;
 import com.skillrat.usermanagement.populator.SRRequirementPopulator;
+import com.skillrat.usermanagement.repository.ApplicationRepository;
 import com.skillrat.usermanagement.repository.B2BUnitRepository;
 import com.skillrat.usermanagement.repository.UserRepository;
 import com.skillrat.usermanagement.services.SRRequirementService;
@@ -33,7 +34,7 @@ public class SRRequirementServiceImpl implements SRRequirementService {
     private final SRRequirementPopulator srRequirementPopulator;
     private final B2BUnitRepository b2BUnitRepository;
     private final UserRepository userRepository;
-
+    private final ApplicationRepository applicationRepository;
     @Override
     @Transactional
     public RequirementDTO createRequirement(RequirementDTO requirementDTO) {
@@ -137,14 +138,20 @@ public class SRRequirementServiceImpl implements SRRequirementService {
     }
 
     @Override
-    public Page<RequirementDTO> getAllRequirements(Pageable pageable) {
+    public Page<RequirementDTO> getAllRequirements(Pageable pageable, Long userId) {
         return srRequirementRepository.findAll(pageable)
                 .map(model -> {
                     RequirementDTO dto = new RequirementDTO();
                     srRequirementPopulator.populate(model, dto);
+
+                    // Check if the user has applied to this requirement
+                    boolean applied = applicationRepository.existsByRequirementIdAndApplicantId(model.getId(), userId);
+                    dto.setApplied(applied);
+
                     return dto;
                 });
     }
+
 
     @Override
     @Transactional

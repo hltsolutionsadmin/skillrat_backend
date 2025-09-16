@@ -1,9 +1,11 @@
 package com.skillrat.usermanagement.controllers;
 
 import com.skillrat.commonservice.dto.StandardResponse;
+import com.skillrat.commonservice.user.UserDetailsImpl;
 import com.skillrat.usermanagement.dto.RequirementDTO;
 import com.skillrat.usermanagement.services.SRRequirementService;
 import com.skillrat.utils.SRAppConstants;
+import com.skillrat.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,12 +49,14 @@ public class SRRequirementController {
     public ResponseEntity<StandardResponse<Page<RequirementDTO>>> getAllRequirements(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+        UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<RequirementDTO> requirements = srRequirementService.getAllRequirements(pageable);
+        Page<RequirementDTO> requirements = srRequirementService.getAllRequirements(pageable, loggedInUser.getId());
         return ResponseEntity.ok(StandardResponse.page(
                 SRAppConstants.REQUIREMENT_LIST_SUCCESS, requirements));
     }
+
 
     /**
      * Update requirement

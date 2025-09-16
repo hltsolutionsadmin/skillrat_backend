@@ -18,5 +18,6 @@ public interface ApplicationRepository extends JpaRepository<ApplicationModel, L
 
     boolean existsByRequirement_IdAndApplicant_Id(Long requirementId, Long applicantUserId);
 
+    boolean existsByRequirementIdAndApplicantId(Long requirementId, Long applicantId);
 
 }
