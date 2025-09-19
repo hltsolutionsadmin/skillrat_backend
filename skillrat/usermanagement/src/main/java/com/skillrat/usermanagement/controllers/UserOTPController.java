@@ -37,7 +37,7 @@ public class UserOTPController extends SRBaseEndpoint {
     private final UserOTPService userOTPService;
     private final UserService userService;
 
-    @Value("${otp.trigger}")
+    @Value("${otp.trigger:false}")
     private boolean triggerOtp;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
