@@ -2,20 +2,17 @@
 package com.skillrat.usermanagement.services;
 
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import com.skillrat.commonservice.dto.BasicOnboardUserDTO;
 import com.skillrat.commonservice.dto.UserDTO;
 import com.skillrat.commonservice.enums.ERole;
-import com.skillrat.commonservice.enums.UserVerificationStatus;
 import com.skillrat.usermanagement.dto.UserUpdateDTO;
 import com.skillrat.usermanagement.model.UserModel;
 
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author juvi

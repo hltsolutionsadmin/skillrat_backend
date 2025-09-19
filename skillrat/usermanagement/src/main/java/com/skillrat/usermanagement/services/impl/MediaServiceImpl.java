@@ -1,8 +1,9 @@
 package com.skillrat.usermanagement.services.impl;
 
+import org.springframework.stereotype.Service;
+
 import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
-import com.skillrat.usermanagement.azure.service.AzureBlobService;
 import com.skillrat.usermanagement.dto.MediaDTO;
 import com.skillrat.usermanagement.model.B2BUnitModel;
 import com.skillrat.usermanagement.model.MediaModel;
@@ -13,8 +14,6 @@ import com.skillrat.usermanagement.services.MediaService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

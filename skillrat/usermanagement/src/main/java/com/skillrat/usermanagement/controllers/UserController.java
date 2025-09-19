@@ -1,11 +1,41 @@
 package com.skillrat.usermanagement.controllers;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
-import com.skillrat.commonservice.dto.*;
+import com.skillrat.commonservice.dto.BasicOnboardUserDTO;
+import com.skillrat.commonservice.dto.LoggedInUser;
+import com.skillrat.commonservice.dto.MediaDTO;
+import com.skillrat.commonservice.dto.MessageResponse;
+import com.skillrat.commonservice.dto.StandardResponse;
+import com.skillrat.commonservice.dto.UserDTO;
 import com.skillrat.commonservice.enums.ERole;
 import com.skillrat.commonservice.user.UserDetailsImpl;
-import com.skillrat.usermanagement.azure.service.AzureBlobService;
+import com.skillrat.usermanagement.azure.service.BlobStorageService;
 import com.skillrat.usermanagement.dto.BasicUserDetails;
 import com.skillrat.usermanagement.dto.UserUpdateDTO;
 import com.skillrat.usermanagement.model.MediaModel;
@@ -24,17 +54,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.*;
 
 
 @RestController
@@ -44,7 +63,7 @@ import java.util.*;
 public class UserController extends SRBaseEndpoint {
 
     private final UserService userService;
-    private final AzureBlobService azureBlobService;
+    private final BlobStorageService azureBlobService;
     private final MediaPopulator mediaPopulator;
     private final B2BUnitRepository b2bUnitRepository;
     private final MediaService mediaService;
@@ -138,7 +157,7 @@ public class UserController extends SRBaseEndpoint {
 
         if (details.getProfilePicture() != null && !details.getProfilePicture().isEmpty()) {
             MediaModel profilePicMedia = azureBlobService.uploadCustomerPictureFile(
-                    userId, details.getProfilePicture(), userId);
+                    userId, details.getProfilePicture());
 
             String originalFilename = details.getProfilePicture().getOriginalFilename();
             profilePicMedia.setFileName(originalFilename);
@@ -327,8 +346,7 @@ public class UserController extends SRBaseEndpoint {
         UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
 
         if (!ObjectUtils.isEmpty(loggedInUser)) {
-            MediaModel mediaModel = azureBlobService.uploadCustomerPictureFile(loggedInUser.getId(), profilePicture,
-                    loggedInUser.getId());
+            MediaModel mediaModel = azureBlobService.uploadCustomerPictureFile(loggedInUser.getId(), profilePicture);
             MediaDTO mediaDTO = (MediaDTO) getConvertedInstance().convert(mediaModel);
             log.info("Profile picture uploaded successfully for user with ID {}", loggedInUser.getId());
             return new ResponseEntity<>(mediaDTO, HttpStatus.OK);

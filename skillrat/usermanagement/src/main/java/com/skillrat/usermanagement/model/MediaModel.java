@@ -1,10 +1,21 @@
 package com.skillrat.usermanagement.model;
 
-import jakarta.persistence.*;
+import java.util.Date;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Date;
 
 @Entity
 @Table(name = "media", indexes = {
@@ -64,5 +75,14 @@ public class MediaModel {
     @PreUpdate
     protected void onUpdate() {
         this.modificationTime = new Date();
+    }
+    
+    public MediaModel(String fileName, String fileUrl) {
+        this.fileName = fileName;
+        this.url = fileUrl;
+    }
+    
+    public MediaModel() {
+    	
     }
 }
