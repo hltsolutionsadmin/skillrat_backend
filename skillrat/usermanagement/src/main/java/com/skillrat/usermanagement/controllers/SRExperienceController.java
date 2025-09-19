@@ -43,7 +43,6 @@ public class SRExperienceController {
                 SRAppConstants.EXPERIENCE_FETCH_SUCCESS, dto));
     }
 
-    // ---------------- GET EDUCATION ----------------
     @GetMapping("/education")
     public ResponseEntity<StandardResponse<List<EducationDTO>>> getMyEducation() {
         List<EducationDTO> list = experienceService.getEducation().getBody();
@@ -58,7 +57,6 @@ public class SRExperienceController {
                 SRAppConstants.EDUCATION_FETCH_SUCCESS, dto));
     }
 
-    // ---------------- GET INTERNSHIPS ----------------
     @GetMapping("/internships")
     public ResponseEntity<StandardResponse<Page<InternshipDTO>>> getMyInternships(Pageable pageable) {
         Page<InternshipDTO> page = experienceService.getInternships(pageable).getBody();
@@ -73,7 +71,7 @@ public class SRExperienceController {
                 SRAppConstants.INTERNSHIP_FETCH_SUCCESS, dto));
     }
 
-    // ---------------- GET JOBS ----------------
+
     @GetMapping("/jobs")
     public ResponseEntity<StandardResponse<Page<JobDTO>>> getMyJobs(Pageable pageable) {
         Page<JobDTO> page = experienceService.getJobs(pageable).getBody();

@@ -66,7 +66,7 @@ public class B2BUnitController extends SRBaseEndpoint {
 
     @GetMapping("/{id}")
     public ResponseEntity<B2BUnitDTO> getBusinessById(@PathVariable Long id) {
-        return ResponseEntity.ok(b2BUnitService.getById(id));
+        return  ResponseEntity.ok(b2BUnitService.getById(id));
     }
 
     @GetMapping("get")

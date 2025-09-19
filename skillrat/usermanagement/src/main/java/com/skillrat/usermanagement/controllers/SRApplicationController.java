@@ -41,7 +41,7 @@ public class SRApplicationController {
     private final SRRequirementRepository srRequirementRepository;
     private final B2BUnitRepository b2bUnitRepository;
 
-    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+//    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StandardResponse<ApplicationDTO>> createApplication(
             @ModelAttribute ApplicationDTO applicationDTO) {
