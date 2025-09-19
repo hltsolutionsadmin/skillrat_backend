@@ -27,7 +27,6 @@ import com.skillrat.utils.SRBaseEndpoint;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-
 @RestController
 @RequestMapping(value = "/auth/jtuserotp")
 @Slf4j
@@ -39,6 +38,9 @@ public class UserOTPController extends SRBaseEndpoint {
 
     @Value("${otp.trigger:false}")
     private boolean triggerOtp;
+
+    @Value("${otp.static.enabled:false}")
+    private boolean staticOtpEnabled;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final DecimalFormat OTP_FORMAT = new DecimalFormat("000000");
@@ -70,15 +72,16 @@ public class UserOTPController extends SRBaseEndpoint {
             userOTPDTO.setOtp(null);
         }
 
-        log.info("Returning response for Primary Contact: {}", userOtpDto.getPrimaryContact());
         return new ResponseEntity<>(userOTPDTO, HttpStatus.OK);
     }
 
     @PostMapping("/trigger/otp")
-    public ResponseEntity<UserOTPDTO> newUserSignUp(@Valid @RequestBody UserOTPDTO userOtpDto) throws IOException {
+    public ResponseEntity<UserOTPDTO> newUserSignUp(
+            @Valid @RequestBody UserOTPDTO userOtpDto,
+            @RequestParam(name = "triggerOtp", required = false) Boolean triggerOtpOverride) throws IOException {
 
-        log.info("Entering newUserSignUp with Primary Contact: {}, OTP Type: {}",
-                userOtpDto.getPrimaryContact(), userOtpDto.getOtpType());
+        log.info("Entering newUserSignUp with Primary Contact: {}, OTP Type: {}, triggerOtpOverride={}",
+                userOtpDto.getPrimaryContact(), userOtpDto.getOtpType(), triggerOtpOverride);
 
         userOTPService.deleteByPrimaryContactAndOtpType(
                 userOtpDto.getPrimaryContact(), userOtpDto.getOtpType());
@@ -86,16 +89,18 @@ public class UserOTPController extends SRBaseEndpoint {
         UserOTPModel userOtp = generateAndSaveOtp(userOtpDto);
         UserOTPDTO userOTPDTO = new UserOTPDTO(userOtp.getOtp(), userOtp.getCreationTime());
 
-        CustomerIntegrationService jtCustomerIntegration = new CustomerIntegrationServiceImpl();
-        log.info("Returning response for triggerOtp value: {}", triggerOtp);
+        // Resolve effective trigger flag
+        boolean effectiveTrigger = triggerOtpOverride != null ? triggerOtpOverride : this.triggerOtp;
 
-        if (triggerOtp) {
+        log.info("Effective triggerOtp value: {}", effectiveTrigger);
+
+        if (effectiveTrigger) {
             log.debug("Triggering OTP for Primary Contact: {}", userOtp.getPrimaryContact());
+            CustomerIntegrationService jtCustomerIntegration = new CustomerIntegrationServiceImpl();
             jtCustomerIntegration.triggerSMS(userOtp.getPrimaryContact(), userOtp.getOtp());
             userOTPDTO.setOtp(null); // mask OTP if triggered
         }
 
-        log.info("Returning response for Primary Contact: {}", userOtpDto.getPrimaryContact());
         return ResponseEntity.ok(userOTPDTO);
     }
 
@@ -110,23 +115,21 @@ public class UserOTPController extends SRBaseEndpoint {
         jtUserOTP.setEmailAddress(userOTPDTO.getEmailAddress());
         jtUserOTP.setOtpType(userOTPDTO.getOtpType());
 
-        Map<String, String> staticOtps = Map.of(
-                "9100881724", "123123",
-                "9700020630", "291120"
-        );
-
-        String primaryContact = userOTPDTO.getPrimaryContact();
-        String otp = staticOtps.get(primaryContact);
-
-        if (otp != null) {
-            jtUserOTP.setOtp(otp);
-            log.debug("Static OTP assigned for Primary Contact: {}", primaryContact);
+        String otp;
+        if (staticOtpEnabled) {
+            // Use static OTPs for testing/demo accounts
+            Map<String, String> staticOtps = Map.of(
+                    "9100881724", "123123",
+                    "9700020630", "291120"
+            );
+            otp = staticOtps.getOrDefault(userOTPDTO.getPrimaryContact(), generateOtp());
+            log.debug("Using static OTP [{}] for Primary Contact: {}", otp, userOTPDTO.getPrimaryContact());
         } else {
             otp = generateOtp();
-            jtUserOTP.setOtp(otp);
-            log.debug("Generated OTP for Primary Contact: {}", primaryContact);
+            log.debug("Generated dynamic OTP [{}] for Primary Contact: {}", otp, userOTPDTO.getPrimaryContact());
         }
 
+        jtUserOTP.setOtp(otp);
         return userOTPService.save(jtUserOTP);
     }
 
