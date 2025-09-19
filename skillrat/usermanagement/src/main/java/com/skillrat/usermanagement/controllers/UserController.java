@@ -55,327 +55,320 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-
 @RestController
 @RequestMapping("/user")
 @Slf4j
 @RequiredArgsConstructor
 public class UserController extends SRBaseEndpoint {
 
-    private final UserService userService;
-    private final BlobStorageService azureBlobService;
-    private final MediaPopulator mediaPopulator;
-    private final B2BUnitRepository b2bUnitRepository;
-    private final MediaService mediaService;
-    private final UserRepository userRepository;
-    private final MediaRepository mediaRepository;
+	private final UserService userService;
+	private final BlobStorageService azureBlobService;
+	private final MediaPopulator mediaPopulator;
+	private final B2BUnitRepository b2bUnitRepository;
+	private final MediaService mediaService;
+	private final UserRepository userRepository;
+	private final MediaRepository mediaRepository;
 
-    @GetMapping("/find/{userId}")
-    public UserDTO getUserById(@PathVariable("userId") Long userId) {
-        log.info("Request received to fetch customer details for ID: {}", userId);
-        return userService.getUserById(userId);
-    }
+	@GetMapping("/find/{userId}")
+	public UserDTO getUserById(@PathVariable("userId") Long userId) {
+		log.info("Request received to fetch customer details for ID: {}", userId);
+		return userService.getUserById(userId);
+	}
 
-    @GetMapping("/userDetails")
-    public UserDTO getUserByToken() {
-        UserDetailsImpl user = SecurityUtils.getCurrentUserDetails();
-        Long userId = user.getId();
-        log.info("Request received to fetch customer details for ID: {}", userId);
-        return userService.getUserById(userId);
-    }
+	@GetMapping("/userDetails")
+	public UserDTO getUserByToken() {
+		UserDetailsImpl user = SecurityUtils.getCurrentUserDetails();
+		Long userId = user.getId();
+		log.info("Request received to fetch customer details for ID: {}", userId);
+		return userService.getUserById(userId);
+	}
 
-    @PostMapping("/details/all")
-    public List<UserModel> getUserDetailsByIds(@RequestBody List<Long> userIds) {
-        return userService.findByIds(userIds);
-    }
+	@PostMapping("/details/all")
+	public List<UserModel> getUserDetailsByIds(@RequestBody List<Long> userIds) {
+		return userService.findByIds(userIds);
+	}
 
-    @PutMapping("/user/role/{role}")
-    public ResponseEntity<?> assignRoleToCurrentUser(@PathVariable String role) {
-        UserDetailsImpl currentUser = SecurityUtils.getCurrentUserDetails();
+	@PutMapping("/user/role/{role}")
+	public ResponseEntity<?> assignRoleToCurrentUser(@PathVariable String role) {
+		UserDetailsImpl currentUser = SecurityUtils.getCurrentUserDetails();
 
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
+		if (currentUser == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+		}
 
-        Long userId = currentUser.getId();
+		Long userId = currentUser.getId();
 
-        try {
-            ERole parsedRole = ERole.valueOf(role.toUpperCase().trim());
-            userService.addUserRole(userId, parsedRole);
+		try {
+			ERole parsedRole = ERole.valueOf(role.toUpperCase().trim());
+			userService.addUserRole(userId, parsedRole);
 
-            return ResponseEntity.ok().body(
-                    Map.of(
-                            "message", "RoleModel successfully added",
-                            "role", parsedRole.name()
-                    )
-            );
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("error", "Invalid role: " + role)
-            );
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(
-                    Map.of("error", "Failed to add role: " + e.getMessage())
-            );
-        }
-    }
+			return ResponseEntity.ok()
+					.body(Map.of("message", "RoleModel successfully added", "role", parsedRole.name()));
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(Map.of("error", "Invalid role: " + role));
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().body(Map.of("error", "Failed to add role: " + e.getMessage()));
+		}
+	}
 
+	@PutMapping(value = "/userDetails", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<StandardResponse<String>> updateBasicUserDetails(
+			@ModelAttribute @Valid BasicUserDetails details) throws IOException {
 
-    @PutMapping(value = "/userDetails", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<StandardResponse<String>> updateBasicUserDetails(
-            @ModelAttribute @Valid BasicUserDetails details) throws IOException {
+		log.info("Entering into Update Basic UserModel Details API");
 
-        log.info("Entering into Update Basic UserModel Details API");
+		UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
+		UserModel userModel = userService.findById(loggedInUser.getId());
 
-        UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
-        UserModel userModel = userService.findById(loggedInUser.getId());
+		if (userModel == null) {
+			log.error("UserModel not found with ID: {}", loggedInUser.getId());
+			throw new HltCustomerException(ErrorCode.USER_NOT_FOUND);
+		}
 
-        if (userModel == null) {
-            log.error("UserModel not found with ID: {}", loggedInUser.getId());
-            throw new HltCustomerException(ErrorCode.USER_NOT_FOUND);
-        }
+		log.info("Updating details for userModel with ID: {}", loggedInUser.getId());
 
-        log.info("Updating details for userModel with ID: {}", loggedInUser.getId());
+		Optional.ofNullable(details.getFullName()).filter(StringUtils::hasText).ifPresent(userModel::setFullName);
 
-        Optional.ofNullable(details.getFullName()).filter(StringUtils::hasText).ifPresent(userModel::setFullName);
+		Optional.ofNullable(details.getEmail()).filter(StringUtils::hasText).ifPresent(email -> {
+			if (!userService.existsByEmail(email, userModel.getId())) {
+				userModel.setEmail(email);
+			} else {
+				log.warn("Email '{}' is already in use", email);
+				throw new HltCustomerException(ErrorCode.EMAIL_ALREADY_IN_USE);
+			}
+		});
 
-        Optional.ofNullable(details.getEmail())
-                .filter(StringUtils::hasText)
-                .ifPresent(email -> {
-                    if (!userService.existsByEmail(email, userModel.getId())) {
-                        userModel.setEmail(email);
-                    } else {
-                        log.warn("Email '{}' is already in use", email);
-                        throw new HltCustomerException(ErrorCode.EMAIL_ALREADY_IN_USE);
-                    }
-                });
+		Optional.ofNullable(details.getFcmToken()).ifPresent(userModel::setFcmToken);
 
-        Optional.ofNullable(details.getFcmToken()).ifPresent(userModel::setFcmToken);
+		Long userId = loggedInUser.getId();
+		List<MediaModel> mediaModels = new ArrayList<>();
 
-        Long userId = loggedInUser.getId();
-        List<MediaModel> mediaModels = new ArrayList<>();
+		if (details.getProfilePicture() != null && !details.getProfilePicture().isEmpty()) {
 
-        if (details.getProfilePicture() != null && !details.getProfilePicture().isEmpty()) {
-            MediaModel profilePicMedia = azureBlobService.uploadCustomerPictureFile(
-                    userId, details.getProfilePicture());
+			MediaModel profilePicMedia = azureBlobService.uploadCustomerPictureFile(userId,
+					details.getProfilePicture());
+			String originalFilename = details.getProfilePicture().getOriginalFilename();
 
-            String originalFilename = details.getProfilePicture().getOriginalFilename();
-            profilePicMedia.setFileName(originalFilename);
-            profilePicMedia.setName(originalFilename);
+			if (null != getCustomerPicture(userId)) {
+				MediaModel media = getCustomerPicture(userId);
+				media.setUrl(profilePicMedia.getUrl());
+				profilePicMedia = media;
+				profilePicMedia.setFileName(originalFilename);
+			} else {
 
-            profilePicMedia.setMediaType("PROFILE_PICTURE");
-            profilePicMedia.setCustomerId(userId);
-            profilePicMedia.setCreatedBy(userId);
-            profilePicMedia.setCreationTime(new Date());
-            profilePicMedia.setModificationTime(new Date());
+				profilePicMedia.setFileName(originalFilename);
+				profilePicMedia.setName(originalFilename);
 
-            mediaService.saveMedia(profilePicMedia);
-        }
+				profilePicMedia.setMediaType("PROFILE_PICTURE");
+				profilePicMedia.setCustomerId(userId);
+				profilePicMedia.setCreatedBy(userId);
+			}
+			profilePicMedia.setCreationTime(new Date());
+			profilePicMedia.setModificationTime(new Date());
 
-        if (details.getMediaFiles() != null && !details.getMediaFiles().isEmpty()) {
-            for (MultipartFile file : details.getMediaFiles()) {
-                if (!file.isEmpty()) {
-                    MediaModel uploadedMedia = azureBlobService.uploadFile(file);
-                    String originalFilename = file.getOriginalFilename();
+			mediaService.saveMedia(profilePicMedia);
+		}
 
-                    uploadedMedia.setFileName(originalFilename);
-                    uploadedMedia.setName(originalFilename);
-                    uploadedMedia.setMediaType("USER_PROFILE");
-                    uploadedMedia.setCustomerId(userId);
-                    uploadedMedia.setCreatedBy(userId);
-                    uploadedMedia.setCreationTime(new Date());
-                    uploadedMedia.setModificationTime(new Date());
+		if (details.getMediaFiles() != null && !details.getMediaFiles().isEmpty()) {
+			for (MultipartFile file : details.getMediaFiles()) {
+				if (!file.isEmpty()) {
+					MediaModel uploadedMedia = azureBlobService.uploadFile(file);
+					String originalFilename = file.getOriginalFilename();
 
-                    mediaService.saveMedia(uploadedMedia);
-                    mediaModels.add(uploadedMedia);
-                }
-            }
-        }
+					uploadedMedia.setFileName(originalFilename);
+					uploadedMedia.setName(originalFilename);
+					uploadedMedia.setMediaType("USER_PROFILE");
+					uploadedMedia.setCustomerId(userId);
+					uploadedMedia.setCreatedBy(userId);
+					uploadedMedia.setCreationTime(new Date());
+					uploadedMedia.setModificationTime(new Date());
 
-        if (details.getMediaUrls() != null) {
-            for (String url : details.getMediaUrls()) {
-                if (StringUtils.hasText(url)) {
-                    MediaModel media = new MediaModel();
-                    media.setUrl(url);
-                    media.setFileName("external");
-                    media.setExtension("url");
-                    media.setMediaType("EXTERNAL_LINK");
-                    media.setName("External URL: " + url);
-                    media.setCreationTime(new Date());
-                    media.setModificationTime(new Date());
-                    media.setCreatedBy(userId);
-                    media.setCustomerId(userId);
+					mediaService.saveMedia(uploadedMedia);
+					mediaModels.add(uploadedMedia);
+				}
+			}
+		}
 
-                    mediaService.saveMedia(media);
-                    mediaModels.add(media);
-                }
-            }
-        }
+		if (details.getMediaUrls() != null) {
+			for (String url : details.getMediaUrls()) {
+				if (StringUtils.hasText(url)) {
+					MediaModel media = new MediaModel();
+					media.setUrl(url);
+					media.setFileName("external");
+					media.setExtension("url");
+					media.setMediaType("EXTERNAL_LINK");
+					media.setName("External URL: " + url);
+					media.setCreationTime(new Date());
+					media.setModificationTime(new Date());
+					media.setCreatedBy(userId);
+					media.setCustomerId(userId);
 
-        if (details.getMedia() != null) {
-            for (MediaDTO dto : details.getMedia()) {
-                MediaModel media = new MediaModel();
-                media.setUrl(dto.getUrl());
-                media.setFileName(dto.getName());
-                media.setExtension(dto.getExtension());
-                media.setMediaType(dto.getMediaType());
-                media.setCreationTime(dto.getCreationTime() != null ? dto.getCreationTime() : new Date());
-                media.setModificationTime(new Date());
-                media.setCreatedBy(userId);
-                media.setCustomerId(userId);
-                media.setName(StringUtils.hasText(dto.getName()) ? dto.getName() : dto.getUrl());
-                media.setDescription(dto.getDescription());
+					mediaService.saveMedia(media);
+					mediaModels.add(media);
+				}
+			}
+		}
 
-                mediaService.saveMedia(media);
-                mediaModels.add(media);
-            }
-        }
+		if (details.getMedia() != null) {
+			for (MediaDTO dto : details.getMedia()) {
+				MediaModel media = new MediaModel();
+				media.setUrl(dto.getUrl());
+				media.setFileName(dto.getName());
+				media.setExtension(dto.getExtension());
+				media.setMediaType(dto.getMediaType());
+				media.setCreationTime(dto.getCreationTime() != null ? dto.getCreationTime() : new Date());
+				media.setModificationTime(new Date());
+				media.setCreatedBy(userId);
+				media.setCustomerId(userId);
+				media.setName(StringUtils.hasText(dto.getName()) ? dto.getName() : dto.getUrl());
+				media.setDescription(dto.getDescription());
 
-        List<MediaDTO> mediaList = mediaRepository.findByCustomerId(userId)
-                .stream()
-                .map(this::convertToMediaDto)
-                .toList();
+				mediaService.saveMedia(media);
+				mediaModels.add(media);
+			}
+		}
 
-        boolean completed = isProfileCompleted(userModel, mediaList);
-        userModel.setProfileCompleted(completed);
+		List<MediaDTO> mediaList = mediaRepository.findByCustomerId(userId).stream().map(this::convertToMediaDto)
+				.toList();
 
-        userService.saveUser(userModel);
+		boolean completed = isProfileCompleted(userModel, mediaList);
+		userModel.setProfileCompleted(completed);
 
-        log.info("UserModel and media details updated successfully for ID: {}", userId);
-        return ResponseEntity.ok(
-                StandardResponse.single("User details updated successfully", "SUCCESS")
-        );
+		userService.saveUser(userModel);
 
+		log.info("UserModel and media details updated successfully for ID: {}", userId);
+		return ResponseEntity.ok(StandardResponse.single("User details updated successfully", "SUCCESS"));
 
-    }
+	}
 
-    private MediaDTO convertToMediaDto(MediaModel media) {
-        MediaDTO dto = new MediaDTO();
-        dto.setId(media.getId());
-        dto.setUrl(media.getUrl());
-        dto.setName(media.getFileName());
-        dto.setDescription(media.getDescription());
-        dto.setExtension(media.getExtension());
-        dto.setCreationTime(media.getCreationTime());
-        dto.setMediaType(media.getMediaType());
-        return dto;
-    }
+	private MediaDTO convertToMediaDto(MediaModel media) {
+		MediaDTO dto = new MediaDTO();
+		dto.setId(media.getId());
+		dto.setUrl(media.getUrl());
+		dto.setName(media.getFileName());
+		dto.setDescription(media.getDescription());
+		dto.setExtension(media.getExtension());
+		dto.setCreationTime(media.getCreationTime());
+		dto.setMediaType(media.getMediaType());
+		return dto;
+	}
 
-    private boolean isProfileCompleted(UserModel userModel, List<MediaDTO> mediaList) {
-        boolean hasBasicDetails = StringUtils.hasText(userModel.getFullName())
-                && StringUtils.hasText(userModel.getEmail());
+	private boolean isProfileCompleted(UserModel userModel, List<MediaDTO> mediaList) {
+		boolean hasBasicDetails = StringUtils.hasText(userModel.getFullName())
+				&& StringUtils.hasText(userModel.getEmail());
 
 //        boolean hasProfilePic = mediaList.stream()
 //                .anyMatch(m -> "PROFILE_PICTURE".equalsIgnoreCase(m.getMediaType()));
 
-        boolean hasValidExperience = userModel.getExperiences() != null && userModel.getExperiences().stream()
-                .anyMatch(exp -> exp.getEducation() != null && !exp.getEducation().isEmpty());
-        return hasBasicDetails && hasValidExperience;
-    }
+		boolean hasValidExperience = userModel.getExperiences() != null && userModel.getExperiences().stream()
+				.anyMatch(exp -> exp.getEducation() != null && !exp.getEducation().isEmpty());
+		return hasBasicDetails && hasValidExperience;
+	}
 
+	private MediaModel getCustomerPicture(Long userId) {
+		MediaModel media = mediaService.findByJtcustomerAndMediaType(userId, "PROFILE_PICTURE");
+		return (media != null) ? media : null;
+	}
 
+	@PutMapping("/{id}")
+	public ResponseEntity updateUser(@PathVariable("id") @Valid @NotBlank Long id,
+			@Valid @RequestBody UserUpdateDTO details) {
+		log.info("Entering into Update Basic UserModel Details API");
+		userService.updateUser(details, id);
+		log.info("UserModel details updated successfully");
+		return ResponseEntity.ok().body(new MessageResponse("Details Updated"));
+	}
 
+	@PostMapping("/onboard/user")
+	public Long onBoardUser(@Valid @RequestBody BasicOnboardUserDTO basicOnboardUserDTO) {
+		return userService.onBoardUser(basicOnboardUserDTO.getFullName(), basicOnboardUserDTO.getPrimaryContact(),
+				basicOnboardUserDTO.getUserRoles(), basicOnboardUserDTO.getBusinessId());
+	}
 
-    @PutMapping("/{id}")
-    public ResponseEntity updateUser(@PathVariable("id") @Valid @NotBlank Long id, @Valid @RequestBody UserUpdateDTO details) {
-        log.info("Entering into Update Basic UserModel Details API");
-        userService.updateUser(details, id);
-        log.info("UserModel details updated successfully");
-        return ResponseEntity.ok().body(new MessageResponse("Details Updated"));
-    }
+	@PostMapping("/onboard-with-credentials")
+	public ResponseEntity<Long> onBoardUserWithCredentials(@Valid @RequestBody BasicOnboardUserDTO dto) {
+		Long userId = userService.onBoardUserWithCredentials(dto);
+		return ResponseEntity.ok((userId));
+	}
 
-    @PostMapping("/onboard/user")
-    public Long onBoardUser(@Valid @RequestBody BasicOnboardUserDTO basicOnboardUserDTO) {
-        return userService.onBoardUser(basicOnboardUserDTO.getFullName(), basicOnboardUserDTO.getPrimaryContact(),
-                basicOnboardUserDTO.getUserRoles(), basicOnboardUserDTO.getBusinessId());
-    }
+	@PostMapping("/save")
+	public UserModel saveUser(@RequestBody UserModel userModel) {
+		return userService.saveUser(userModel);
+	}
 
-    @PostMapping("/onboard-with-credentials")
-    public ResponseEntity<Long> onBoardUserWithCredentials(@Valid @RequestBody BasicOnboardUserDTO dto) {
-        Long userId = userService.onBoardUserWithCredentials(dto);
-        return ResponseEntity.ok((userId));
-    }
+	@DeleteMapping("/contact/{mobileNumber}/role/{role}")
+	public ResponseEntity<?> removeUserRole(@PathVariable("mobileNumber") String mobileNumber,
+			@PathVariable("role") ERole userRole) {
+		try {
+			userService.removeUserRole(mobileNumber, userRole);
 
+			return ResponseEntity.ok()
+					.body(Collections.singletonMap("message", "RoleModel successfully removed from user"));
+		} catch (RuntimeException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(Collections.singletonMap("message", "Failed to remove role: " + e.getMessage()));
+		}
+	}
 
-    @PostMapping("/save")
-    public UserModel saveUser(@RequestBody UserModel userModel) {
-        return userService.saveUser(userModel);
-    }
-
-    @DeleteMapping("/contact/{mobileNumber}/role/{role}")
-    public ResponseEntity<?> removeUserRole(@PathVariable("mobileNumber") String mobileNumber,
-                                            @PathVariable("role") ERole userRole) {
-        try {
-            userService.removeUserRole(mobileNumber, userRole);
-
-            return ResponseEntity.ok().body(Collections.singletonMap("message", "RoleModel successfully removed from user"));
-        } catch (RuntimeException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Collections.singletonMap("message", "Failed to remove role: " + e.getMessage()));
-        }
-    }
-
-
-    @GetMapping("/contact")
-    public LoggedInUser getByPrimaryContact(@Valid @RequestParam("primaryContact") String primaryContact) {
-        log.info("Request received to fetch customer details for primary Contact: {}", primaryContact);
-        Optional<UserModel> customer = userService.findByPrimaryContact(primaryContact);
-        if (customer.isPresent()) {
-            UserModel userModel = customer.get();
-            LoggedInUser loggedInUser = new LoggedInUser();
-            loggedInUser.setId(userModel.getId());
-            loggedInUser.setFullName(userModel.getFullName());
+	@GetMapping("/contact")
+	public LoggedInUser getByPrimaryContact(@Valid @RequestParam("primaryContact") String primaryContact) {
+		log.info("Request received to fetch customer details for primary Contact: {}", primaryContact);
+		Optional<UserModel> customer = userService.findByPrimaryContact(primaryContact);
+		if (customer.isPresent()) {
+			UserModel userModel = customer.get();
+			LoggedInUser loggedInUser = new LoggedInUser();
+			loggedInUser.setId(userModel.getId());
+			loggedInUser.setFullName(userModel.getFullName());
 //            List<String> roles = userModel.getRoleModels().stream().map(role -> role.getName().name())
 //                    .collect(Collectors.toList());
 //            loggedInUser.setRoles(new HashSet<>(roles));
-            loggedInUser.setPrimaryContact(userModel.getPrimaryContact());
+			loggedInUser.setPrimaryContact(userModel.getPrimaryContact());
 
-            log.info("Customer details fetched successfully for Primary Contact: {}", primaryContact);
-            return loggedInUser;
-        }
-        return null;
+			log.info("Customer details fetched successfully for Primary Contact: {}", primaryContact);
+			return loggedInUser;
+		}
+		return null;
 
-    }
+	}
 
-    @SuppressWarnings("unchecked")
-    @PostMapping("/profile/upload")
-    public ResponseEntity<MediaDTO> uploadCustomerProfilePicture(@ModelAttribute MultipartFile profilePicture)
-            throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        log.info("Entering uploadCustomerProfilePicture API");
-        UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
+	@SuppressWarnings("unchecked")
+	@PostMapping("/profile/upload")
+	public ResponseEntity<MediaDTO> uploadCustomerProfilePicture(@ModelAttribute MultipartFile profilePicture)
+			throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+		log.info("Entering uploadCustomerProfilePicture API");
+		UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
 
-        if (!ObjectUtils.isEmpty(loggedInUser)) {
-            MediaModel mediaModel = azureBlobService.uploadCustomerPictureFile(loggedInUser.getId(), profilePicture);
-            MediaDTO mediaDTO = (MediaDTO) getConvertedInstance().convert(mediaModel);
-            log.info("Profile picture uploaded successfully for user with ID {}", loggedInUser.getId());
-            return new ResponseEntity<>(mediaDTO, HttpStatus.OK);
-        }
-        log.error("LoggedInUser not found or invalid");
-        return new ResponseEntity<>(new MediaDTO(), HttpStatus.BAD_REQUEST);
-    }
+		if (!ObjectUtils.isEmpty(loggedInUser)) {
+			MediaModel mediaModel = azureBlobService.uploadCustomerPictureFile(loggedInUser.getId(), profilePicture);
+			MediaDTO mediaDTO = (MediaDTO) getConvertedInstance().convert(mediaModel);
+			log.info("Profile picture uploaded successfully for user with ID {}", loggedInUser.getId());
+			return new ResponseEntity<>(mediaDTO, HttpStatus.OK);
+		}
+		log.error("LoggedInUser not found or invalid");
+		return new ResponseEntity<>(new MediaDTO(), HttpStatus.BAD_REQUEST);
+	}
 
-    @SuppressWarnings("unchecked")
-    public AbstractConverter getConvertedInstance() {
-        return getConverter(mediaPopulator, MediaDTO.class.getName());
-    }
+	@SuppressWarnings("unchecked")
+	public AbstractConverter getConvertedInstance() {
+		return getConverter(mediaPopulator, MediaDTO.class.getName());
+	}
 
-    @GetMapping("/byRole")
-    public List<UserDTO> getUsersByRole(@RequestParam String roleName) {
-        return userService.getUsersByRole(roleName);
-    }
+	@GetMapping("/byRole")
+	public List<UserDTO> getUsersByRole(@RequestParam String roleName) {
+		return userService.getUsersByRole(roleName);
+	}
 
-    @DeleteMapping("/fcmToken")
-    public ResponseEntity<?> deleteFcmToken() {
-        UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
-        userService.clearFcmToken(loggedInUser.getId());
-        return ResponseEntity.ok(new MessageResponse("FCM token deleted successfully"));
-    }
+	@DeleteMapping("/fcmToken")
+	public ResponseEntity<?> deleteFcmToken() {
+		UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
+		userService.clearFcmToken(loggedInUser.getId());
+		return ResponseEntity.ok(new MessageResponse("FCM token deleted successfully"));
+	}
 
-    @GetMapping("/count/business/{businessId}")
-    public ResponseEntity<StandardResponse<Long>> getUserCountByBusinessId(@PathVariable Long businessId) {
-        long count = userService.getUserCountByBusinessId(businessId);
-        return ResponseEntity.ok(StandardResponse.single("User count fetched successfully", count));
-    }
+	@GetMapping("/count/business/{businessId}")
+	public ResponseEntity<StandardResponse<Long>> getUserCountByBusinessId(@PathVariable Long businessId) {
+		long count = userService.getUserCountByBusinessId(businessId);
+		return ResponseEntity.ok(StandardResponse.single("User count fetched successfully", count));
+	}
 
 }
