@@ -31,7 +31,7 @@ public interface SRAppConstants {
     // Roles (Spring Security Expressions)
     // =======================================
     String ROLE_USER = "hasRole('ROLE_USER')";
-    String ROLE_STUDENT = "hasRole('ROLE_STUDENT')";
+    String ROLE_STUDENT = "ROLE_STUDENT";
     String ROLE_USER_ADMIN = "hasRole('ROLE_USER_ADMIN')";
     String ROLE_ROLE_BUILDER = "hasRole('ROLE_BUILDER')";
     String ROLE_LAND_OWNER = "hasRole('ROLE_LAND_OWNER')";
