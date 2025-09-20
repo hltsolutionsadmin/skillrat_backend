@@ -13,22 +13,18 @@ import com.skillrat.usermanagement.services.UserService;
 import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 public class AddressServiceImpl extends SRBaseEndpoint implements AddressService {
 
-    @Autowired
-    private AddressRepository addressRepository;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private AddressPopulator addressPopulator;
+    private final AddressRepository addressRepository;
+    private final UserService userService;
+    private final AddressPopulator addressPopulator;
 
     private AddressDTO convertToDTO(AddressModel addressModel) {
         AddressDTO addressDTO = new AddressDTO();
@@ -73,7 +69,7 @@ public class AddressServiceImpl extends SRBaseEndpoint implements AddressService
         addressEntity.setPostalCode(addressDTO.getPostalCode());
         addressEntity.setLatitude(addressDTO.getLatitude());
         addressEntity.setLongitude(addressDTO.getLongitude());
-        addressEntity.setIsDefault(addressDTO.getIsDefault() != null ? addressDTO.getIsDefault() : false);
+        addressEntity.setIsDefault(Boolean.TRUE.equals(addressDTO.getIsDefault()));
         UserModel user = new UserModel();
         user.setId(userId);
         addressEntity.setUser(user);

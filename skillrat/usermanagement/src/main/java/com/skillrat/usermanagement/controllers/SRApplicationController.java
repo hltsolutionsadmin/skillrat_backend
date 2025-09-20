@@ -37,7 +37,7 @@ public class SRApplicationController {
 
     private final SRApplicationService srApplicationService;
     private final UserService userService;
-    private final SRApplicationPopulator SRApplicationPopulator;
+    private final SRApplicationPopulator srApplicationPopulator;
     private final SRRequirementRepository srRequirementRepository;
     private final B2BUnitRepository b2bUnitRepository;
 
@@ -160,7 +160,7 @@ public ResponseEntity<StandardResponse<ApplicationDTO>> createApplication(
 
     private ApplicationDTO entityToDto(ApplicationModel app) {
         ApplicationDTO dto = new ApplicationDTO();
-        SRApplicationPopulator.populate(app, dto);
+        srApplicationPopulator.populate(app, dto);
         return dto;
     }
 

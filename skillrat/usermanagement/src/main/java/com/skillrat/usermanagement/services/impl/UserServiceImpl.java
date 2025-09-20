@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
     @Override
     public Long onBoardUserWithCredentials(BasicOnboardUserDTO dto) {
-        if (userRepository.existsByUsername(dto.getUsername())) {
+        if (Boolean.TRUE.equals(userRepository.existsByUsername(dto.getUsername()))) {
             throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS);
         }
 
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
             throw new HltCustomerException(ErrorCode.USER_NOT_FOUND);
         }
 
-        if (existsByEmail(details.getEmail(), userId)) {
+        if (Boolean.TRUE.equals(existsByEmail(details.getEmail(), userId))) {
             throw new HltCustomerException(ErrorCode.EMAIL_ALREADY_IN_USE);
         }
 
@@ -185,7 +185,8 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         return userRepository.findByRolesContaining(roleModel)
                 .stream()
                 .map(this::convertToUserDto)
-                .collect(Collectors.toList());
+                .toList();
+
     }
 
 

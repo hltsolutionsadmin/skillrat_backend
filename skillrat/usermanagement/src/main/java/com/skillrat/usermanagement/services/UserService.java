@@ -41,7 +41,6 @@ public interface UserService {
 
     Optional<UserModel> findByPrimaryContact(String primaryContact);
 
-
     Boolean existsByEmail(final String email, final Long userId);
 
     List<UserDTO> getUsersByRole(String roleName);

@@ -42,8 +42,6 @@ import com.skillrat.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
 
 
-
-
 @SuppressWarnings("rawtypes")
 @Service("srExperienceService")
 @RequiredArgsConstructor
@@ -56,7 +54,7 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
     private final SRInternshipRepository internshipRepository;
     private final SRJobRepository jobRepository;
     private final ExperiencePopulator experiencePopulator;
-    // -------------------------- CREATE/UPDATE (already had) --------------------------
+
     @Override
     public ResponseEntity<MessageResponse> save(ExperienceDTO dto) {
         UserModel currentUser = fetchCurrentUser();
@@ -94,8 +92,6 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
         reposiroty.save(experience);
         return ResponseEntity.ok(new MessageResponse("Success"));
     }
-
-    // -------------------------- NEW: READ/GET --------------------------
 
 
     @Override
@@ -159,14 +155,15 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
     }
 
 
-@Override
-@Transactional(readOnly = true)
-public ResponseEntity<Page<JobDTO>> getJobs(Pageable pageable) {
-    UserModel currentUser = fetchCurrentUser();
-    Page<JobDTO> page = jobRepository.findByUser(currentUser, pageable)
-            .map(this::toJobDTO);
-    return ResponseEntity.ok(page);
-}
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<JobDTO>> getJobs(Pageable pageable) {
+        UserModel currentUser = fetchCurrentUser();
+        Page<JobDTO> page = jobRepository.findByUser(currentUser, pageable)
+                .map(this::toJobDTO);
+        return ResponseEntity.ok(page);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<JobDTO> getJobById(Long id) {
@@ -177,7 +174,6 @@ public ResponseEntity<Page<JobDTO>> getJobs(Pageable pageable) {
     }
 
 
-    // -------------------------- MAPPING: Model -> DTO --------------------------
     private EducationDTO toEducationDTO(EducationModel m) {
         EducationDTO dto = new EducationDTO();
         dto.setLevel(m.getEducationLevel() != null ? m.getEducationLevel().name() : null);
@@ -209,7 +205,6 @@ public ResponseEntity<Page<JobDTO>> getJobs(Pageable pageable) {
         return dto;
     }
 
-    // -------------------------- existing private helpers (unchanged) --------------------------
     private void mergeOrAddEducation(List<EducationModel> academics, List<EducationDTO> incoming, UserModel user) {
         if (incoming == null || incoming.isEmpty()) {
             return;
@@ -327,7 +322,6 @@ public ResponseEntity<Page<JobDTO>> getJobs(Pageable pageable) {
         return model;
     }
 
-    // -------------------------- COMMON --------------------------
     private UserModel fetchCurrentUser() {
         UserDetailsImpl userDetails = SecurityUtils.getCurrentUserDetails();
         return userRepository.findById(userDetails.getId())
