@@ -41,41 +41,39 @@ public class SRApplicationController {
     private final SRRequirementRepository srRequirementRepository;
     private final B2BUnitRepository b2bUnitRepository;
 
-//    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
-@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-public ResponseEntity<StandardResponse<ApplicationDTO>> createApplication(
-        @ModelAttribute ApplicationDTO applicationDTO) {
+    //@PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<StandardResponse<ApplicationDTO>> createApplication(
+            @ModelAttribute ApplicationDTO applicationDTO) {
 
-    // Fetch the currently logged-in user
-    UserModel currentUser = fetchCurrentUser();
+        // Fetch the currently logged-in user
+        UserModel currentUser = fetchCurrentUser();
 
-    boolean hasRole = currentUser.getRoles().stream()
-            .anyMatch(role -> SRAppConstants.ROLE_STUDENT.equalsIgnoreCase(String.valueOf(role.getName())));
+        boolean hasRole = currentUser.getRoles().stream()
+                .anyMatch(role -> SRAppConstants.ROLE_STUDENT.equalsIgnoreCase(String.valueOf(role.getName())));
 
-    if (!hasRole) {
-        throw new HltCustomerException(ErrorCode.UNAUTHORIZED);
-    }
+        if (!hasRole) {
+            throw new HltCustomerException(ErrorCode.UNAUTHORIZED);
+        }
 
 
-    // Optional: validate profile completion
+        // Optional: validate profile completion
 //    if (!Boolean.TRUE.equals(currentUser.getProfileCompleted())) {
 //        throw new HltCustomerException(ErrorCode.PROFILE_NOT_COMPLETED);
 //    }
 
-    // Convert DTO to entity and set applicant
-    ApplicationModel application = dtoToEntity(applicationDTO, currentUser);
+        // Convert DTO to entity and set applicant
+        ApplicationModel application = dtoToEntity(applicationDTO, currentUser);
 
-    // Save the application
-    ApplicationModel saved = srApplicationService.createApplication(application);
+        // Save the application
+        ApplicationModel saved = srApplicationService.createApplication(application);
 
-    log.info("Application created [appId={}] by user [userId={}]", saved.getId(), currentUser.getId());
+        log.info("Application created [appId={}] by user [userId={}]", saved.getId(), currentUser.getId());
 
-    // Return standardized response
-    return ResponseEntity.status(201)
-            .body(StandardResponse.single(SRAppConstants.APPLICATION_CREATE_SUCCESS, entityToDto(saved)));
-}
-
-
+        // Return standardized response
+        return ResponseEntity.status(201)
+                .body(StandardResponse.single(SRAppConstants.APPLICATION_CREATE_SUCCESS, entityToDto(saved)));
+    }
 
 
     @GetMapping("/{id}")
