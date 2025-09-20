@@ -4,8 +4,10 @@ import com.skillrat.usermanagement.dto.enums.ApplicationStatus;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -30,7 +32,8 @@ public class ApplicationDTO {
     @Size(max = 2000, message = "Cover letter must not exceed 2000 characters")
     private String coverLetter;
 
-    private Set <MediaDTO> mediaFiles;
+    private List<MultipartFile> documents;
+    private List<MediaDTO> documentsInfo;
 
     @PastOrPresent(message = "CreatedAt cannot be in the future")
     private LocalDateTime createdAt;

@@ -40,6 +40,8 @@ public enum ErrorCode {
     // ===========================
     OTP_EXPIRED(1801, "OTP Expired", HttpStatus.BAD_REQUEST),
     TOKEN_PROCESSING_ERROR(1804, "Error Processing Refresh Token", HttpStatus.INTERNAL_SERVER_ERROR),
+    AZURE_BLOB_UPLOAD_FAILED(4001, "Failed to upload file to Azure Blob Storage", HttpStatus.INTERNAL_SERVER_ERROR),
+
 
     // ===========================
     // Address & App Info (1900–1999)

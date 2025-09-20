@@ -2,6 +2,7 @@ package com.skillrat.usermanagement.populator;
 
 import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
+import com.skillrat.usermanagement.azure.service.BlobStorageService;
 import com.skillrat.usermanagement.dto.ApplicationDTO;
 import com.skillrat.usermanagement.dto.MediaDTO;
 import com.skillrat.usermanagement.dto.RequirementDTO;
@@ -13,11 +14,11 @@ import com.skillrat.usermanagement.services.UserService;
 import com.skillrat.utils.Populator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 @Component
 @RequiredArgsConstructor
 public class SRApplicationPopulator implements Populator<ApplicationModel, ApplicationDTO> {
@@ -25,6 +26,7 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
     private final UserService userService;
     private final SRRequirementRepository requirementRepository;
     private final B2BUnitRepository b2bUnitRepository;
+    private final BlobStorageService blobStorageService;
 
     @Override
     public void populate(ApplicationModel source, ApplicationDTO target) {
@@ -39,12 +41,11 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
         if (source.getB2bUnit() != null) target.setB2bUnitId(source.getB2bUnit().getId());
 
         if (source.getApplicant() != null) target.setApplicantUserId(source.getApplicant().getId());
-
         if (source.getMediaFiles() != null && !source.getMediaFiles().isEmpty()) {
-            Set<MediaDTO> mediaDTOs = source.getMediaFiles().stream()
+            List<MediaDTO> mediaDTOs = source.getMediaFiles().stream()
                     .map(this::convertMedia)
-                    .collect(Collectors.toSet());
-            target.setMediaFiles(mediaDTOs);
+                    .collect(Collectors.toList());
+            target.setDocumentsInfo(mediaDTOs);
         }
 
         if (source.getRequirement() != null) {
@@ -84,6 +85,20 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
             B2BUnitModel b2bUnit = b2bUnitRepository.findById(dto.getB2bUnitId())
                     .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
             target.setB2bUnit(b2bUnit);
+        }
+
+        // Handle uploaded files
+        if (dto.getDocuments() != null && !dto.getDocuments().isEmpty()) {
+            try {
+                List<MediaModel> uploadedFiles = blobStorageService.uploadFiles(
+                        dto.getDocuments().stream()
+                                .map(doc -> (MultipartFile) doc)
+                                .toList()
+                );
+                target.setMediaFiles(uploadedFiles);
+            } catch (Exception e) {
+                throw new HltCustomerException(ErrorCode.AZURE_BLOB_UPLOAD_FAILED);
+            }
         }
 
         return target;
@@ -137,6 +152,5 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
                     .toList();
             target.setAddresses(addresses);
         }
-
     }
 }

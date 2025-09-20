@@ -4,11 +4,9 @@ import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.commonservice.dto.StandardResponse;
 import com.skillrat.commonservice.user.UserDetailsImpl;
+import com.skillrat.usermanagement.azure.service.BlobStorageService;
 import com.skillrat.usermanagement.dto.ApplicationDTO;
-import com.skillrat.usermanagement.model.ApplicationModel;
-import com.skillrat.usermanagement.model.B2BUnitModel;
-import com.skillrat.usermanagement.model.RequirementModel;
-import com.skillrat.usermanagement.model.UserModel;
+import com.skillrat.usermanagement.model.*;
 import com.skillrat.usermanagement.populator.SRApplicationPopulator;
 import com.skillrat.usermanagement.services.SRApplicationService;
 import com.skillrat.usermanagement.services.UserService;
@@ -27,6 +25,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -40,30 +40,30 @@ public class SRApplicationController {
     private final SRApplicationPopulator srApplicationPopulator;
     private final SRRequirementRepository srRequirementRepository;
     private final B2BUnitRepository b2bUnitRepository;
+    private final BlobStorageService blobStorageService;
 
     //@PreAuthorize("hasAuthority('ROLE_STUDENT')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StandardResponse<ApplicationDTO>> createApplication(
-            @ModelAttribute ApplicationDTO applicationDTO) {
+            @ModelAttribute ApplicationDTO applicationDTO) throws IOException {
 
-        // Fetch the currently logged-in user
+        // Fetch currently logged-in user
         UserModel currentUser = fetchCurrentUser();
 
         boolean hasRole = currentUser.getRoles().stream()
                 .anyMatch(role -> SRAppConstants.ROLE_STUDENT.equalsIgnoreCase(String.valueOf(role.getName())));
-
         if (!hasRole) {
             throw new HltCustomerException(ErrorCode.UNAUTHORIZED);
         }
 
-
-        // Optional: validate profile completion
-//    if (!Boolean.TRUE.equals(currentUser.getProfileCompleted())) {
-//        throw new HltCustomerException(ErrorCode.PROFILE_NOT_COMPLETED);
-//    }
-
         // Convert DTO to entity and set applicant
         ApplicationModel application = dtoToEntity(applicationDTO, currentUser);
+
+        // Upload files (if any) and attach URLs to application
+        if (applicationDTO.getDocuments() != null && !applicationDTO.getDocuments().isEmpty()) {
+            List<MediaModel> uploadedFiles = blobStorageService.uploadFiles(applicationDTO.getDocuments());
+            application.setMediaFiles(uploadedFiles); // Map MediaModel to your entity field
+        }
 
         // Save the application
         ApplicationModel saved = srApplicationService.createApplication(application);
@@ -74,6 +74,7 @@ public class SRApplicationController {
         return ResponseEntity.status(201)
                 .body(StandardResponse.single(SRAppConstants.APPLICATION_CREATE_SUCCESS, entityToDto(saved)));
     }
+
 
 
     @GetMapping("/{id}")
