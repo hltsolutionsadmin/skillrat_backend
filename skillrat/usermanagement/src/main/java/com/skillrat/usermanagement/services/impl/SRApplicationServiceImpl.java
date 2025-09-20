@@ -25,7 +25,7 @@ public class SRApplicationServiceImpl implements SRApplicationService {
         srRequirementRepository.findById(app.getRequirement().getId())
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.REQUIREMENT_NOT_FOUND));
 
-        if (applicationRepository.existsByRequirement_IdAndApplicant_Id(
+        if (applicationRepository.existsByRequirement_IdAndApplicant_Id (
                 app.getRequirement().getId(), app.getApplicant().getId())) {
             throw new HltCustomerException(ErrorCode.APPLICATION_ALREADY_EXISTS);
         }

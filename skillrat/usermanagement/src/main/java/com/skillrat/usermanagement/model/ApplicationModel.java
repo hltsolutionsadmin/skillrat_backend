@@ -4,21 +4,7 @@ import java.util.List;
 
 import com.skillrat.usermanagement.dto.enums.ApplicationStatus;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -54,8 +40,13 @@ public class ApplicationModel extends GenericModel {
 	@Column(name = "cover_letter", columnDefinition = "TEXT")
 	private String coverLetter;
 
-	@OneToMany
-	@JoinTable(name = "application_media", joinColumns = @JoinColumn(name = "application_id"), inverseJoinColumns = @JoinColumn(name = "media_id"))
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinTable(
+			name = "application_media",
+			joinColumns = @JoinColumn(name = "application_id"),
+			inverseJoinColumns = @JoinColumn(name = "media_id")
+	)
 	private List<MediaModel> mediaFiles;
+
 
 }

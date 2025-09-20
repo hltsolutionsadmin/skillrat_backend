@@ -41,7 +41,7 @@ public class MediaServiceImpl implements MediaService {
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
         MediaModel media = new MediaModel();
-        media.setB2bUnitModel(b2b);
+//        media.setB2bUnitModel(b2b);
         media.setUrl(dto.getUrl());
         media.setFileName(dto.getFileName());
         media.setMediaType(dto.getMediaType());

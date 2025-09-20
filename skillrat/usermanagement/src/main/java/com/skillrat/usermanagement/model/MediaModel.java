@@ -29,9 +29,9 @@ public class MediaModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "business_id", nullable = false)
-    private B2BUnitModel b2bUnitModel;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "business_id", nullable = false)
+//    private B2BUnitModel b2bUnitModel;
 
     @Column(name = "url", nullable = false)
     private String url;
