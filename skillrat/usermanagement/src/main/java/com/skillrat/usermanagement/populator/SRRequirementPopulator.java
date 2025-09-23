@@ -2,12 +2,13 @@ package com.skillrat.usermanagement.populator;
 
 import com.skillrat.usermanagement.dto.AddressDTO;
 import com.skillrat.usermanagement.dto.RequirementDTO;
+import com.skillrat.usermanagement.dto.SkillDTO;
 import com.skillrat.usermanagement.model.RequirementModel;
+import com.skillrat.usermanagement.model.SkillModel;
 import com.skillrat.utils.Populator;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
-
 @Component
 public class SRRequirementPopulator implements Populator<RequirementModel, RequirementDTO> {
 
@@ -23,7 +24,6 @@ public class SRRequirementPopulator implements Populator<RequirementModel, Requi
         target.setType(source.getType());
         target.setDesignation(source.getDesignation());
         target.setIsActive(source.getIsActive());
-        target.setSkillsRequired(source.getSkillsRequired());
         target.setCode(source.getCode());
         target.setBusinessName(source.getBusinessName());
         target.setDepartment(source.getDepartment());
@@ -32,6 +32,14 @@ public class SRRequirementPopulator implements Populator<RequirementModel, Requi
         target.setEligibilityCriteria(source.getEligibilityCriteria());
         target.setResponsibilities(source.getResponsibilities());
         target.setBenefits(source.getBenefits());
+
+        if (source.getSkillsRequired() != null && !source.getSkillsRequired().isEmpty()) {
+            target.setSkillsRequired(
+                    source.getSkillsRequired().stream()
+                            .map(SkillModel::getId)
+                            .toList()
+            );
+        }
 
         if (source.getB2bUnit() != null) {
             target.setB2bUnitId(source.getB2bUnit().getId());
@@ -45,7 +53,6 @@ public class SRRequirementPopulator implements Populator<RequirementModel, Requi
         target.setStartDate(source.getStartDate());
         target.setEndDate(source.getEndDate());
 
-        // Populate addresses if present
         if (source.getAddresses() != null && !source.getAddresses().isEmpty()) {
             target.setAddresses(
                     source.getAddresses().stream().map(addr -> {

@@ -57,8 +57,7 @@ public class RequirementDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 
-    @Size(max = 500, message = "Skills required must not exceed 500 characters")
-    private String skillsRequired;
+    private List<Long> skillsRequired;
 
     @NotBlank(message = "Code is required")
     @Size(max = 100, message = "Code must not exceed 100 characters")

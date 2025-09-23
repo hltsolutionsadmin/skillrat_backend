@@ -3,10 +3,7 @@ package com.skillrat.usermanagement.populator;
 import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.usermanagement.azure.service.BlobStorageService;
-import com.skillrat.usermanagement.dto.ApplicationDTO;
-import com.skillrat.usermanagement.dto.MediaDTO;
-import com.skillrat.usermanagement.dto.RequirementDTO;
-import com.skillrat.usermanagement.dto.AddressDTO;
+import com.skillrat.usermanagement.dto.*;
 import com.skillrat.usermanagement.model.*;
 import com.skillrat.usermanagement.repository.B2BUnitRepository;
 import com.skillrat.usermanagement.repository.SRRequirementRepository;
@@ -17,7 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
@@ -128,7 +124,12 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
         target.setCreatedAt(source.getCreatedAt());
         target.setUpdatedAt(source.getUpdatedAt());
 
-        target.setSkillsRequired(source.getSkillsRequired());
+        if (source.getSkillsRequired() != null && !source.getSkillsRequired().isEmpty()) {
+            List<Long> skillIds = source.getSkillsRequired().stream()
+                    .map(SkillModel::getId)
+                    .toList();
+            target.setSkillsRequired(skillIds);
+        }
         target.setCode(source.getCode());
         target.setBusinessName(source.getBusinessName());
         target.setDepartment(source.getDepartment());

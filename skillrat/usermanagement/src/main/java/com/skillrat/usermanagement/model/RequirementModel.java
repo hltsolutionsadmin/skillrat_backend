@@ -60,8 +60,14 @@ public class RequirementModel extends GenericModel {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
-    @Column(name = "skills_required", length = 500)
-    private String skillsRequired;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "requirement_skills",
+            joinColumns = @JoinColumn(name = "requirement_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id")
+    )
+    private List<SkillModel> skillsRequired;
+
 
     @Column(name = "code", nullable = false, unique = true, length = 100)
     private String code;

@@ -4,16 +4,10 @@ import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.usermanagement.dto.AddressDTO;
 import com.skillrat.usermanagement.dto.RequirementDTO;
-import com.skillrat.usermanagement.model.AddressModel;
-import com.skillrat.usermanagement.model.B2BUnitModel;
-import com.skillrat.usermanagement.model.RequirementModel;
-import com.skillrat.usermanagement.model.UserModel;
+import com.skillrat.usermanagement.model.*;
 import com.skillrat.usermanagement.populator.SRRequirementPopulator;
-import com.skillrat.usermanagement.repository.ApplicationRepository;
-import com.skillrat.usermanagement.repository.B2BUnitRepository;
-import com.skillrat.usermanagement.repository.UserRepository;
+import com.skillrat.usermanagement.repository.*;
 import com.skillrat.usermanagement.services.SRRequirementService;
-import com.skillrat.usermanagement.repository.SRRequirementRepository;
 import com.skillrat.utils.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +27,7 @@ public class SRRequirementServiceImpl implements SRRequirementService {
     private final B2BUnitRepository b2BUnitRepository;
     private final UserRepository userRepository;
     private final ApplicationRepository applicationRepository;
+    private final SRSkillRepository srSkillRepository;
     @Override
     @Transactional
     public RequirementDTO createRequirement(RequirementDTO requirementDTO) {
@@ -59,7 +54,13 @@ public class SRRequirementServiceImpl implements SRRequirementService {
         model.setStipend(dto.getStipend());
         model.setEligibilityCriteria(dto.getEligibilityCriteria());
         model.setResponsibilities(dto.getResponsibilities());
-        model.setSkillsRequired(dto.getSkillsRequired());
+        if (dto.getSkillsRequired() != null && !dto.getSkillsRequired().isEmpty()) {
+            List<SkillModel> skills = dto.getSkillsRequired().stream()
+                    .map(skillId -> srSkillRepository.findById(skillId)
+                            .orElseThrow(() -> new HltCustomerException(ErrorCode.SKILL_NOT_FOUND)))
+                    .toList();
+            model.setSkillsRequired(skills);
+        }
         model.setBenefits(dto.getBenefits());
         model.setCode(dto.getCode());
         model.setB2bUnit(fetchB2BUnit(dto.getB2bUnitId()));
