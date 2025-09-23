@@ -42,6 +42,9 @@ public interface SRAppConstants {
     String ROLE_HOSPITAL_MANAGER = "hasRole('ROLE_HOSPITAL_MANAGER')";
     String ROLE_TELECALLER = "hasRole('ROLE_TELECALLER')";
     String ROLE_CALL_SUPERVISOR = "hasRole('ROLE_CALL_SUPERVISOR')";
+    String SKILL_SAVED_SUCCESS = "Skill saved successfully";
+    String SKILL_FETCH_SUCCESS = "Skill fetched successfully";
+    String SKILL_DELETED_SUCCESS = "Skill deleted successfully";
 
     // =======================================
     // Direct Role Names (Without hasRole())
