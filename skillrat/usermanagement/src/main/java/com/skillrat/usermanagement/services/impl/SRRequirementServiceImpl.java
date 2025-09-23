@@ -147,6 +147,16 @@ public class SRRequirementServiceImpl implements SRRequirementService {
                 });
     }
 
+    @Override
+    public Page<RequirementDTO> getRequirementsByB2bUnit(Long b2bUnitId, Pageable pageable) {
+        return srRequirementRepository.findByB2bUnit_Id(b2bUnitId, pageable)
+                .map(model -> {
+                    RequirementDTO dto = new RequirementDTO();
+                    srRequirementPopulator.populate(model, dto);
+                    return dto;
+                });
+    }
+
 
     @Override
     @Transactional

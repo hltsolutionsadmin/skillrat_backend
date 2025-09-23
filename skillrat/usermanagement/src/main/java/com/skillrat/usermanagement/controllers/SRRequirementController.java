@@ -79,4 +79,18 @@ public class SRRequirementController {
         srRequirementService.deleteRequirement(id);
         return ResponseEntity.ok(StandardResponse.message(SRAppConstants.REQUIREMENT_DELETE_SUCCESS));
     }
+
+    @GetMapping("/b2b/{b2bUnitId}")
+    public ResponseEntity<StandardResponse<Page<RequirementDTO>>> getRequirementsByB2bUnit(
+            @PathVariable Long b2bUnitId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<RequirementDTO> requirements = srRequirementService.getRequirementsByB2bUnit(b2bUnitId, pageable);
+
+        return ResponseEntity.ok(
+                StandardResponse.page(SRAppConstants.REQUIREMENT_FETCH_SUCCESS, requirements)
+        );
+    }
 }

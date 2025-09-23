@@ -30,4 +30,7 @@ public interface SRRequirementService {
      * Delete requirement by id (soft delete with isActive=false)
      */
     void deleteRequirement(Long id);
+
+    Page<RequirementDTO> getRequirementsByB2bUnit(Long b2bUnitId, Pageable pageable);
+
 }
