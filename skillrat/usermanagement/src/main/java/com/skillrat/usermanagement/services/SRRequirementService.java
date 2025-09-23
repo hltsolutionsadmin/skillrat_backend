@@ -1,6 +1,7 @@
 package com.skillrat.usermanagement.services;
 
 import com.skillrat.usermanagement.dto.RequirementDTO;
+import com.skillrat.usermanagement.dto.enums.RequirementType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -31,6 +32,5 @@ public interface SRRequirementService {
      */
     void deleteRequirement(Long id);
 
-    Page<RequirementDTO> getRequirementsByB2bUnit(Long b2bUnitId, Pageable pageable);
-
+     Page<RequirementDTO> getRequirementsByB2bUnit(Long b2bUnitId, RequirementType type, Pageable pageable);
 }

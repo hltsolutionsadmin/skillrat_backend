@@ -4,6 +4,7 @@ import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.usermanagement.dto.AddressDTO;
 import com.skillrat.usermanagement.dto.RequirementDTO;
+import com.skillrat.usermanagement.dto.enums.RequirementType;
 import com.skillrat.usermanagement.model.*;
 import com.skillrat.usermanagement.populator.SRRequirementPopulator;
 import com.skillrat.usermanagement.repository.*;
@@ -149,14 +150,22 @@ public class SRRequirementServiceImpl implements SRRequirementService {
     }
 
     @Override
-    public Page<RequirementDTO> getRequirementsByB2bUnit(Long b2bUnitId, Pageable pageable) {
-        return srRequirementRepository.findByB2bUnit_Id(b2bUnitId, pageable)
-                .map(model -> {
-                    RequirementDTO dto = new RequirementDTO();
-                    srRequirementPopulator.populate(model, dto);
-                    return dto;
-                });
+    public Page<RequirementDTO> getRequirementsByB2bUnit(Long b2bUnitId, RequirementType type, Pageable pageable) {
+        Page<RequirementModel> models;
+
+        if (type != null) {
+            models = srRequirementRepository.findByB2bUnit_IdAndType(b2bUnitId, type, pageable);
+        } else {
+            models = srRequirementRepository.findByB2bUnit_Id(b2bUnitId, pageable);
+        }
+
+        return models.map(model -> {
+            RequirementDTO dto = new RequirementDTO();
+            srRequirementPopulator.populate(model, dto);
+            return dto;
+        });
     }
+
 
 
     @Override

@@ -3,6 +3,7 @@ package com.skillrat.usermanagement.controllers;
 import com.skillrat.commonservice.dto.StandardResponse;
 import com.skillrat.commonservice.user.UserDetailsImpl;
 import com.skillrat.usermanagement.dto.RequirementDTO;
+import com.skillrat.usermanagement.dto.enums.RequirementType;
 import com.skillrat.usermanagement.services.SRRequirementService;
 import com.skillrat.utils.SRAppConstants;
 import com.skillrat.utils.SecurityUtils;
@@ -83,14 +84,16 @@ public class SRRequirementController {
     @GetMapping("/b2b/{b2bUnitId}")
     public ResponseEntity<StandardResponse<Page<RequirementDTO>>> getRequirementsByB2bUnit(
             @PathVariable Long b2bUnitId,
+            @RequestParam(required = false) RequirementType type,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<RequirementDTO> requirements = srRequirementService.getRequirementsByB2bUnit(b2bUnitId, pageable);
+        Page<RequirementDTO> requirements = srRequirementService.getRequirementsByB2bUnit(b2bUnitId, type, pageable);
 
         return ResponseEntity.ok(
                 StandardResponse.page(SRAppConstants.REQUIREMENT_FETCH_SUCCESS, requirements)
         );
     }
+
 }
