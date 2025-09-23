@@ -8,6 +8,7 @@ public enum ErrorCode {
     // User & Auth Errors (1000–1099)
     // ===========================
     USER_NOT_FOUND(1000, "User Not Found", HttpStatus.NOT_FOUND),
+    SKILL_NOT_FOUND(2001, "Skill not found", HttpStatus.NOT_FOUND),
     USER_ALREADY_EXISTS(1001, "User Already Exists", HttpStatus.CONFLICT),
     EMAIL_ALREADY_IN_USE(1002, "Email Is Already In Use", HttpStatus.CONFLICT),
     UNAUTHORIZED(1003, "Unauthorized Access", HttpStatus.UNAUTHORIZED),
