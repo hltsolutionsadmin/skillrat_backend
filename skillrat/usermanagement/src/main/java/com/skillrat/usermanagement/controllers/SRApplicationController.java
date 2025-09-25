@@ -6,6 +6,7 @@ import com.skillrat.commonservice.dto.StandardResponse;
 import com.skillrat.commonservice.user.UserDetailsImpl;
 import com.skillrat.usermanagement.azure.service.BlobStorageService;
 import com.skillrat.usermanagement.dto.ApplicationDTO;
+import com.skillrat.usermanagement.dto.enums.ApplicationStatus;
 import com.skillrat.usermanagement.model.*;
 import com.skillrat.usermanagement.populator.SRApplicationPopulator;
 import com.skillrat.usermanagement.services.SRApplicationService;
@@ -118,13 +119,13 @@ public class SRApplicationController {
         return ResponseEntity.ok(StandardResponse.page(SRAppConstants.APPLICATION_LIST_SUCCESS, dtoPage));
     }
 
-    @GetMapping("/applicant/{applicantUserId}")
+    @GetMapping("/applicantionsByUser")
     public ResponseEntity<StandardResponse<Page<ApplicationDTO>>> getApplicationsByApplicant(
-            @PathVariable Long applicantUserId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<ApplicationModel> applications = srApplicationService.getApplicationsByApplicant(applicantUserId, buildPageable(page, size));
+        UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
+        Page<ApplicationModel> applications = srApplicationService.getApplicationsByApplicant(loggedInUser.getId(), buildPageable(page, size));
 
         Page<ApplicationDTO> dtoPage = applications.map(this::entityToDto);
 
@@ -167,7 +168,7 @@ public class SRApplicationController {
         ApplicationModel app = new ApplicationModel();
 
         app.setId(dto.getId());
-        app.setStatus(dto.getStatus());
+        app.setStatus(dto.getStatus() != null ? dto.getStatus() : ApplicationStatus.PENDING);
         app.setCoverLetter(dto.getCoverLetter());
 
         if (applicant != null) {

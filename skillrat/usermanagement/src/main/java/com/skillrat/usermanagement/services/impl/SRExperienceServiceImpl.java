@@ -5,8 +5,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
+import com.skillrat.usermanagement.dto.*;
+import com.skillrat.usermanagement.model.*;
+import com.skillrat.usermanagement.repository.*;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -18,24 +22,9 @@ import com.skillrat.auth.exception.handling.ErrorCode;
 import com.skillrat.auth.exception.handling.HltCustomerException;
 import com.skillrat.commonservice.dto.MessageResponse;
 import com.skillrat.commonservice.user.UserDetailsImpl;
-import com.skillrat.usermanagement.dto.EducationDTO;
-import com.skillrat.usermanagement.dto.ExperienceDTO;
-import com.skillrat.usermanagement.dto.InternshipDTO;
-import com.skillrat.usermanagement.dto.JobDTO;
 import com.skillrat.usermanagement.dto.enums.EducationLevel;
 import com.skillrat.usermanagement.dto.enums.ExperienceType;
-import com.skillrat.usermanagement.model.EducationModel;
-import com.skillrat.usermanagement.model.ExperienceModel;
-import com.skillrat.usermanagement.model.InternshipModel;
-import com.skillrat.usermanagement.model.JobModel;
-import com.skillrat.usermanagement.model.UserModel;
 import com.skillrat.usermanagement.populator.ExperiencePopulator;
-import com.skillrat.usermanagement.repository.B2BUnitRepository;
-import com.skillrat.usermanagement.repository.SREducationRepository;
-import com.skillrat.usermanagement.repository.SRExperienceReposiroty;
-import com.skillrat.usermanagement.repository.SRInternshipRepository;
-import com.skillrat.usermanagement.repository.SRJobRepository;
-import com.skillrat.usermanagement.repository.UserRepository;
 import com.skillrat.usermanagement.services.SRExperienceService;
 import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
@@ -54,6 +43,7 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
     private final SRInternshipRepository internshipRepository;
     private final SRJobRepository jobRepository;
     private final ExperiencePopulator experiencePopulator;
+    private final SRSkillRepository skillRepository;
 
     @Override
     public ResponseEntity<MessageResponse> save(ExperienceDTO dto) {
@@ -87,6 +77,31 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
             List<JobModel> jobs = new ArrayList<>(jobRepository.findByUser(currentUser));
             mergeOrAddJobs(jobs, dto.getJobs(), currentUser);
             experience.setJobs(jobs);
+        }
+        if (dto.getSkills() != null && !dto.getSkills().isEmpty()) {
+            List<SkillModel> skills = new ArrayList<>();
+
+            // Load existing skills for the user
+            Set<SkillModel> existingSkills = currentUser.getSkills();
+
+            for (SkillDTO skillDTO : dto.getSkills()) {
+                // Check if the skill already exists globally
+                SkillModel skill = skillRepository.findByName(skillDTO.getName())
+                        .orElseGet(() -> skillRepository.save(new SkillModel(skillDTO.getName())));
+
+                // Add to experience
+                skills.add(skill);
+
+                // Add to user's aggregated skill set if not already present
+                existingSkills.add(skill);
+            }
+
+            // Set skills on experience
+            experience.setSkills(skills);
+
+            // Persist user's updated aggregated skills
+            currentUser.setSkills(existingSkills);
+            userRepository.save(currentUser);
         }
 
         reposiroty.save(experience);

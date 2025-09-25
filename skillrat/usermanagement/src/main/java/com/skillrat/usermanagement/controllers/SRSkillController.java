@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/skills")
@@ -17,6 +18,7 @@ public class SRSkillController {
 
     private final SRSkillService skillService;
 
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     @PostMapping
     public ResponseEntity<StandardResponse<SkillDTO>> saveSkill(@RequestBody SkillDTO dto) {
         SkillDTO saved = skillService.saveSkill(dto);

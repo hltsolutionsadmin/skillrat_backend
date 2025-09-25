@@ -95,4 +95,13 @@ public class UserModel extends GenericModel {
     @Column(name = "PROFILE_COMPLETED", nullable = false)
     private Boolean profileCompleted = Boolean.FALSE;
 
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_skills",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id")
+    )
+    private Set<SkillModel> skills = new HashSet<>();
+
 }

@@ -5,18 +5,7 @@ import java.util.List;
 
 import com.skillrat.usermanagement.dto.enums.ExperienceType;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,7 +35,15 @@ public class ExperienceModel extends GenericModel {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "B2B_UNIT_ID", nullable = true)
     private B2BUnitModel b2bUnit;
-    
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "experience_skills",
+            joinColumns = @JoinColumn(name = "experience_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id")
+    )
+    private List<SkillModel> skills;
+
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @Valid

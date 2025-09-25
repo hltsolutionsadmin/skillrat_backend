@@ -1,5 +1,6 @@
 package com.skillrat.usermanagement.model;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,7 @@ import lombok.Setter;
 @Table(name = "skills")
 @Getter
 @Setter
+@AllArgsConstructor
 public class SkillModel {
 
     @Id
@@ -17,4 +19,11 @@ public class SkillModel {
 
     @Column(name = "name", nullable = false, unique = true, length = 100)
     private String name;
+
+    public SkillModel() {
+
+    }
+
+    public SkillModel(String name) {
+    }
 }
