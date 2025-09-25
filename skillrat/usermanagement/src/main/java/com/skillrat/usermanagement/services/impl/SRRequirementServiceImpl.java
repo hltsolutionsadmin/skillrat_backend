@@ -135,8 +135,8 @@ public class SRRequirementServiceImpl implements SRRequirementService {
     }
 
     @Override
-    public Page<RequirementDTO> getAllRequirements(Pageable pageable, Long userId) {
-        return srRequirementRepository.findAll(pageable)
+    public Page<RequirementDTO> getAllRequirements(Pageable pageable, Long userId, RequirementType type) {
+        return srRequirementRepository.findByTypeOptional(type, pageable)
                 .map(model -> {
                     RequirementDTO dto = new RequirementDTO();
                     srRequirementPopulator.populate(model, dto);
@@ -148,6 +148,7 @@ public class SRRequirementServiceImpl implements SRRequirementService {
                     return dto;
                 });
     }
+
 
     @Override
     public Page<RequirementDTO> getRequirementsByB2bUnit(Long b2bUnitId, RequirementType type, Pageable pageable) {

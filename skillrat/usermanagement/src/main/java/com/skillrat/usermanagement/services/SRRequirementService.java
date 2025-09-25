@@ -25,7 +25,7 @@ public interface SRRequirementService {
     /**
      * Get all requirements with pagination
      */
-    Page<RequirementDTO> getAllRequirements(Pageable pageable, Long userId);
+     Page<RequirementDTO> getAllRequirements(Pageable pageable, Long userId, RequirementType type) ;
 
     /**
      * Delete requirement by id (soft delete with isActive=false)

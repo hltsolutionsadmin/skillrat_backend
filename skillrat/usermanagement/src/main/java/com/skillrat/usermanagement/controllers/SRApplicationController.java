@@ -63,7 +63,7 @@ public class SRApplicationController {
         // Upload files (if any) and attach URLs to application
         if (applicationDTO.getDocuments() != null && !applicationDTO.getDocuments().isEmpty()) {
             List<MediaModel> uploadedFiles = blobStorageService.uploadFiles(applicationDTO.getDocuments());
-            application.setMediaFiles(uploadedFiles); // Map MediaModel to your entity field
+            application.setMediaFiles(uploadedFiles);
         }
 
         // Save the application

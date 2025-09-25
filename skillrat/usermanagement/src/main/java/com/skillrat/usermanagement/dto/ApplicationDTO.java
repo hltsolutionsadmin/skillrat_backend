@@ -42,4 +42,7 @@ public class ApplicationDTO {
     private LocalDateTime updatedAt;
 
     private RequirementDTO requirement;
+
+    private UserDTO applicant;
+
 }

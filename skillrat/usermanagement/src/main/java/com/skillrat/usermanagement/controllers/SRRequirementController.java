@@ -49,11 +49,14 @@ public class SRRequirementController {
     @GetMapping
     public ResponseEntity<StandardResponse<Page<RequirementDTO>>> getAllRequirements(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) RequirementType type // optional
+    ) {
         UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<RequirementDTO> requirements = srRequirementService.getAllRequirements(pageable, loggedInUser.getId());
+        Page<RequirementDTO> requirements = srRequirementService.getAllRequirements(pageable, loggedInUser.getId(), type);
+
         return ResponseEntity.ok(StandardResponse.page(
                 SRAppConstants.REQUIREMENT_LIST_SUCCESS, requirements));
     }
