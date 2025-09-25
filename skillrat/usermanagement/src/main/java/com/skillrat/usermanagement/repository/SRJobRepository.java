@@ -15,4 +15,5 @@ public interface SRJobRepository extends JpaRepository<JobModel, Long> {
     Optional<JobModel> findByIdAndUser(Long id, UserModel user);
     Page<JobModel> findByUser(UserModel user, Pageable pageable);
 
+    Optional<JobModel> findByUserAndCompanyNameAndPosition(UserModel user, String companyName, String position);
 }

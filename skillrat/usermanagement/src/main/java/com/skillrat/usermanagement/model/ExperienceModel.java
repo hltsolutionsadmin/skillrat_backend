@@ -1,10 +1,10 @@
 package com.skillrat.usermanagement.model;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.skillrat.usermanagement.dto.enums.ExperienceType;
-
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.Getter;
@@ -32,7 +32,7 @@ public class ExperienceModel extends GenericModel {
     @JoinColumn(name = "USER_ID", nullable = false)
     private UserModel user;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "B2B_UNIT_ID", nullable = true)
     private B2BUnitModel b2bUnit;
 
@@ -42,28 +42,29 @@ public class ExperienceModel extends GenericModel {
             joinColumns = @JoinColumn(name = "experience_id"),
             inverseJoinColumns = @JoinColumn(name = "skill_id")
     )
-    private List<SkillModel> skills;
+    private Set<SkillModel> skills = new HashSet<>();
 
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @Valid
-    private List<EducationModel> education;
+    private Set<EducationModel> education = new HashSet<>();
 
-    // Internship Experiences
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @Valid
-    private List<InternshipModel> internships;
+    private Set<InternshipModel> internships = new HashSet<>();
 
-    //  Job Experiences
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @Valid
-    private List<JobModel> jobs;
+    @ManyToMany
+    @JoinTable(name = "experiences_jobs",
+            joinColumns = @JoinColumn(name = "experience_id"),
+            inverseJoinColumns = @JoinColumn(name = "job_id"),
+            uniqueConstraints = @UniqueConstraint(columnNames = {"experience_id", "job_id"}))
+    private Set<JobModel> jobs = new HashSet<>();
+
 
     @Column(name = "START_DATE")
     private LocalDate startDate;
 
     @Column(name = "END_DATE")
     private LocalDate endDate;
-
 
 }

@@ -1,11 +1,13 @@
 package com.skillrat.usermanagement.dto;
 
 import java.time.LocalDate;
-import lombok.Data;
 
+import lombok.Builder;
+import lombok.Data;
+//@Builder
 @Data
 public class JobDTO {
-    private Long id;                // optional
+    private Long id;
     private String companyName;
     private String position;
     private LocalDate startDate;
