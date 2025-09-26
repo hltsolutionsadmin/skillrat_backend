@@ -44,7 +44,9 @@ public interface SRAppConstants {
     String ROLE_CALL_SUPERVISOR = "hasRole('ROLE_CALL_SUPERVISOR')";
     String SKILL_SAVED_SUCCESS = "Skill saved successfully";
     String SKILL_FETCH_SUCCESS = "Skill fetched successfully";
-    String SKILL_DELETED_SUCCESS = "Skill deleted successfully";
+    public static final String SKILL_ADDED_SUCCESS = "Skill added/assigned successfully";
+    public static final String SKILL_REMOVED_SUCCESS = "Skill removed successfully";
+    public static final String SKILL_DELETED_SUCCESS = "Skill deleted successfully";
 
     // =======================================
     // Direct Role Names (Without hasRole())
