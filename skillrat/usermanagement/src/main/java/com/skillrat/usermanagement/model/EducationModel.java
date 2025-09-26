@@ -39,7 +39,6 @@ public class EducationModel extends GenericModel {
     @Column(name = "CGPA", nullable = true)
     private Float cgpa;
 
-    @Min(200)
     @Max(1000)
     @Column(name = "MARKS", nullable = true)
     private int marks;

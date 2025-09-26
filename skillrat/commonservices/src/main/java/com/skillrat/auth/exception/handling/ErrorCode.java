@@ -36,6 +36,9 @@ public enum ErrorCode {
     APPLICATION_UNAUTHORIZED_ACCESS(3004, "You are not authorized to access this application", HttpStatus.FORBIDDEN),
     BUSINESS_ALREADY_APPROVED(2003, "Business already approved", HttpStatus.BAD_REQUEST),
     PROFILE_NOT_COMPLETED(1010, "Profile must be completed to perform this action", HttpStatus.FORBIDDEN),
+    EDUCATION_NOT_FOUND(2001, "Education not found", HttpStatus.NOT_FOUND),
+    INTERNSHIP_NOT_FOUND(2002, "Internship not found", HttpStatus.NOT_FOUND),
+    JOB_NOT_FOUND(2003, "Job not found", HttpStatus.NOT_FOUND),
     // ===========================
     // OTP & Token (1800–1899)
     // ===========================
@@ -60,6 +63,7 @@ public enum ErrorCode {
     FORBIDDEN(2002, "Forbidden", HttpStatus.FORBIDDEN),
     METHOD_NOT_ALLOWED(2003, "Method Not Allowed", HttpStatus.METHOD_NOT_ALLOWED),
     NULL_POINTER(2004, "Null Pointer Exception", HttpStatus.BAD_REQUEST),
+    USER_INPUT_INVALID(3001, "Invalid user input", HttpStatus.BAD_REQUEST),
 
     // Product, Category, Business (3000–3099)
     // ===========================
