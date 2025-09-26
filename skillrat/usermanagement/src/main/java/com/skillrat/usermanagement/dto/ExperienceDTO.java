@@ -51,6 +51,4 @@ public class ExperienceDTO {
     @Valid
     private List<JobDTO> jobs;
 
-    @Valid
-    private List<SkillDTO> skills;
 }

@@ -47,6 +47,9 @@ public interface SRAppConstants {
     public static final String SKILL_ADDED_SUCCESS = "Skill added/assigned successfully";
     public static final String SKILL_REMOVED_SUCCESS = "Skill removed successfully";
     public static final String SKILL_DELETED_SUCCESS = "Skill deleted successfully";
+    String EDUCATION = "EDUCATION";
+    String INTERNSHIP = "INTERNSHIP";
+    String JOB = "JOB";
 
     // =======================================
     // Direct Role Names (Without hasRole())

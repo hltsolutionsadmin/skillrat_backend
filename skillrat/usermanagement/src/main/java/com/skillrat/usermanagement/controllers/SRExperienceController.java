@@ -18,7 +18,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/experience")
+    @RequestMapping("/v1/experience")
 @RequiredArgsConstructor
 public class SRExperienceController {
 
