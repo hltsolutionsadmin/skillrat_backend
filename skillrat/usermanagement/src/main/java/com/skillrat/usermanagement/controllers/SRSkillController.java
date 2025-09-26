@@ -39,10 +39,11 @@ public class SRSkillController {
     @GetMapping("/admin")
     public ResponseEntity<StandardResponse<Page<SkillDTO>>> getAllSkills(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+                @RequestParam(required = false) String search) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<SkillDTO> skills = skillService.getAllSkills(pageable);
+        Page<SkillDTO> skills = skillService.getAllSkills(search, pageable);
         return ResponseEntity.ok(StandardResponse.page(SRAppConstants.SKILL_FETCH_SUCCESS, skills));
     }
 
@@ -86,6 +87,19 @@ public class SRSkillController {
         Long userId = SecurityUtils.getCurrentUserDetails().getId();
         List<SkillDTO> skills = skillService.getUserSkills(userId);
         return ResponseEntity.ok(StandardResponse.list(SRAppConstants.SKILL_FETCH_SUCCESS, skills));
+    }
+
+    @GetMapping("/user/search")
+    public ResponseEntity<StandardResponse<Page<SkillDTO>>> searchAndAssignSkill(
+            @RequestParam String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Long userId = SecurityUtils.getCurrentUserDetails().getId();
+        Pageable pageable = PageRequest.of(page, size);
+        Page<SkillDTO> skills = skillService.searchAndAssignSkill(userId, search, pageable);
+
+        return ResponseEntity.ok(StandardResponse.page(SRAppConstants.SKILL_ADDED_SUCCESS, skills));
     }
 
 }

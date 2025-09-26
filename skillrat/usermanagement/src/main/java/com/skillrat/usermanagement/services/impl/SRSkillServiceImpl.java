@@ -28,33 +28,46 @@ public class SRSkillServiceImpl implements SRSkillService {
     private final SRSkillPopulator skillPopulator;
 
 
+    private UserModel getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private SkillModel findOrCreateSkill(String name) {
+        return skillRepository.findByNameIgnoreCase(name)
+                .orElseGet(() -> skillRepository.save(new SkillModel(name)));
+    }
+
+    private List<SkillDTO> mapUserSkills(UserModel user) {
+        return user.getSkills().stream()
+                .map(skillPopulator::toDTO)
+                .collect(Collectors.toList());
+    }
+
+
     @Override
     public SkillDTO saveSkill(SkillDTO dto) {
-        SkillModel skill;
-        if (dto.getId() != null) {
-            skill = skillRepository.findById(dto.getId())
-                    .orElseThrow(() -> new HltCustomerException(ErrorCode.SKILL_NOT_FOUND));
-            skill.setName(dto.getName());
-        } else {
-            skill = new SkillModel();
-            skill.setName(dto.getName());
-        }
+        SkillModel skill = (dto.getId() != null)
+                ? skillRepository.findById(dto.getId())
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.SKILL_NOT_FOUND))
+                : new SkillModel();
 
-        SkillModel saved = skillRepository.save(skill);
-        return skillPopulator.toDTO(saved);
+        skill.setName(dto.getName());
+        return skillPopulator.toDTO(skillRepository.save(skill));
     }
 
     @Override
     public SkillDTO getSkillById(Long id) {
-        SkillModel skill = skillRepository.findById(id)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.SKILL_NOT_FOUND));
-        return skillPopulator.toDTO(skill);
+        return skillPopulator.toDTO(skillRepository.findById(id)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.SKILL_NOT_FOUND)));
     }
 
     @Override
-    public Page<SkillDTO> getAllSkills(Pageable pageable) {
-        return skillRepository.findAll(pageable)
-                .map(skillPopulator::toDTO);
+    public Page<SkillDTO> getAllSkills(String search, Pageable pageable) {
+        Page<SkillModel> skills = (search == null || search.isBlank())
+                ? skillRepository.findAll(pageable)
+                : skillRepository.findByNameContainingIgnoreCase(search, pageable);
+        return skills.map(skillPopulator::toDTO);
     }
 
     @Override
@@ -67,64 +80,63 @@ public class SRSkillServiceImpl implements SRSkillService {
 
     @Override
     public List<SkillDTO> addOrAssignSkill(Long userId, String skillName) {
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+        UserModel user = getUser(userId);
+        SkillModel skill = findOrCreateSkill(skillName);
 
-        SkillModel skill = skillRepository.findByNameIgnoreCase(skillName)
-                .orElseGet(() -> skillRepository.save(new SkillModel(skillName)));
-
-        if (!user.getSkills().contains(skill)) {
-            user.getSkills().add(skill);
+        if (user.getSkills().add(skill)) {
             userRepository.save(user);
         }
 
-        return user.getSkills().stream()
-                .map(skillPopulator::toDTO)
-                .collect(Collectors.toList());
+        return mapUserSkills(user);
     }
 
     @Override
     public List<SkillDTO> addOrAssignSkills(Long userId, List<String> skillNames) {
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+        UserModel user = getUser(userId);
 
+        boolean modified = false;
         for (String name : skillNames) {
-            SkillModel skill = skillRepository.findByNameIgnoreCase(name)
-                    .orElseGet(() -> skillRepository.save(new SkillModel(name)));
-
-            user.getSkills().add(skill); // Set ensures no duplicates
+            SkillModel skill = findOrCreateSkill(name);
+            modified |= user.getSkills().add(skill);
         }
 
-        userRepository.save(user);
+        if (modified) {
+            userRepository.save(user);
+        }
 
-        return user.getSkills().stream()
-                .map(skillPopulator::toDTO)
-                .collect(Collectors.toList());
+        return mapUserSkills(user);
     }
 
     @Override
     public List<SkillDTO> removeSkill(Long userId, Long skillId) {
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
-
+        UserModel user = getUser(userId);
         SkillModel skill = skillRepository.findById(skillId)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.SKILL_NOT_FOUND));
 
-        user.getSkills().remove(skill);
-        userRepository.save(user);
+        if (user.getSkills().remove(skill)) {
+            userRepository.save(user);
+        }
 
-        return user.getSkills().stream()
-                .map(skillPopulator::toDTO)
-                .collect(Collectors.toList());
+        return mapUserSkills(user);
     }
 
     @Override
     public List<SkillDTO> getUserSkills(Long userId) {
-        UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+        return mapUserSkills(getUser(userId));
+    }
 
-        return user.getSkills().stream()
-                .map(skillPopulator::toDTO)
-                .collect(Collectors.toList());
+    @Override
+    public Page<SkillDTO> searchAndAssignSkill(Long userId, String search, Pageable pageable) {
+        UserModel user = getUser(userId);
+
+        if (search != null && !search.isBlank()) {
+            SkillModel skill = findOrCreateSkill(search);
+            if (user.getSkills().add(skill)) {
+                userRepository.save(user);
+            }
+        }
+
+        return skillRepository.findByNameContainingIgnoreCase(search, pageable)
+                .map(skillPopulator::toDTO);
     }
 }
