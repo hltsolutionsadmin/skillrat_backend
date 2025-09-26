@@ -21,7 +21,7 @@ public interface SRSkillService {
     /**
      * Get all skills with pagination
      */
-    Page<SkillDTO> getAllSkills(Pageable pageable);
+    Page<SkillDTO> getAllSkills(String search, Pageable pageable);
 
     /**
      * Delete a skill from the catalog
@@ -51,4 +51,7 @@ public interface SRSkillService {
      * Get all skills of a user
      */
     List<SkillDTO> getUserSkills(Long userId);
+
+    Page<SkillDTO> searchAndAssignSkill(Long userId, String search, Pageable pageable);
+
 }
