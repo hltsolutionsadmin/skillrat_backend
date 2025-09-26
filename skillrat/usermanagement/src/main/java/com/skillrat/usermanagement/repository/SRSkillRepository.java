@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface SRSkillRepository extends JpaRepository<SkillModel, Long> {
 
     Optional<SkillModel> findByName(String name);
+    Optional<SkillModel> findByNameIgnoreCase(String name);
 }

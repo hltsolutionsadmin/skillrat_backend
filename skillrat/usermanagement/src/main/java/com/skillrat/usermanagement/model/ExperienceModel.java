@@ -1,3 +1,4 @@
+
 package com.skillrat.usermanagement.model;
 
 import java.time.LocalDate;
@@ -46,7 +47,7 @@ public class ExperienceModel extends GenericModel {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "B2B_UNIT_ID", nullable = true)
     private B2BUnitModel b2bUnit;
-    
+
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @Valid

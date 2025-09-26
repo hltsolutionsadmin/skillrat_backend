@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Component
 @RequiredArgsConstructor
 public class SRApplicationPopulator implements Populator<ApplicationModel, ApplicationDTO> {
@@ -23,6 +24,7 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
     private final SRRequirementRepository requirementRepository;
     private final B2BUnitRepository b2bUnitRepository;
     private final BlobStorageService blobStorageService;
+    private final UserPopulator userPopulator;
 
     @Override
     public void populate(ApplicationModel source, ApplicationDTO target) {
@@ -34,9 +36,19 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
         target.setCreatedAt(source.getCreatedAt());
         target.setUpdatedAt(source.getUpdatedAt());
 
-        if (source.getB2bUnit() != null) target.setB2bUnitId(source.getB2bUnit().getId());
+        if (source.getB2bUnit() != null) {
+            target.setB2bUnitId(source.getB2bUnit().getId());
+        }
 
-        if (source.getApplicant() != null) target.setApplicantUserId(source.getApplicant().getId());
+        // Populate applicant user details
+        if (source.getApplicant() != null) {
+            target.setApplicantUserId(source.getApplicant().getId());
+            UserDTO userDTO = new UserDTO();
+            userPopulator.populate(source.getApplicant(), userDTO, true);
+            target.setApplicant(userDTO);
+        }
+
+        // Populate media files
         if (source.getMediaFiles() != null && !source.getMediaFiles().isEmpty()) {
             List<MediaDTO> mediaDTOs = source.getMediaFiles().stream()
                     .map(this::convertMedia)
@@ -44,6 +56,7 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
             target.setDocumentsInfo(mediaDTOs);
         }
 
+        // Populate requirement
         if (source.getRequirement() != null) {
             target.setRequirementId(source.getRequirement().getId());
             RequirementDTO reqDTO = new RequirementDTO();
@@ -59,6 +72,7 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
         target.setStatus(dto.getStatus());
         target.setCoverLetter(dto.getCoverLetter());
 
+        // Set applicant
         if (dto.getApplicantUserId() != null) {
             UserModel applicant = userService.findById(dto.getApplicantUserId());
             if (applicant == null) {
@@ -67,6 +81,7 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
             target.setApplicant(applicant);
         }
 
+        // Set requirement
         if (dto.getRequirementId() != null) {
             RequirementModel requirement = requirementRepository.findById(dto.getRequirementId())
                     .orElseThrow(() -> new HltCustomerException(ErrorCode.REQUIREMENT_NOT_FOUND));
@@ -77,13 +92,14 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
             }
         }
 
+        // Set business unit
         if (dto.getB2bUnitId() != null) {
             B2BUnitModel b2bUnit = b2bUnitRepository.findById(dto.getB2bUnitId())
                     .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
             target.setB2bUnit(b2bUnit);
         }
 
-        // Handle uploaded files
+        // Handle uploaded documents
         if (dto.getDocuments() != null && !dto.getDocuments().isEmpty()) {
             try {
                 List<MediaModel> uploadedFiles = blobStorageService.uploadFiles(
@@ -125,11 +141,11 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
         target.setUpdatedAt(source.getUpdatedAt());
 
         if (source.getSkillsRequired() != null && !source.getSkillsRequired().isEmpty()) {
-            List<Long> skillIds = source.getSkillsRequired().stream()
+            target.setSkillsRequired(source.getSkillsRequired().stream()
                     .map(SkillModel::getId)
-                    .toList();
-            target.setSkillsRequired(skillIds);
+                    .toList());
         }
+
         target.setCode(source.getCode());
         target.setBusinessName(source.getBusinessName());
         target.setDepartment(source.getDepartment());
@@ -139,19 +155,5 @@ public class SRApplicationPopulator implements Populator<ApplicationModel, Appli
         target.setResponsibilities(source.getResponsibilities());
         target.setBenefits(source.getBenefits());
 
-        if (source.getAddresses() != null && !source.getAddresses().isEmpty()) {
-            List<AddressDTO> addresses = source.getAddresses().stream()
-                    .map(addr -> {
-                        AddressDTO dto = new AddressDTO();
-                        dto.setId(addr.getId());
-                        dto.setStreet(addr.getStreet());
-                        dto.setCity(addr.getCity());
-                        dto.setState(addr.getState());
-                        dto.setCountry(addr.getCountry());
-                        return dto;
-                    })
-                    .toList();
-            target.setAddresses(addresses);
-        }
     }
 }

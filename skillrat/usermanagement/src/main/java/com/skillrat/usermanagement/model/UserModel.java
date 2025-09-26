@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -16,11 +17,11 @@ import com.skillrat.auth.EncryptedStringConverter;
 @Table(
         name = "B2B_USER",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"USERNAME"}),
-                @UniqueConstraint(columnNames = {"EMAIL"}),
-                @UniqueConstraint(columnNames = {"EMAIL_HASH"}),
-                @UniqueConstraint(columnNames = {"PRIMARY_CONTACT"}),
-                @UniqueConstraint(columnNames = {"PRIMARY_CONTACT_HASH"})
+                @UniqueConstraint(name = "uk_user_username", columnNames = {"USERNAME"}),
+                @UniqueConstraint(name = "uk_user_email", columnNames = {"EMAIL"}),
+                @UniqueConstraint(name = "uk_user_email_hash", columnNames = {"EMAIL_HASH"}),
+                @UniqueConstraint(name = "uk_user_primary_contact", columnNames = {"PRIMARY_CONTACT"}),
+                @UniqueConstraint(name = "uk_user_primary_contact_hash", columnNames = {"PRIMARY_CONTACT_HASH"})
         },
         indexes = {
                 @Index(name = "idx_username", columnList = "USERNAME", unique = true),
@@ -32,28 +33,29 @@ import com.skillrat.auth.EncryptedStringConverter;
 )
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class UserModel extends GenericModel {
 
-    @Column(name = "FULL_NAME", nullable = true)
+    @Column(name = "FULL_NAME")
     private String fullName;
 
     @Size(max = 20)
-    @Column(name = "USERNAME", nullable = true, unique = true)
+    @Column(name = "USERNAME")
     private String username;
 
     @Email
     @Size(max = 50)
-    @Column(name = "EMAIL", nullable = true, unique = true)
+    @Column(name = "EMAIL")
     private String email;
 
-    @Column(name = "EMAIL_HASH", nullable = true, unique = true)
+    @Column(name = "EMAIL_HASH")
     private String emailHash;
 
     @NotBlank
     @Column(name = "PRIMARY_CONTACT", nullable = false)
     private String primaryContact;
 
-    @Column(name = "PRIMARY_CONTACT_HASH", nullable = true, unique = true)
+    @Column(name = "PRIMARY_CONTACT_HASH")
     private String primaryContactHash;
 
     @Column(name = "GENDER")
@@ -64,7 +66,6 @@ public class UserModel extends GenericModel {
 
     @Column(name = "FCM_TOKEN")
     private String fcmToken;
-
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -81,9 +82,8 @@ public class UserModel extends GenericModel {
     private LocalDate recentActivityDate;
 
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "PASSWORD", nullable = true)
+    @Column(name = "PASSWORD")
     private String password;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "B2B_UNIT_ID")
@@ -95,4 +95,11 @@ public class UserModel extends GenericModel {
     @Column(name = "PROFILE_COMPLETED", nullable = false)
     private Boolean profileCompleted = Boolean.FALSE;
 
+    @ManyToMany
+    @JoinTable(
+            name = "USER_SKILLS",
+            joinColumns = @JoinColumn(name = "USER_ID"),
+            inverseJoinColumns = @JoinColumn(name = "SKILL_ID")
+    )
+    private Set<SkillModel> skills = new HashSet<>();
 }

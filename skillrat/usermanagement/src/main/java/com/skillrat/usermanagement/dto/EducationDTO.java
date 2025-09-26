@@ -3,6 +3,7 @@ package com.skillrat.usermanagement.dto;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
 import lombok.Data;
 
 @Data

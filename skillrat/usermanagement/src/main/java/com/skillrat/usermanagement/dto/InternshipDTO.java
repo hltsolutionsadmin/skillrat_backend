@@ -1,11 +1,13 @@
 package com.skillrat.usermanagement.dto;
 
 import java.time.LocalDate;
+
+import lombok.Builder;
 import lombok.Data;
 
 @Data
 public class InternshipDTO {
-    private Long id;                // optional: useful for future updates
+    private Long id;
     private String companyName;
     private String role;
     private LocalDate startDate;
