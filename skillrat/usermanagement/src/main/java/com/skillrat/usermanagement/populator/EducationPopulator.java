@@ -21,7 +21,7 @@ public class EducationPopulator implements Populator<EducationModel, EducationDT
 		target.setMarks(source.getMarks());
         target.setStartDate(source.getStartDate());
         target.setEndDate(source.getEndDate());
-
+		target.setStudentId(source.getStudentId());
 
         if (source.getEducationLevel() != null) {
 			target.setLevel(source.getEducationLevel().name());

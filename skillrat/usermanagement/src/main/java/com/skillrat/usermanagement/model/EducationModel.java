@@ -49,7 +49,8 @@ public class EducationModel extends GenericModel {
     @Column(name = "END_DATE", nullable = false)
     private LocalDate endDate;
 
-
+    @Column(name = "STUDENT_ID", length = 100, nullable = false, unique = true)
+    private String studentId;
 
 
 }

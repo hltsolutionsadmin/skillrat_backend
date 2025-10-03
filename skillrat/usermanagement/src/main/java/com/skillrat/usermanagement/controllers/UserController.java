@@ -59,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/user")
 @Slf4j
 @RequiredArgsConstructor
-public class UserController extends SRBaseEndpoint {
+public class  UserController extends SRBaseEndpoint {
 
 	private final UserService userService;
 	private final BlobStorageService azureBlobService;
