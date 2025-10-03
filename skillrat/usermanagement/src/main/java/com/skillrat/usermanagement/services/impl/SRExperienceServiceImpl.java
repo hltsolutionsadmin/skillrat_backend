@@ -26,7 +26,6 @@ import com.skillrat.usermanagement.model.ExperienceModel;
 import com.skillrat.usermanagement.model.InternshipModel;
 import com.skillrat.usermanagement.model.JobModel;
 import com.skillrat.usermanagement.model.UserModel;
-import com.skillrat.usermanagement.populator.ExperiencePopulator;
 import com.skillrat.usermanagement.repository.B2BUnitRepository;
 import com.skillrat.usermanagement.repository.SREducationRepository;
 import com.skillrat.usermanagement.repository.SRExperienceReposiroty;
@@ -194,13 +193,20 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
 
 
     private void mergeOrAddEducation(List<EducationModel> academics, List<EducationDTO> incoming, UserModel user) {
-        if (incoming == null) return;
+        if (incoming == null || incoming.isEmpty()) return;
+
         for (EducationDTO dto : incoming) {
             Optional<EducationModel> match = academics.stream()
-                    .filter(e -> e.getEducationLevel() != null && e.getEducationLevel().name().equalsIgnoreCase(dto.getLevel()))
+                    .filter(e -> e.getEducationLevel() != null
+                            && dto.getLevel() != null
+                            && e.getEducationLevel().name().equalsIgnoreCase(dto.getLevel()))
                     .findFirst();
-            if (match.isPresent()) updateEducation(match.get(), dto);
-            else academics.add(createEducation(dto, user));
+
+            if (match.isPresent()) {
+                updateEducation(match.get(), dto);
+            } else {
+                academics.add(createEducation(dto, user));
+            }
         }
     }
 
@@ -229,13 +235,31 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
     }
 
 
-    private void updateEducation(EducationModel model, EducationDTO dto) {
-        model.setInstitution(dto.getInstitution());
-        model.setMarks(dto.getMarks());
-        model.setCgpa(dto.getCgpa());
-        model.setStartDate(dto.getStartDate());
-        model.setEndDate(dto.getEndDate());
+    private void updateEducation(EducationModel existing, EducationDTO dto) {
+        if (dto.getInstitution() != null) {
+            existing.setInstitution(dto.getInstitution());
+        }
+        if (dto.getCgpa() != null) {
+            existing.setCgpa(dto.getCgpa());
+        }
+        if (dto.getMarks() != null) {
+            existing.setMarks(dto.getMarks());
+        }
+        if (dto.getStartDate() != null) {
+            existing.setStartDate(dto.getStartDate());
+        }
+        if (dto.getEndDate() != null) {
+            existing.setEndDate(dto.getEndDate());
+        }
+        if (dto.getStudentId() != null) {
+            existing.setStudentId(dto.getStudentId());
+        }
+        if (dto.getLevel() != null) {
+            existing.setEducationLevel(EducationLevel.valueOf(dto.getLevel().toUpperCase()));
+        }
+        existing.setUpdatedAt(LocalDateTime.now());
     }
+
 
     private EducationModel createEducation(EducationDTO educationDTO, UserModel user) {
         EducationModel educationModel = new EducationModel();
@@ -247,6 +271,7 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
         educationModel.setUser(user);
         educationModel.setStartDate(educationDTO.getStartDate());
         educationModel.setEndDate(educationDTO.getEndDate());
+        educationModel.setStudentId(educationDTO.getStudentId());
         return educationModel;
     }
 

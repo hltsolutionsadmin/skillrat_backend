@@ -14,8 +14,9 @@ public class EducationDTO {
 	private String level; 
 	private String institution;
 	private Float cgpa;
-	private int marks;
-
+	private Integer marks;
+	private String studentId;
 	private LocalDate startDate;
 	private LocalDate endDate;
+
 }
