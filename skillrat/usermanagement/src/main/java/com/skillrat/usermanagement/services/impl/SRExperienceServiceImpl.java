@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.skillrat.usermanagement.dto.enums.ExperienceType;
 import com.skillrat.usermanagement.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -53,21 +54,32 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
         B2BUnitModel b2bUnit = b2bUnitRepository.findById(dto.getB2bUnitId())
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
-
         ExperienceModel experience = new ExperienceModel();
         experience.setUser(currentUser);
         experience.setB2bUnit(b2bUnit);
+
         String type = dto.getType() != null ? dto.getType().toUpperCase() : "";
 
         switch (type) {
-            case EDUCATION -> handleEducation(dto, currentUser, experience);
-            case INTERNSHIP -> handleInternship(dto, currentUser, experience);
-            case JOB -> handleJob(dto, currentUser, experience);
+            case EDUCATION -> {
+                experience.setType(ExperienceType.EDUCATION);
+                handleEducation(dto, currentUser, experience);
+            }
+            case INTERNSHIP -> {
+                experience.setType(ExperienceType.INTERNSHIP);
+                handleInternship(dto, currentUser, experience);
+            }
+            case JOB -> {
+                experience.setType(ExperienceType.JOB);
+                handleJob(dto, currentUser, experience);
+            }
             default -> throw new HltCustomerException(ErrorCode.USER_INPUT_INVALID);
         }
+
         experienceRepository.save(experience);
         return ResponseEntity.ok(new MessageResponse("Experience saved successfully"));
     }
+
 
 
     private void handleEducation(ExperienceDTO dto, UserModel user, ExperienceModel experience) {
