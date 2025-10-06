@@ -2,12 +2,14 @@
 package com.skillrat.usermanagement.controllers;
 
 import com.skillrat.commonservice.dto.StandardResponse;
+import com.skillrat.commonservice.user.UserDetailsImpl;
 import com.skillrat.usermanagement.dto.EducationDTO;
 import com.skillrat.usermanagement.dto.InternshipDTO;
 import com.skillrat.usermanagement.dto.JobDTO;
 import com.skillrat.usermanagement.dto.ExperienceDTO;
 import com.skillrat.usermanagement.services.SRExperienceService;
 import com.skillrat.utils.SRAppConstants;
+import com.skillrat.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +31,8 @@ public class SRExperienceController {
      */
     @PostMapping("/add")
     public ResponseEntity<StandardResponse<Void>> addExperience(@Valid @RequestBody ExperienceDTO dto) {
+        UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
+        dto.setUserId(loggedInUser.getId());
         experienceService.save(dto);
          return ResponseEntity.ok(StandardResponse.message(SRAppConstants.EXPERIENCE_CREATE_SUCCESS));
     }

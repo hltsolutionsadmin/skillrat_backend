@@ -54,31 +54,30 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
         B2BUnitModel b2bUnit = b2bUnitRepository.findById(dto.getB2bUnitId())
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
-        ExperienceModel experience = new ExperienceModel();
-        experience.setUser(currentUser);
-        experience.setB2bUnit(b2bUnit);
-
         String type = dto.getType() != null ? dto.getType().toUpperCase() : "";
 
+        // Check if experience already exists
+        ExperienceModel experience = experienceRepository
+                .findByUserAndB2bUnitAndType(currentUser, b2bUnit, ExperienceType.valueOf(type))
+                .orElseGet(() -> {
+                    ExperienceModel exp = new ExperienceModel();
+                    exp.setUser(currentUser);
+                    exp.setB2bUnit(b2bUnit);
+                    exp.setType(ExperienceType.valueOf(type));
+                    return exp;
+                });
+
         switch (type) {
-            case EDUCATION -> {
-                experience.setType(ExperienceType.EDUCATION);
-                handleEducation(dto, currentUser, experience);
-            }
-            case INTERNSHIP -> {
-                experience.setType(ExperienceType.INTERNSHIP);
-                handleInternship(dto, currentUser, experience);
-            }
-            case JOB -> {
-                experience.setType(ExperienceType.JOB);
-                handleJob(dto, currentUser, experience);
-            }
+            case "EDUCATION" -> handleEducation(dto, currentUser, experience);
+            case "INTERNSHIP" -> handleInternship(dto, currentUser, experience);
+            case "JOB" -> handleJob(dto, currentUser, experience);
             default -> throw new HltCustomerException(ErrorCode.USER_INPUT_INVALID);
         }
 
         experienceRepository.save(experience);
         return ResponseEntity.ok(new MessageResponse("Experience saved successfully"));
     }
+
 
 
 
