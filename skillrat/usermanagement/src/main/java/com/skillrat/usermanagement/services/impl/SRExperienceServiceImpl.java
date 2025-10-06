@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.skillrat.usermanagement.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,11 +22,6 @@ import com.skillrat.usermanagement.dto.ExperienceDTO;
 import com.skillrat.usermanagement.dto.InternshipDTO;
 import com.skillrat.usermanagement.dto.JobDTO;
 import com.skillrat.usermanagement.dto.enums.EducationLevel;
-import com.skillrat.usermanagement.model.EducationModel;
-import com.skillrat.usermanagement.model.ExperienceModel;
-import com.skillrat.usermanagement.model.InternshipModel;
-import com.skillrat.usermanagement.model.JobModel;
-import com.skillrat.usermanagement.model.UserModel;
 import com.skillrat.usermanagement.repository.B2BUnitRepository;
 import com.skillrat.usermanagement.repository.SREducationRepository;
 import com.skillrat.usermanagement.repository.SRExperienceReposiroty;
@@ -54,9 +50,13 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
     public ResponseEntity<MessageResponse> save(ExperienceDTO dto) {
         UserModel currentUser = fetchCurrentUser();
 
+        B2BUnitModel b2bUnit = b2bUnitRepository.findById(dto.getB2bUnitId())
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+
+
         ExperienceModel experience = new ExperienceModel();
         experience.setUser(currentUser);
-
+        experience.setB2bUnit(b2bUnit);
         String type = dto.getType() != null ? dto.getType().toUpperCase() : "";
 
         switch (type) {
@@ -75,8 +75,14 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
 
         List<EducationModel> academics = new ArrayList<>(educationRepository.findByUser(user));
         mergeOrAddEducation(academics, dto.getAcademics(), user);
-        experience.setEducation(academics);
+
+        for (EducationModel edu : academics) {
+            if (!experience.getEducation().contains(edu)) {
+                experience.getEducation().add(edu);
+            }
+        }
     }
+
 
     private void handleInternship(ExperienceDTO dto, UserModel user, ExperienceModel experience) {
         if (dto.getInternships() == null || dto.getInternships().isEmpty()) return;
@@ -205,10 +211,13 @@ public class SRExperienceServiceImpl extends SRBaseEndpoint implements SRExperie
             if (match.isPresent()) {
                 updateEducation(match.get(), dto);
             } else {
-                academics.add(createEducation(dto, user));
+                EducationModel newEdu = createEducation(dto, user);
+                educationRepository.save(newEdu);
+                academics.add(newEdu);
             }
         }
     }
+
 
     private void mergeOrAddInternships(List<InternshipModel> internships, List<InternshipDTO> incoming, UserModel user) {
         if (incoming == null) return;
