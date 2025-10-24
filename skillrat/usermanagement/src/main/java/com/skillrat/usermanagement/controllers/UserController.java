@@ -1,13 +1,12 @@
 package com.skillrat.usermanagement.controllers;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+import com.skillrat.commonservice.enums.RewardPointTransactionType;
+import com.skillrat.usermanagement.model.WalletModel;
+import com.skillrat.usermanagement.services.WalletService;
+import com.skillrat.usermanagement.services.WalletTransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +67,8 @@ public class  UserController extends SRBaseEndpoint {
 	private final MediaService mediaService;
 	private final UserRepository userRepository;
 	private final MediaRepository mediaRepository;
+	private final WalletService walletServiceImpl;
+	private final WalletTransactionService walletTransactionService;
 
 	@GetMapping("/find/{userId}")
 	public UserDTO getUserById(@PathVariable("userId") Long userId) {
@@ -75,7 +76,7 @@ public class  UserController extends SRBaseEndpoint {
 		return userService.getUserById(userId);
 	}
 
-	@GetMapping("/userDetails")
+	@GetMapping("RewardPointTransactionType")
 	public UserDTO getUserByToken() {
 		UserDetailsImpl user = SecurityUtils.getCurrentUserDetails();
 		Long userId = user.getId();
@@ -144,7 +145,7 @@ public class  UserController extends SRBaseEndpoint {
 		List<MediaModel> mediaModels = new ArrayList<>();
 
 		if (details.getProfilePicture() != null && !details.getProfilePicture().isEmpty()) {
-
+			removeOldProfilePicture(userModel);
 			MediaModel profilePicMedia = azureBlobService.uploadCustomerPictureFile(userId,
 					details.getProfilePicture());
 			String originalFilename = details.getProfilePicture().getOriginalFilename();
@@ -167,6 +168,11 @@ public class  UserController extends SRBaseEndpoint {
 			profilePicMedia.setModificationTime(new Date());
 
 			mediaService.saveMedia(profilePicMedia);
+			userModel.setProfilePictureId(profilePicMedia.getId());
+			userRepository.save(userModel);
+			if (null != getCustomerPicture(userId)) {
+				createTransaction(userId);
+			}
 		}
 
 		if (details.getMediaFiles() != null && !details.getMediaFiles().isEmpty()) {
@@ -239,6 +245,18 @@ public class  UserController extends SRBaseEndpoint {
 		log.info("UserModel and media details updated successfully for ID: {}", userId);
 		return ResponseEntity.ok(StandardResponse.single("User details updated successfully", "SUCCESS"));
 
+	}
+
+	private void removeOldProfilePicture(UserModel userModel) {
+		Optional<MediaModel> existingMeedia = mediaRepository.findById(userModel.getProfilePictureId());
+		if (existingMeedia.isPresent()) {
+			MediaModel existMedia = existingMeedia.get();
+			mediaRepository.delete(existMedia);
+		}
+	}
+
+	private void createTransaction(Long userId) {
+		WalletModel wallet=walletServiceImpl.createTransaction(userId, RewardPointTransactionType.PROFILE_PICTURE, null);
 	}
 
 	private MediaDTO convertToMediaDto(MediaModel media) {
