@@ -175,7 +175,6 @@ public class SRRequirementServiceImpl implements SRRequirementService {
         RequirementModel model = srRequirementRepository.findById(id)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.REQUIREMENT_NOT_FOUND));
 
-        model.setIsActive(false);
-        srRequirementRepository.save(model);
+        srRequirementRepository.delete(model);
     }
 }
