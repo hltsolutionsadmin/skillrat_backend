@@ -64,7 +64,7 @@ public class AuthController extends SRBaseEndpoint {
     private final RewardEventPublisher rewardEventPublisher;
 
     @PostMapping("/login")
-    public ResponseEntity<Object> generateJwt(@Valid @RequestBody LoginRequest loginRequest) throws JsonProcessingException {
+    public ResponseEntity<Object> generateJwt( @RequestBody LoginRequest loginRequest) throws JsonProcessingException {
         log.info("Login attempt for primary contact: {}", loginRequest.getPrimaryContact());
         loginRequest.setOtpType(SIGN_IN);
         validateOtp(loginRequest);

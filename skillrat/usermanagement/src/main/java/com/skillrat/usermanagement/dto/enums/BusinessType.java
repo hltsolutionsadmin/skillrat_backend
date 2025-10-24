@@ -14,7 +14,6 @@ public enum BusinessType {
     INSTITUTE("INST", "Institute"),
     UNIVERSITY("UNI", "University"),
 
-    // Corporate / Employment
     COMPANY("COMP", "Company"),
 
     // Social Sector

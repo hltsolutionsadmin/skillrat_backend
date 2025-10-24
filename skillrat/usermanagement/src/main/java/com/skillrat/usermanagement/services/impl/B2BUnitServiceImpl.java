@@ -295,16 +295,9 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
 
     @Override
     public Page<B2BUnitDTO> searchByCityAndCategory(String city, String categoryName, String searchTerm, Pageable pageable) {
-        Page<B2BUnitModel> modelPage = b2bUnitRepository.findByCityAndCategoryName(city, categoryName, pageable);
+        Page<B2BUnitModel> modelPage = b2bUnitRepository.findByCityAndCategoryNameAndSearchTerm(city, categoryName, searchTerm, pageable);
 
-        List<B2BUnitModel> filteredModels = modelPage.stream()
-                .filter(model -> {
-                    if (searchTerm == null || searchTerm.isBlank()) return true;
-                    String businessName = model.getBusinessName();
-                    return businessName != null && businessName.toLowerCase().contains(searchTerm.toLowerCase());
-                })
-                .toList();
-        List<B2BUnitDTO> dtoList = filteredModels.stream()
+        List<B2BUnitDTO> dtoList = modelPage.stream()
                 .map(model -> {
                     B2BUnitDTO dto = new B2BUnitDTO();
                     b2bUnitPopulator.populate(model, dto);
@@ -317,8 +310,9 @@ public class B2BUnitServiceImpl extends SRBaseEndpoint implements B2BUnitService
                 })
                 .toList();
 
-        return new PageImpl<>(dtoList, pageable, filteredModels.size());
+        return new PageImpl<>(dtoList, pageable, modelPage.getTotalElements());
     }
+
 
     public AddressDTO getAddressByB2BUnitId(Long unitId) {
         AddressModel addressModel = b2bUnitRepository.findBusinessAddressByUnitId(unitId)

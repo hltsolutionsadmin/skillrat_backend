@@ -67,21 +67,21 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
 
     // 6. Find by admin's address postal code
     @Query("""
-        SELECT DISTINCT b
-        FROM B2BUnitModel b
-        JOIN b.admin u
-        JOIN u.addresses a
-        WHERE a.postalCode = :postalCode
-    """)
+                SELECT DISTINCT b
+                FROM B2BUnitModel b
+                JOIN b.admin u
+                JOIN u.addresses a
+                WHERE a.postalCode = :postalCode
+            """)
     Page<B2BUnitModel> findByAdminAddressPostalCode(@Param("postalCode") String postalCode, Pageable pageable);
 
     // 7. Find by city and category name
     @Query("""
-       SELECT b FROM B2BUnitModel b
-       WHERE b.enabled = true
-         AND LOWER(b.businessAddress.city) = LOWER(:city)
-         AND LOWER(b.category.name) = LOWER(:categoryName)
-    """)
+               SELECT b FROM B2BUnitModel b
+               WHERE b.enabled = true
+                 AND LOWER(b.businessAddress.city) = LOWER(:city)
+                 AND LOWER(b.category.name) = LOWER(:categoryName)
+            """)
     Page<B2BUnitModel> findByCityAndCategoryName(@Param("city") String city,
                                                  @Param("categoryName") String categoryName,
                                                  Pageable pageable);
@@ -96,4 +96,17 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
     boolean existsByIdAndAdmin_Id(Long id, Long adminId);
 
     Optional<B2BUnitModel> findByBusinessCode(String businessCode);
+
+    @Query("SELECT b FROM B2BUnitModel b " +
+            "JOIN b.category c " +
+            "WHERE b.businessAddress.city = :city " +
+            "AND c.name = :categoryName " +
+            "AND (:searchTerm IS NULL OR LOWER(b.businessName) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+    Page<B2BUnitModel> findByCityAndCategoryNameAndSearchTerm(
+            @Param("city") String city,
+            @Param("categoryName") String categoryName,
+            @Param("searchTerm") String searchTerm,
+            Pageable pageable
+    );
 }
+

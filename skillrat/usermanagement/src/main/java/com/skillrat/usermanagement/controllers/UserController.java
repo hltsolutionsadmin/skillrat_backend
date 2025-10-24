@@ -3,10 +3,10 @@ package com.skillrat.usermanagement.controllers;
 import java.io.IOException;
 import java.util.*;
 
-import com.skillrat.commonservice.enums.RewardPointTransactionType;
-import com.skillrat.usermanagement.model.WalletModel;
-import com.skillrat.usermanagement.services.WalletService;
-import com.skillrat.usermanagement.services.WalletTransactionService;
+//import com.skillrat.commonservice.enums.RewardPointTransactionType;
+//import com.skillrat.usermanagement.model.WalletModel;
+//import com.skillrat.usermanagement.services.WalletService;
+//import com.skillrat.usermanagement.services.WalletTransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -67,8 +67,8 @@ public class  UserController extends SRBaseEndpoint {
 	private final MediaService mediaService;
 	private final UserRepository userRepository;
 	private final MediaRepository mediaRepository;
-	private final WalletService walletServiceImpl;
-	private final WalletTransactionService walletTransactionService;
+//	private final WalletService walletServiceImpl;
+//	private final WalletTransactionService walletTransactionService;
 
 	@GetMapping("/find/{userId}")
 	public UserDTO getUserById(@PathVariable("userId") Long userId) {
@@ -170,9 +170,9 @@ public class  UserController extends SRBaseEndpoint {
 			mediaService.saveMedia(profilePicMedia);
 			userModel.setProfilePictureId(profilePicMedia.getId());
 			userRepository.save(userModel);
-			if (null != getCustomerPicture(userId)) {
-				createTransaction(userId);
-			}
+//			if (null != getCustomerPicture(userId)) {
+//				createTransaction(userId);
+//			}
 		}
 
 		if (details.getMediaFiles() != null && !details.getMediaFiles().isEmpty()) {
@@ -255,9 +255,9 @@ public class  UserController extends SRBaseEndpoint {
 		}
 	}
 
-	private void createTransaction(Long userId) {
-		WalletModel wallet=walletServiceImpl.createTransaction(userId, RewardPointTransactionType.PROFILE_PICTURE, null);
-	}
+//	private void createTransaction(Long userId) {
+//		WalletModel wallet=walletServiceImpl.createTransaction(userId, RewardPointTransactionType.PROFILE_PICTURE, null);
+//	}
 
 	private MediaDTO convertToMediaDto(MediaModel media) {
 		MediaDTO dto = new MediaDTO();

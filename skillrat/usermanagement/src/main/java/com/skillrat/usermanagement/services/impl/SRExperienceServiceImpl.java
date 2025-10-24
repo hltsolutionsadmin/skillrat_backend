@@ -33,7 +33,6 @@ import com.skillrat.usermanagement.services.SRExperienceService;
 import com.skillrat.utils.SRBaseEndpoint;
 import com.skillrat.utils.SecurityUtils;
 
-import static com.skillrat.utils.SRAppConstants.*;
 
 @Service("srExperienceService")
 @RequiredArgsConstructor
