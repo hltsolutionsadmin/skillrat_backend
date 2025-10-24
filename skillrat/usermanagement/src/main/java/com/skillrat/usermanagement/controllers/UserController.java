@@ -76,7 +76,7 @@ public class  UserController extends SRBaseEndpoint {
 		return userService.getUserById(userId);
 	}
 
-	@GetMapping("RewardPointTransactionType")
+	@GetMapping("/userDetails")
 	public UserDTO getUserByToken() {
 		UserDetailsImpl user = SecurityUtils.getCurrentUserDetails();
 		Long userId = user.getId();
