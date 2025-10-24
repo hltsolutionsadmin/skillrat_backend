@@ -110,10 +110,9 @@ public class B2BUnitController extends SRBaseEndpoint {
 
     @PutMapping("/{businessId}/approve")
     public ResponseEntity<StandardResponse<B2BUnitDTO>> approveBusiness(
-            @PathVariable Long businessId,
-            @RequestParam Long adminUserId
+            @PathVariable Long businessId
     ) {
-        B2BUnitDTO dto = b2BUnitService.approveBusiness(businessId, adminUserId);
+        B2BUnitDTO dto = b2BUnitService.approveBusiness(businessId, SecurityUtils.getCurrentUserDetails().getId());
         return ResponseEntity.ok(StandardResponse.single("Business approved successfully", dto));
     }
 
