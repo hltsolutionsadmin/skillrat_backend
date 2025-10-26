@@ -46,5 +46,4 @@ public class UserOTPModel {
     @Column(name = "PRIMARY_CONTACT")
     private String primaryContact;
 
-
 }

@@ -29,7 +29,8 @@ public class SecurityUtils {
         if (principal instanceof UserDetailsImpl) {
             return (UserDetailsImpl) principal;
         }
-        return new UserDetailsImpl();
+        return
+                new UserDetailsImpl();
     }
 
     public static String getCurrentToken() {
