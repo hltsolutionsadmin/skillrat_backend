@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Service("placementCellService")
+@Service
 @RequiredArgsConstructor
 public class SRPlacementCellServiceImpl implements SRPlacementCellService {
 
