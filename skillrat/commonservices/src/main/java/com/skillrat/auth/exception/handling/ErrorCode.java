@@ -39,6 +39,9 @@ public enum ErrorCode {
     EDUCATION_NOT_FOUND(2001, "Education not found", HttpStatus.NOT_FOUND),
     INTERNSHIP_NOT_FOUND(2002, "Internship not found", HttpStatus.NOT_FOUND),
     JOB_NOT_FOUND(2003, "Job not found", HttpStatus.NOT_FOUND),
+    PLACEMENT_CELL_NOT_FOUND(3001, "Placement cell not found", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_ACCESS(3003, "User not authorized to create placement cell", HttpStatus.FORBIDDEN),
+
     // ===========================
     // OTP & Token (1800–1899)
     // ===========================

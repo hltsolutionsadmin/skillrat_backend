@@ -1,25 +1,24 @@
 package com.skillrat.usermanagement.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 public class PlacementCellDTO {
 
     private Long id;
 
+    @NotBlank(message = "Description is required")
+    @Size(max = 500, message = "Description must not exceed 500 characters")
     private String description;
 
-    private Long b2bUnitId;
-
-    private Long userId;
-
-    private UserDTO user;
-
+    @NotNull(message = "B2B Unit is required")
     private B2BUnitDTO b2bUnit;
 
-    private LocalDateTime createdAt;
+    private UserDTO coordinator;
+
+    private String coordinatorName;
+
 }
