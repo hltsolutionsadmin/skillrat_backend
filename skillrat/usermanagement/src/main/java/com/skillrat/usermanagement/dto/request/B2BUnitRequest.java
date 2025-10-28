@@ -70,5 +70,6 @@ public class B2BUnitRequest {
 
     private String adminPassword;
 
+    private PlacementCellRequest placementCell;
 
 }

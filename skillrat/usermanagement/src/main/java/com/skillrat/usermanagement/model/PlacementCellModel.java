@@ -57,4 +57,5 @@ public class PlacementCellModel extends AuditableModel {
 
     @Column(name = "remarks", length = 255)
     private String remarks;
+
 }

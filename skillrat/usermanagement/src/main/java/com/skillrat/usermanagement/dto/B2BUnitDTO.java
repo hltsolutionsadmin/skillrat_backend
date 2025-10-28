@@ -60,4 +60,6 @@ public class B2BUnitDTO {
 
     @NotNull(message = "Temporarily closed flag is required")
     private Boolean temporarilyClosed;
+
+    private PlacementCellDTO placementCell;
 }

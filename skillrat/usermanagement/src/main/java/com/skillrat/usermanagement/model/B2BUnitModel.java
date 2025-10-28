@@ -79,4 +79,7 @@ public class B2BUnitModel extends AuditableModel {
 
     @Column(name = "is_temporarily_closed", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean temporarilyClosed = Boolean.FALSE;
+
+    @OneToOne(mappedBy = "b2bUnit", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PlacementCellModel placementCell;
 }
